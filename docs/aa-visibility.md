@@ -187,6 +187,48 @@ signature, so Play Protect behaves normally and publisher updates still apply cl
   *Unknown sources*, and no amount of app-side cleverness changes that.
 - The catalog does not need per-app patching metadata; every app already declares the AA meta-data.
 
+## Package renaming: what it actually does (T-07, partial) [V]
+
+Upstream distributes some apps under package names that are not their publishers'
+(`maps.jaoolonda.android`, `android.loandamaps.it`, `maps.kiao2client.android`, …). Examined by
+pulling upstream's renamed **AAMirror** build (`mirror-debug.apk`, 2.0 MB) and reading its manifest.
+
+What the rename changes: **only the package identifier.**
+
+- Internal classes are untouched — the manifest still points at
+  `com.github.slashmax.aamirror.CarService`, `.ForegroundService`, `.CarApplication`, and so on.
+  Consistent with `ARSCPackageRenamer` rewriting the manifest's package attribute and
+  `resources.arsc`, not the code.
+- **AA capability is not added by the rename.** The original app already declares everything AA
+  needs: the `com.google.android.gms.car.application` meta-data plus the
+  `com.google.android.gms.car.category.CATEGORY_PROJECTION` and `CATEGORY_PROJECTION_OEM`
+  intent categories.
+
+Which apps get renamed is the informative part:
+
+| Renamed | Left alone |
+| --- | --- |
+| Screen2Auto, AAMirror, AAStream, AA Mirror Plus, CarStream | AA Passenger, Nav2Contacts, AATorque, Fermata, AA Browser, Performance Monitor, Widgets For Android Auto |
+
+Exactly the mirroring/streaming family — the category Google actively blocks — is renamed. Ordinary
+AA utilities keep their publishers' package names, even the ones upstream hosts itself
+(AA Passenger ships from upstream's bucket as `com.github.martoreto.aaremote`, unrenamed).
+
+**So the rename is about identity, not capability.** The obvious reading is evading a
+blocklist — Play Protect's, Android Auto's, or both — but nothing in the code or the artifacts
+states a reason, and it is **[I]**. Do not assert it.
+
+Also worth knowing: that build is signed with the **public AOSP test key**
+(`EMAILADDRESS=android@android.com, CN=Android, O=Android`, SHA-256
+`a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc`) and is named `-debug`. The
+private half of that key is public, so anyone can produce a signed update for those package ids.
+
+**What this means for the fork.** Since renaming adds no AA capability, shipping the *original*
+publisher builds is a viable starting point — the apps are already AA-capable as published. Whether
+Android Auto or Play Protect rejects them under their real identity is the open half of T-07, and
+it needs the observation channel below. This unblocks T-15 more than expected: the mirroring family
+can be catalogued from publisher sources and flagged as AA-visibility-unverified.
+
 ## Observability: AA's app list needs a live projection session [V]
 
 Checked on the test device with Android Auto installed but not projecting:

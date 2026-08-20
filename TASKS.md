@@ -70,9 +70,9 @@ Design and rationale: [docs/standalone.md](docs/standalone.md).
   names, which are now all resolved. **Do not copy its `download_url`s**: they point at upstream's
   Firebase Storage bucket with embedded access tokens. Establish each `source` from the
   publisher's own release page instead, and do not invent URLs to fill gaps.
-  **Blocked on T-07** for the mirroring family: use v2.8.5's corrected `package_name` values
-  (`maps.jaoolonda.android`, `android.loandamaps.it`, …), not v2.1's, and settle whether the fork
-  distributes renamed or original builds before writing those entries.
+  For the mirroring family: T-07 established that renaming adds no AA capability, so catalogue
+  them from **publisher** sources under their real package names and mark AA visibility unverified.
+  Do not copy upstream's renamed builds — they are signed with the public AOSP test key.
 - [ ] **T-06** Android Auto visibility: **installer attribution, not APK patching.** The mechanism
   is fully recovered — spec in [docs/aa-visibility.md](docs/aa-visibility.md). Implement:
   a Shizuku session install (`pm install-create -i com.android.vending --originating-uri
@@ -91,8 +91,18 @@ Design and rationale: [docs/standalone.md](docs/standalone.md).
   only be declared at session creation, never changed afterwards, so a wrongly-installed app must
   be uninstalled and reinstalled.
   *Done when:* an app installed by this build is listed by Android Auto on the test device.
-- [ ] **T-07** Determine whether the mirroring family needs **package renaming** to be visible to
-  Android Auto. Upstream distributes CarStream as `maps.jaoolonda.android`, Screen2Auto as
+- [~] **T-07** Determine whether the mirroring family needs **package renaming** to be visible to
+  Android Auto. **Half answered** — see
+  [aa-visibility.md](docs/aa-visibility.md#package-renaming-what-it-actually-does-t-07-partial-v).
+  Verified by examining upstream's renamed AAMirror build: the rename changes **only the package
+  identifier** (classes stay `com.github.slashmax.aamirror.*`) and **adds no AA capability** — the
+  original already declares `com.google.android.gms.car.application` plus the `CATEGORY_PROJECTION`
+  categories. Only the mirroring/streaming family is renamed; utilities upstream hosts itself keep
+  their publishers' names. So the rename is about identity, not capability — plausibly blocklist
+  evasion, but that is **inferred, not established**.
+  Remaining half needs T-22's observation channel: does AA (or Play Protect) actually reject the
+  original identity? Until then, catalogue the mirroring family from **publisher** sources and mark
+  AA visibility unverified rather than copying upstream's renamed builds. Upstream distributes CarStream as `maps.jaoolonda.android`, Screen2Auto as
   `android.loandamaps.it`, and the AAMirror/AAStream/AAMirrorPlus family as `maps.*` — v2.1 shipped
   pre-renamed APKs, v2.8.5 renames on-device (`PackageRenamer` + `ARSCPackageRenamer` over
   `AndroidManifest.xml` and `resources.arsc`). The *reason* is unverified. This gates T-15: if the
