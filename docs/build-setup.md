@@ -4,8 +4,22 @@ Covers [TASKS.md](../TASKS.md) Phase 1. Target design: [standalone.md](standalon
 
 ## Status
 
-**Scaffolding is in place and verified.** `./gradlew projects` succeeds on-device with Gradle
-8.13 + AGP 8.13.1 and lists `:app`.
+**The build works on-device, end to end.** `./build-on-termux.sh debug --no-install` produces
+`app/build/outputs/apk/debug/AAAD-2.1-debug.apk` (14 MB) in Termux — verified 2026-08-20:
+
+```
+package: name='sksa.aa.customapps.dev' versionCode='18' versionName='2.1'
+         compileSdkVersion='36' targetSdkVersion='36'
+application-label: 'AAAD (dev)'
+launchable-activity: com.legs.appsforaa.LauncherActivity
+Signer #1 certificate DN: C=US, O=Android, CN=Android Debug
+```
+
+First clean build: ~11 min (dependency downloads + `mergeExtDexDebug` dominate). Incremental
+builds reuse the daemon and build cache.
+
+**The APK does not run yet.** `LauncherActivity` is declared but has no source, so it crashes on
+launch. That is T-04, not a build problem.
 
 | Piece | State |
 | --- | --- |
@@ -152,8 +166,15 @@ Then stub `OnboardingActivity`, `OnboardingActivityNew`, `SupportActivity`, and
 
 ```bash
 ./gradlew projects                      # ✅ verified: lists :app
-./build-on-termux.sh debug --no-install # produces app/build/outputs/apk/debug/AAAD-2.1-*.apk
+./build-on-termux.sh debug --no-install # ✅ verified: AAAD-2.1-debug.apk, 14 MB
 adb install -r app/build/outputs/apk/debug/*.apk
 adb shell am start -n sksa.aa.customapps.dev/com.legs.appsforaa.LauncherActivity
 adb logcat -d -s AndroidRuntime:E       # will crash until T-04 lands — expected
+```
+
+Inspecting the result (use the native aapt2, not the qemu wrapper):
+
+```bash
+~/git/Embeddy/tools/aapt2-arm64/aapt2 dump badging app/build/outputs/apk/debug/*.apk
+apksigner verify --print-certs app/build/outputs/apk/debug/*.apk
 ```

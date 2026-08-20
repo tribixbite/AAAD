@@ -35,9 +35,10 @@ Three goals, in priority order. Task breakdown in [TASKS.md](TASKS.md).
 
 ## Buildability
 
-**Scaffolding works.** `./gradlew projects` is verified on-device (Gradle 8.13 + AGP 8.13.1).
-Building needs **no secrets**: no `google-services.json`, no Stripe keys, and `local.properties`
-is optional.
+**The build works.** `./build-on-termux.sh debug --no-install` produces a 14 MB
+`AAAD-2.1-debug.apk` on-device — verified 2026-08-20 (Gradle 8.13 + AGP 8.13.1, package
+`sksa.aa.customapps.dev`, targetSdk 36, debug-signed). Building needs **no secrets**: no
+`google-services.json`, no Stripe keys, and `local.properties` is optional.
 
 **The app does not run yet.** These are declared in `AndroidManifest.xml` with no source in tree:
 `LauncherActivity` · `MainActivityNew` · `OnboardingActivity` · `OnboardingActivityNew` ·

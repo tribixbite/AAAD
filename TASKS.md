@@ -20,8 +20,11 @@ Status: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked (say why 
 Detail: [docs/build-setup.md](docs/build-setup.md).
 
 - [x] **T-01** Gradle scaffolding: `settings.gradle`, `gradle.properties`, wrapper pinned to
-  Gradle 8.13 (AGP 8.13.1's minimum), `app/proguard-rules.pro`, `local.properties.example`.
-  *Verified:* `./gradlew projects` succeeds on-device and lists `:app`.
+  Gradle 8.13 (AGP 8.13.1's minimum), `app/proguard-rules.pro`, `local.properties.example`,
+  `build-on-termux.sh`.
+  *Verified 2026-08-20:* `./build-on-termux.sh debug --no-install` produces a 14 MB
+  `AAAD-2.1-debug.apk` on-device — package `sksa.aa.customapps.dev`, targetSdk 36, debug-signed.
+  It crashes on launch because `LauncherActivity` has no source; that is T-04.
 - [x] ~~**T-02** Create a Firebase project and add `google-services.json`.~~
   **Obsolete** — the fork has no backend, so there is nothing to configure.
   See [docs/standalone.md](docs/standalone.md).
@@ -138,6 +141,13 @@ Append dated entries as decisions are made — this is the fork's decision log.
 - **2026-08-20** — Build toolchain established from `../swype/cleverkeys` (`build-on-termux.sh`,
   env-var signing, CI shape) and `~/git/termux-tools/.claude/skills/android-termux-build.md`.
   Verified on-device: Gradle 8.13 + AGP 8.13.1 configure `:app` successfully.
+- **2026-08-20** — **First APK built on-device.** 11 min clean, `mergeExtDexDebug` and dependency
+  downloads dominate. Two failures on the way, both from
+  `com.github.iGio90:BottomDialogs:master-SNAPSHOT` (T-19): a JitPack read timeout, then
+  `com.android.support:support-compat:27.0.2` colliding with `androidx.core` in
+  `checkDebugDuplicateClasses`. Also fixed a bug in `build-on-termux.sh`: `RELEASE_KEYSTORE` is
+  exported device-wide for another project, which was pushing *debug* builds onto the slow
+  distribution path (no daemon, no cache). That path is now release-only.
 - **2026-08-20** — **aapt2 is the one real Termux trap.** AGP's Maven aapt2 is x86_64 and cannot
   run here. `$PREFIX/bin/aapt2` is *not* native — it is a `qemu-x86_64` wrapper. The native
   aarch64 binary on this device is `~/git/Embeddy/tools/aapt2-arm64/aapt2`, which
