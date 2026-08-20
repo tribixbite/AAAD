@@ -70,8 +70,10 @@ class InstallManager(
 
         onProgress(Progress.Installing)
         return try {
-            when (ShizukuInstaller.availability()) {
-                ShizukuInstaller.Availability.Ready -> when (val result = ShizukuInstaller.install(apk)) {
+            // Waits for the permission dialog if one is needed, so the first install of a session
+            // does not silently fall back to an unattributed install.
+            if (ShizukuInstaller.ensureReady()) {
+                when (val result = ShizukuInstaller.install(apk)) {
                     is ShizukuInstaller.Result.Success ->
                         Outcome.InstalledAttributed(release.versionName)
                     is ShizukuInstaller.Result.Failure -> {
@@ -79,7 +81,11 @@ class InstallManager(
                         systemInstall(apk)
                     }
                 }
-                else -> systemInstall(apk)
+            } else {
+                Logger.i(TAG, "Falling back to the system installer — the result will NOT be " +
+                    "attributed to the Play Store, so Android Auto will not list ${entry.name} " +
+                    "unless AA's Unknown sources is enabled")
+                systemInstall(apk)
             }
         } finally {
             // The APK is reproducible; keeping it only costs cache space.

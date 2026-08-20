@@ -3,9 +3,11 @@ package com.legs.appsforaa.utils
 import android.content.pm.PackageManager
 import android.os.Build
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import rikka.shizuku.Shizuku
 import java.io.File
+import kotlin.coroutines.resume
 
 /**
  * Installs an APK through Shizuku so Android Auto will list it.
@@ -55,9 +57,54 @@ object ShizukuInstaller {
         else -> Availability.Ready
     }
 
-    fun requestPermission() {
-        runCatching { Shizuku.requestPermission(PERMISSION_REQUEST_CODE) }
-            .onFailure { Logger.w(TAG, "Shizuku permission request failed", it) }
+    /**
+     * Returns true when Shizuku is usable, prompting for permission and **waiting for the
+     * answer** if needed.
+     *
+     * The waiting is the point. Requesting permission and continuing immediately guarantees the
+     * first install of every session silently takes the unattributed fallback path, because the
+     * user has not answered yet — which looks like "Shizuku doesn't work" and produces an app
+     * Android Auto will not list.
+     */
+    suspend fun ensureReady(): Boolean {
+        val state = availability()
+        // Logged unconditionally: "why did it not use Shizuku" is the single most common
+        // question when an install turns out not to be visible in Android Auto.
+        Logger.i(TAG, "Shizuku availability: $state (binder=${isBinderAlive()}, appInstalled=$shizukuAppInstalled)")
+        when (state) {
+            Availability.Ready -> return true
+            Availability.NotInstalled, Availability.NotRunning -> return false
+            Availability.PermissionRequired -> Unit
+        }
+
+        // shouldShowRequestPermissionRationale() means the user denied and asked not to be asked
+        // again; prompting would be a no-op that hangs this coroutine forever.
+        if (runCatching { Shizuku.shouldShowRequestPermissionRationale() }.getOrDefault(false)) {
+            Logger.i(TAG, "Shizuku permission was permanently denied")
+            return false
+        }
+
+        return suspendCancellableCoroutine { continuation ->
+            val listener = object : Shizuku.OnRequestPermissionResultListener {
+                override fun onRequestPermissionResult(requestCode: Int, grantResult: Int) {
+                    if (requestCode != PERMISSION_REQUEST_CODE) return
+                    Shizuku.removeRequestPermissionResultListener(this)
+                    if (continuation.isActive) {
+                        continuation.resume(grantResult == PackageManager.PERMISSION_GRANTED)
+                    }
+                }
+            }
+            Shizuku.addRequestPermissionResultListener(listener)
+            continuation.invokeOnCancellation {
+                Shizuku.removeRequestPermissionResultListener(listener)
+            }
+            runCatching { Shizuku.requestPermission(PERMISSION_REQUEST_CODE) }
+                .onFailure { error ->
+                    Shizuku.removeRequestPermissionResultListener(listener)
+                    Logger.w(TAG, "Shizuku permission request failed", error)
+                    if (continuation.isActive) continuation.resume(false)
+                }
+        }
     }
 
     private fun isBinderAlive(): Boolean =

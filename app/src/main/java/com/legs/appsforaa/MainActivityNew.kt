@@ -160,11 +160,9 @@ class MainActivityNew : AppCompatActivity() {
             return
         }
 
-        // Shizuku can be started or stopped at any moment, so re-check per attempt.
+        // Shizuku can be started or stopped at any moment, so re-check per attempt. The
+        // permission prompt itself is awaited inside InstallManager.
         ShizukuInstaller.refreshInstalledState(packageManager)
-        if (ShizukuInstaller.availability() == ShizukuInstaller.Availability.PermissionRequired) {
-            ShizukuInstaller.requestPermission()
-        }
 
         installJob = lifecycleScope.launch {
             val outcome = installManager.install(item.entry) { progress ->
