@@ -152,16 +152,24 @@ device.** This matters: it means the fork does not need to reproduce any of it.
 O=AAAD, L=Internet, ST=Online, C=US`, store password `aaad2024secure`) and is consumed only by the
 dead signer.
 
-**Verified empirically on this device** — the exact argv `BundledApkSigner` builds:
+**Verified empirically** — the exact argv `BundledApkSigner` builds:
 
 ```
-$ dalvikvm -Xmx256m -cp assets/tools/apksigner.jar com.android.apksigner.ApkSignerTool --version
-Aborted
-exit=134            # SIGABRT, zero output
+$ dalvikvm -Xmx256m -cp <readonly>/apksigner.jar com.android.apksigner.ApkSignerTool --version
+Unable to locate class 'com/android/apksigner/ApkSignerTool'
+java.lang.ClassNotFoundException: com.android.apksigner.ApkSignerTool
+exit=1
 ```
 
-That failure is a property of the shipped artifact (no dex), not of the environment, so it fails
-identically inside the app.
+ART opens the jar, finds no dex in it, and therefore cannot resolve the entry class. That is a
+property of the shipped artifact, so it fails identically inside the app.
+
+> Correction: an earlier run of this test reported `SIGABRT / exit=134`, which was an artifact of
+> the test environment, not the jar — the copy lived on a writable path and tripped ART's
+> `SecurityException: Writable dex file … is not allowed` W^X check before it ever looked at the
+> contents. Re-run against a read-only copy, the real failure is the `ClassNotFoundException`
+> above. The conclusion is unchanged; the evidence for it is different. If you test this yourself,
+> `chmod 444` the jar first or you will measure the wrong thing.
 
 Not re-signing is also the better outcome: the installed app keeps its original developer
 signature, so Play Protect behaves normally and publisher updates still apply cleanly.

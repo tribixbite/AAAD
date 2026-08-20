@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "updated": "2026-08-20",
+  "_comment": [
+    "Bundled app catalog. Schema: docs/standalone.md#catalog-format.",
+    "Every entry here resolves to the publisher's OWN GitHub releases — verified to have APK",
+    "assets on 2026-08-20. Nothing points at upstream AAAD's Firebase bucket.",
+    "",
+    "The mirroring family (Screen2Auto, AAMirror, AAStream, AA Mirror Plus) and CarStream are",
+    "deliberately absent: upstream distributes those as pre-renamed builds from its own storage,",
+    "and whether the rename is required for Android Auto visibility is unresolved (TASKS.md T-07).",
+    "Do not add them with invented URLs."
+  ],
+  "apps": [
+    {
+      "id": "fermata",
+      "name": "Fermata Auto",
+      "packageName": "me.aap.fermata.auto.dear.google.why",
+      "category": "multimedia",
+      "descriptionRes": "fermata_description",
+      "source": {
+        "type": "github-release",
+        "repo": "AndreyPavlenko/Fermata",
+        "assetPattern": "^fermata-auto-.*\\.apk$"
+      }
+    },
+    {
+      "id": "aabrowser",
+      "name": "AA Browser",
+      "packageName": "com.kododake.aabrowser",
+      "category": "other",
+      "descriptionRes": "aabrowser_description",
+      "source": {
+        "type": "github-release",
+        "repo": "kododake/AABrowser",
+        "assetPattern": "^AABrowser-.*\\.apk$"
+      }
+    },
+    {
+      "id": "pm",
+      "name": "Performance Monitor",
+      "packageName": "com.mqbcoding.stats",
+      "category": "other",
+      "descriptionRes": "performance_monitor_description",
+      "source": {
+        "type": "github-release",
+        "repo": "jilleb/mqb-pm",
+        "assetPattern": "\\.apk$"
+      }
+    },
+    {
+      "id": "aatorque",
+      "name": "AA Torque",
+      "packageName": "com.aatorque.stats",
+      "category": "other",
+      "descriptionRes": "aatorque_description",
+      "source": {
+        "type": "github-release",
+        "repo": "agronick/aa-torque",
+        "assetPattern": "\\.apk$"
+      }
+    },
+    {
+      "id": "aawidgets",
+      "name": "Widgets For Android Auto",
+      "packageName": "de.nsvb.android.auto.w4a",
+      "category": "other",
+      "descriptionRes": "aawidgets_description",
+      "source": {
+        "type": "github-release",
+        "repo": "ns130291/widgets-for-auto",
+        "assetPattern": "\\.apk$"
+      }
+    },
+    {
+      "id": "n2c",
+      "name": "Nav2Contacts",
+      "packageName": "nl.frankkie.nav2contacts",
+      "category": "other",
+      "descriptionRes": "nav2contacts_description",
+      "source": {
+        "type": "github-release",
+        "repo": "frankkienl/Nav2Contacts",
+        "assetPattern": "\\.apk$"
+      }
+    }
+  ]
+}

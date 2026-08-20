@@ -110,19 +110,10 @@
             </intent-filter>
         </activity>
 
-        <!-- Onboarding Activity (Old) -->
-        <activity
-            android:name=".OnboardingActivity"
-            android:screenOrientation="portrait"
-            android:exported="false"
-            android:theme="@style/Theme.AA_Apps_Downloader" />
-
-        <!-- Onboarding Activity (New - Multi-page) -->
-        <activity
-            android:name=".OnboardingActivityNew"
-            android:screenOrientation="portrait"
-            android:exported="false"
-            android:theme="@style/Theme.AA_Apps_Downloader" />
+        <!-- Onboarding (T-08), Support (T-09) and the Android Auto setup guide (T-09) are not
+             implemented yet. Their entries are omitted rather than declared against classes that
+             do not exist: a declared-but-missing component is a crash waiting for whoever first
+             routes to it. Re-add each alongside its implementation. -->
 
         <!-- New Material You Main Activity -->
         <activity
@@ -144,24 +135,6 @@
              EnterProCode, TransferLicense, LicenseTransferActivity. There is no PRO tier,
              no purchase, no license, and no backend to hold one. See docs/standalone.md. -->
 
-        <!-- Support Activity - Help & Contact -->
-        <activity
-            android:name=".SupportActivity"
-            android:screenOrientation="portrait"
-            android:exported="false"
-            android:label="@string/support_title"
-            android:parentActivityName=".MainActivityNew"
-            android:theme="@style/Theme.AA_Apps_Downloader" />
-
-        <!-- Android Auto Setup Activity - Guide for Enabling Developer Settings -->
-        <activity
-            android:name=".AndroidAutoSetupActivity"
-            android:screenOrientation="portrait"
-            android:exported="false"
-            android:label="@string/android_auto_setup_title"
-            android:parentActivityName=".OnboardingActivityNew"
-            android:theme="@style/Theme.AA_Apps_Downloader" />
-
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="sksa.aa.customapps.fileProvider"
@@ -181,17 +154,11 @@
             android:multiprocess="false"
             android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
 
-        <!-- BroadcastReceiver for package installation/removal events -->
-        <receiver
-            android:name=".receivers.PackageInstallReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.PACKAGE_ADDED" />
-                <action android:name="android.intent.action.PACKAGE_REMOVED" />
-                <action android:name="android.intent.action.PACKAGE_REPLACED" />
-                <data android:scheme="package" />
-            </intent-filter>
-        </receiver>
+        <!-- PackageInstallReceiver is registered at RUNTIME, not here. Since Android 8.0,
+             manifest-declared receivers never receive PACKAGE_ADDED/REMOVED/REPLACED for other
+             packages — they are implicit broadcasts subject to the background execution limits,
+             so this declaration looked correct upstream and silently never fired. See the class
+             doc on com.legs.appsforaa.receivers.PackageInstallReceiver. -->
 
     </application>
 

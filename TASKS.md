@@ -47,10 +47,22 @@ Design and rationale: [docs/standalone.md](docs/standalone.md).
 - [x] **T-11** Remove the paid surface: `AboutPaymentActivity.kt`, `EnterProCode.java`,
   `TransferLicense.java`, `User.java`, their layouts and menu, the five manifest activities, the
   `CAMERA` permission, and the `transfer_license` menu item.
-- [ ] **T-04** Reimplement the minimum spine to a running app: `utils/Logger`,
-  `utils/applyBottomInsetPadding`, `LauncherActivity`, `MainActivityNew`,
-  `receivers/PackageInstallReceiver`; stub the four remaining activities as `finish()` shells.
-  *Done when:* `./build-on-termux.sh debug` produces an APK that launches to a catalog screen.
+- [x] **T-04** Minimum spine to a running app: `utils/Logger`, `utils/ViewExtensions`
+  (`applyBottomInsetPadding` / `applyTopInsetPadding`), `data/CatalogModels` +
+  `data/CatalogRepository`, `adapters/AppListAdapter`, `LauncherActivity`, `MainActivityNew`,
+  `receivers/PackageInstallReceiver`, and the three layouts the source drop never published.
+  *Verified live on SM_S938U1 / Android 16:* the app launches to the catalog, loads 6 apps from
+  the bundled asset, renders in dark mode with correct edge-to-edge insets, and — after
+  Nav2Contacts was installed out-of-band — the receiver logged `PACKAGE_ADDED` and the card
+  flipped from `Not Installed / INSTALL` to `Installed: 1.0.3 / OPEN` with no manual refresh.
+  The unimplemented activities were **omitted from the manifest rather than stubbed**: a declared
+  component with no class is a crash waiting for whoever first routes to it.
+- [ ] **T-08** Onboarding (`OnboardingActivityNew` + the first-run routing seam already present in
+  `LauncherActivity`): permissions, Play Protect warning, Shizuku setup. All strings already
+  exist in `res/values/strings.xml`. Re-add the manifest entry with the implementation.
+- [ ] **T-09** `SupportActivity` and `AndroidAutoSetupActivity` — the AA developer-settings
+  walkthrough matters more than usual here, because without Shizuku it is the *only* route to
+  Android Auto visibility ([aa-visibility.md](docs/aa-visibility.md)). Strings already exist.
 - [ ] **T-15** Build the real catalog: `app/src/main/assets/catalog.json` per the schema in
   [standalone.md](docs/standalone.md#catalog-format). Upstream's own catalog (14 apps, with
   package names and categories) is recovered in
@@ -180,6 +192,18 @@ Append dated entries as decisions are made — this is the fork's decision log.
 - **2026-08-20** — Build toolchain established from `../swype/cleverkeys` (`build-on-termux.sh`,
   env-var signing, CI shape) and `~/git/termux-tools/.claude/skills/android-termux-build.md`.
   Verified on-device: Gradle 8.13 + AGP 8.13.1 configure `:app` successfully.
+- **2026-08-20** — **T-04 done; the app runs.** Catalog screen live on device, install-state
+  detection verified end to end against a real publisher build. Two decisions worth keeping:
+  unimplemented activities are **omitted from the manifest, not stubbed**, and
+  `PackageInstallReceiver` is **runtime-registered only** — since Android 8.0 a manifest-declared
+  receiver never gets `PACKAGE_ADDED`/`_REMOVED`/`_REPLACED` for other packages, so upstream's
+  manifest entry looked right and silently never fired.
+  The bundled catalog ships **6 apps, all from their publishers' own GitHub releases** (verified to
+  have APK assets). The mirroring family and CarStream are deliberately absent pending T-07.
+- **2026-08-20** — **Correction to the 2.1 signer evidence.** The earlier `dalvikvm` SIGABRT was an
+  artifact of running from a writable path (ART's `Writable dex file … is not allowed` W^X check),
+  not proof about the jar. Re-tested against a read-only copy: `ClassNotFoundException:
+  com.android.apksigner.ApkSignerTool` — no dex in the jar. Conclusion unchanged, evidence fixed.
 - **2026-08-20** — **Mechanism validated on real hardware** (SM_S938U1, Android 16 / SDK 36).
   Three results: (1) **adb is an exact substitute for Shizuku** — a Play-attributed session install
   over plain adb yields `installer=com.android.vending`, `packageSource=1`, so the harness never

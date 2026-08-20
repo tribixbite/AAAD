@@ -306,6 +306,11 @@
     <string name="second_section_name">Mirroring Apps</string>
     <string name="third_section_name">Others</string>
 
+    <!-- Standalone fork: catalog provenance and unimplemented actions -->
+    <string name="catalog_origin_bundled">Using the built-in app list</string>
+    <string name="catalog_origin_remote">App list updated %1$s</string>
+    <string name="install_not_implemented">Installing is not implemented yet in this build</string>
+
     <!-- Server-Side Download Authorization -->
     <string name="verifying_authorization">Verifying download authorization…</string>
     <string name="authorization_failed">Download authorization failed. Please try again.</string>

@@ -40,11 +40,14 @@ Three goals, in priority order. Task breakdown in [TASKS.md](TASKS.md).
 `sksa.aa.customapps.dev`, targetSdk 36, debug-signed). Building needs **no secrets**: no
 `google-services.json`, no Stripe keys, and `local.properties` is optional.
 
-**The app does not run yet.** These are declared in `AndroidManifest.xml` with no source in tree:
-`LauncherActivity` · `MainActivityNew` · `OnboardingActivity` · `OnboardingActivityNew` ·
-`SupportActivity` · `AndroidAutoSetupActivity` · `receivers.PackageInstallReceiver`,
-plus `utils.Logger` and `utils.applyBottomInsetPadding`. An installed build therefore has no
-entry point. That is the starting condition, not a regression — see [TASKS.md](TASKS.md) T-04.
+**The app runs.** `LauncherActivity` → `MainActivityNew` shows the catalog, resolves install state
+against the device, and refreshes on package changes — verified on SM_S938U1 / Android 16
+([TASKS.md](TASKS.md) T-04). Downloading and installing are **not** wired yet (T-06); the action
+button launches installed apps and otherwise says so plainly.
+
+Still unimplemented: onboarding (T-08), support and the AA setup guide (T-09). Their manifest
+entries are **omitted, not stubbed** — a declared component with no class is a crash waiting for
+whoever first routes to it. Re-add each entry alongside its implementation.
 
 The `res/` tree is complete, and upstream's **full class list and behaviour are now recovered**
 from a decompile of the v2.1 release APK — see
@@ -95,11 +98,23 @@ local.properties.example     Every key optional; documents the few that exist
 .github/workflows/           build-apk.yml (no secrets) · release.yml (tag → signed)
 app/build.gradle             compileSdk 36, minSdk 24, appId sksa.aa.customapps (.dev on debug)
 app/src/main/
-  AndroidManifest.xml        7 app components, 13 permissions, <queries> = the catalog packages
+  AndroidManifest.xml        2 activities, 13 permissions, <queries> = the catalog packages
+  assets/catalog.json        The bundled catalog — 6 apps, publisher GitHub releases only
   java/com/legs/appsforaa/
-    AboutDialog.java         About / privacy dialog
+    LauncherActivity.kt      MAIN/LAUNCHER routing seam; onboarding check belongs here (T-08)
+    MainActivityNew.kt       The catalog screen
+    AboutDialog.java         About / privacy dialog (upstream, not yet rewired)
+    adapters/
+      AppListAdapter.kt      ListAdapter + DiffUtil over AppListItem
+    data/
+      CatalogModels.kt       AppEntry / AppSource / Catalog / InstallState, org.json parsing
+      CatalogRepository.kt   Bundled asset + optional CATALOG_URL override; install-state resolve
+    receivers/
+      PackageInstallReceiver.kt  Runtime-registered ONLY — see its class doc
     utils/
-      BottomDialog.java      Vendored fork of iGio90/BottomDialogs
+      Logger.kt              Facade; all tags prefixed AAAD/ for `adb logcat -s AAAD:V`
+      ViewExtensions.kt      applyTopInsetPadding / applyBottomInsetPadding
+      BottomDialog.java      Vendored fork of iGio90/BottomDialogs (unused; see T-19)
       UtilsLibrary.java      dp→px + button drawable helpers for BottomDialog
       Version.java           Dotted-version comparator for update checks
   res/                       Complete; 30 locales via Crowdin
