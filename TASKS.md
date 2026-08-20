@@ -74,6 +74,10 @@ Design and rationale: [docs/standalone.md](docs/standalone.md).
   v2.8.5's `SmartInstaller`: Shizuku+Play attribution → Shizuku direct → plain `PackageInstaller`,
   with an honest capability report
   ([upstream-2.8.5-diff.md](docs/upstream-2.8.5-diff.md#install-is-now-a-strategy-ladder-v)).
+  **Do not implement a `pm set-installer` repair path** — verified impossible on Android 16:
+  `SecurityException: Caller does not have same cert as new installer package`. Attribution can
+  only be declared at session creation, never changed afterwards, so a wrongly-installed app must
+  be uninstalled and reinstalled.
   *Done when:* an app installed by this build is listed by Android Auto on the test device.
 - [ ] **T-07** Determine whether the mirroring family needs **package renaming** to be visible to
   Android Auto. Upstream distributes CarStream as `maps.jaoolonda.android`, Screen2Auto as
@@ -94,6 +98,9 @@ a matrix run is impossible against a quota-gated build, and that is now moot.
 
 - [ ] **T-20** `harness/` skeleton (TypeScript, bun): device discovery, adb wrapper with the
   rotating-port rediscovery this box needs, structured run logging to JSONL.
+  **The harness needs no Shizuku** — adb runs as the same shell UID, and the Play-attributed
+  session install is verified working over plain adb
+  ([aa-visibility.md](docs/aa-visibility.md#without-shizuku--adb-is-an-exact-substitute-v)).
 - [ ] **T-21** Catalog-driven install matrix: for each catalog app × each connected device,
   install → launch → screenshot → record result.
 - [ ] **T-22** Android Auto visibility probe — the assertion that actually matters. Upstream's
@@ -173,6 +180,15 @@ Append dated entries as decisions are made — this is the fork's decision log.
 - **2026-08-20** — Build toolchain established from `../swype/cleverkeys` (`build-on-termux.sh`,
   env-var signing, CI shape) and `~/git/termux-tools/.claude/skills/android-termux-build.md`.
   Verified on-device: Gradle 8.13 + AGP 8.13.1 configure `:app` successfully.
+- **2026-08-20** — **Mechanism validated on real hardware** (SM_S938U1, Android 16 / SDK 36).
+  Three results: (1) **adb is an exact substitute for Shizuku** — a Play-attributed session install
+  over plain adb yields `installer=com.android.vending`, `packageSource=1`, so the harness never
+  needs Shizuku; (2) **`pm set-installer` is impossible** —
+  `SecurityException: Caller does not have same cert as new installer package`, which kills
+  upstream's entire tier-2 repair path for adb *and* Shizuku alike (both are shell UID), so
+  attribution must be declared at session creation; (3) **AA's app list is unobservable on an idle
+  phone** — gearhead runs no services until a head unit connects, which is the real T-22 blocker.
+  Device restored afterwards: test app uninstalled, pushed APK deleted.
 - **2026-08-20** — **Diffed upstream v2.8.5 against v2.1** ([docs/upstream-2.8.5-diff.md](docs/upstream-2.8.5-diff.md)).
   93 → 241 classes. The `pm install-create -i com.android.vending` trick is **unchanged** — the
   v2.1 spec still describes the current mechanism. What changed: signing now works in-process

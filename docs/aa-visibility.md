@@ -64,16 +64,35 @@ package, falling back to a hardcoded `10299`.
 
 `-i com.android.vending` is the payload: it sets the installer package, which is what AA reads.
 
-### Tier 2 — repair an existing install
+### Tier 2 — repair an existing install — **does not work** [V]
 
-`utils/PlayStoreSpoofer.makeAppAppearAsPlayInstalled()`, for apps already on the device:
+`utils/PlayStoreSpoofer.makeAppAppearAsPlayInstalled()` tries, for apps already on the device:
 
 - `pm set-installer <pkg> com.android.vending` via Shizuku, or
 - `PackageManager.setInstallerPackageName` by reflection, then
-- `verifyInstallerSet()` confirms it took — the code explicitly handles
+- `verifyInstallerSet()` to confirm — the code explicitly handles
   *"pm set-installer command succeeded but verification failed"*.
 
-`fixAllAAADInstalledApps()` batch-repairs every catalog app already installed.
+**Tested on a real device (SM_S938U1, Android 16 / SDK 36) and it cannot succeed:**
+
+```
+$ pm set-installer sksa.aa.customapps.dev com.android.vending
+java.lang.SecurityException: Caller does not have same cert as new installer package
+                             com.android.vending
+    at PackageManagerService$IPackageManagerImpl.setInstallerPackageName
+```
+
+`setInstallerPackageName` requires the **caller to be signed with the same certificate as the new
+installer package**. Neither adb nor Shizuku qualifies — both run as the shell UID (2000), which
+is not signed as the Play Store. So the entire tier-2 repair path, including
+`fixAllAAADInstalledApps()`, is dead on modern Android.
+
+The asymmetry is the important part: **the installer package can be *declared* when the session is
+created, but never *changed* afterwards.** That is why tier 1 works and tier 2 does not — and why
+upstream needed a root-only tier 3 at all.
+
+Practical consequence: **attribution must be set at install time.** An app already installed
+without it cannot be fixed in place; it has to be uninstalled and reinstalled through a session.
 
 ### Tier 3 — `/data/system/packages.xml` (root, last resort)
 
@@ -81,7 +100,35 @@ package, falling back to a hardcoded `10299`.
 installer attribute with an `awk` script, restores `chown system:system` + `chmod 660`, and
 reports *"REBOOT REQUIRED"*. Needs real root; irrelevant to the non-root use case.
 
-### Without Shizuku
+### Without Shizuku — adb is an exact substitute [V]
+
+Shizuku's whole contribution is running `pm` as the **shell UID (2000)**. `adb shell` is that same
+UID, so anything Shizuku can do here, adb can do — no Shizuku app, no permission prompt, no
+on-device service. Verified end to end on SM_S938U1 / Android 16 / SDK 36:
+
+```bash
+adb push app.apk /data/local/tmp/x.apk
+adb shell "pm install-create -r -i com.android.vending \
+    --originating-uri 'https://play.google.com/store' --install-reason 0 \
+    --bypass-low-target-sdk-block"          # → Success: created install session [644219766]
+adb shell "pm install-write -S <bytes> <session> base /data/local/tmp/x.apk"
+adb shell "pm install-commit <session>"     # → Success
+
+adb shell "pm list packages -i" | grep <pkg>
+#   package:<pkg>  installer=com.android.vending
+adb shell "dumpsys package <pkg>" | grep -E 'installerPackageName|packageSource'
+#   installerPackageName=com.android.vending
+#   packageSource=1
+```
+
+Note shell does **not** hold the Play Store's certificate, yet declaring `-i com.android.vending`
+at session creation is accepted — the restriction only applies to changing it later (tier 2).
+
+**This makes the test harness Shizuku-free.** The harness runs on a host with adb, so it never
+needs Shizuku on the device ([testing-harness.md](testing-harness.md)). Shizuku only matters for
+the *app* doing its own installs on a phone with no host attached.
+
+### Without Shizuku and without a host
 
 Falls back to the system installer. Modern Android does not honour `EXTRA_INSTALLER_PACKAGE_NAME`
 from an ordinary app, so attribution fails and visibility depends on AA's *Unknown sources*
@@ -131,6 +178,26 @@ signature, so Play Protect behaves normally and publisher updates still apply cl
   unavailable — because in that case AA visibility genuinely depends on the user enabling AA's
   *Unknown sources*, and no amount of app-side cleverness changes that.
 - The catalog does not need per-app patching metadata; every app already declares the AA meta-data.
+
+## Observability: AA's app list needs a live projection session [V]
+
+Checked on the test device with Android Auto installed but not projecting:
+
+```bash
+adb shell "dumpsys activity service com.google.android.projection.gearhead"
+#   No services match: com.google.android.projection.gearhead
+adb shell "settings get global car_developer_settings_enabled"   # null
+```
+
+Gearhead runs no services until a head unit connects, so **there is no way to read AA's app list
+on an idle phone.** The question "does Android Auto list this app" is only answerable inside a
+projection session — a real car, the desktop Desktop Head Unit, or an emulated head unit.
+
+That is the concrete blocker behind [testing-harness.md](testing-harness.md) T-22, and it is very
+likely why upstream v2.8.5 built its own head unit emulator
+([upstream-2.8.5-diff.md](upstream-2.8.5-diff.md#the-other-headline-an-in-app-android-auto-head-unit)).
+Everything upstream of that assertion — download, attribution, install state — is observable from
+adb today; only the final "AA sees it" step is not.
 
 ## Diagnostics worth keeping
 
