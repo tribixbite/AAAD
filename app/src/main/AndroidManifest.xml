@@ -23,6 +23,11 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!-- Shizuku's own runtime permission. Without it Shizuku.checkSelfPermission always denies,
+         and the Play-attributed install path — the only one Android Auto honours — is
+         unavailable. See docs/aa-visibility.md. -->
+    <uses-permission android:name="moe.shizuku.manager.permission.API_V23" />
+
     <!-- Request ability to query all packages (Android 11+) -->
     <!-- This ensures we can detect ALL installed apps without declaring each one -->
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"

@@ -309,7 +309,12 @@
     <!-- Standalone fork: catalog provenance and unimplemented actions -->
     <string name="catalog_origin_bundled">Using the built-in app list</string>
     <string name="catalog_origin_remote">App list updated %1$s</string>
-    <string name="install_not_implemented">Installing is not implemented yet in this build</string>
+    <string name="install_already_running">Another install is already running</string>
+    <string name="progress_resolving">Finding the latest %1$s…</string>
+    <string name="progress_downloading_percent">Downloading %1$s… %2$d%%</string>
+    <string name="install_done_attributed">%1$s installed and registered for Android Auto</string>
+    <string name="install_handed_to_system">Confirm the install when Android asks. Without Shizuku the app is not registered for Android Auto — enable \"Unknown sources\" in Android Auto\'s developer settings.</string>
+    <string name="install_failed_reason">Install failed: %1$s</string>
 
     <!-- Server-Side Download Authorization -->
     <string name="verifying_authorization">Verifying download authorization…</string>

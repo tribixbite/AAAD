@@ -14,9 +14,12 @@ import com.legs.appsforaa.data.CatalogRepository
 import com.legs.appsforaa.data.InstallState
 import com.legs.appsforaa.databinding.ActivityMainNewBinding
 import com.legs.appsforaa.receivers.PackageInstallReceiver
+import com.legs.appsforaa.utils.InstallManager
 import com.legs.appsforaa.utils.Logger
+import com.legs.appsforaa.utils.ShizukuInstaller
 import com.legs.appsforaa.utils.applyBottomInsetPadding
 import com.legs.appsforaa.utils.applyTopInsetPadding
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 /**
@@ -38,6 +41,10 @@ class MainActivityNew : AppCompatActivity() {
     private lateinit var binding: ActivityMainNewBinding
     private lateinit var repository: CatalogRepository
     private lateinit var adapter: AppListAdapter
+    private lateinit var installManager: InstallManager
+
+    /** The single in-flight install, if any. */
+    private var installJob: Job? = null
 
     /** Set when the catalog has loaded, so package-change refreshes can skip the network. */
     private var loadedCatalog: Catalog? = null
@@ -55,6 +62,8 @@ class MainActivityNew : AppCompatActivity() {
         binding.appList.applyBottomInsetPadding()
 
         repository = CatalogRepository(applicationContext)
+        installManager = InstallManager(applicationContext)
+        ShizukuInstaller.refreshInstalledState(packageManager)
 
         adapter = AppListAdapter(onAction = ::onAppAction)
         binding.appList.layoutManager = LinearLayoutManager(this)
@@ -131,19 +140,64 @@ class MainActivityNew : AppCompatActivity() {
         binding.errorMessage.text = message
     }
 
-    /**
-     * An installed app is launched; anything else reports that install is not implemented.
-     *
-     * TODO(T-06): resolve the entry's source, download the APK, and install it through a
-     * Play-attributed session so Android Auto lists it. See docs/aa-visibility.md.
-     */
+    /** An installed app is launched; anything else is downloaded and installed. */
     private fun onAppAction(item: AppListItem) {
         when (item.state) {
             is InstallState.Installed, is InstallState.UpdateAvailable -> launchApp(item)
-            is InstallState.NotInstalled -> Toast.makeText(
-                this, R.string.install_not_implemented, Toast.LENGTH_LONG
-            ).show()
+            is InstallState.NotInstalled -> startInstall(item)
         }
+    }
+
+    /**
+     * Resolves, downloads and installs [item], reporting progress in the hero subtitle.
+     *
+     * Only one install runs at a time: they contend for the same package-installer session slot,
+     * and a queue of them would make the progress line meaningless.
+     */
+    private fun startInstall(item: AppListItem) {
+        if (installJob?.isActive == true) {
+            Toast.makeText(this, R.string.install_already_running, Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // Shizuku can be started or stopped at any moment, so re-check per attempt.
+        ShizukuInstaller.refreshInstalledState(packageManager)
+        if (ShizukuInstaller.availability() == ShizukuInstaller.Availability.PermissionRequired) {
+            ShizukuInstaller.requestPermission()
+        }
+
+        installJob = lifecycleScope.launch {
+            val outcome = installManager.install(item.entry) { progress ->
+                binding.heroSubtitle.text = when (progress) {
+                    is InstallManager.Progress.Resolving ->
+                        getString(R.string.progress_resolving, item.entry.name)
+                    is InstallManager.Progress.Downloading ->
+                        if (progress.fraction < 0f) getString(R.string.progress_downloading, item.entry.name)
+                        else getString(
+                            R.string.progress_downloading_percent,
+                            item.entry.name,
+                            (progress.fraction * 100).toInt(),
+                        )
+                    is InstallManager.Progress.Installing ->
+                        getString(R.string.progress_installing, item.entry.name)
+                }
+            }
+            binding.heroSubtitle.setText(R.string.hero_subtitle)
+            reportOutcome(item, outcome)
+            refreshInstalledState()
+        }
+    }
+
+    private fun reportOutcome(item: AppListItem, outcome: InstallManager.Outcome) {
+        val message = when (outcome) {
+            is InstallManager.Outcome.InstalledAttributed ->
+                getString(R.string.install_done_attributed, item.entry.name)
+            is InstallManager.Outcome.HandedToSystemInstaller ->
+                getString(R.string.install_handed_to_system)
+            is InstallManager.Outcome.Failed ->
+                getString(R.string.install_failed_reason, outcome.message)
+        }
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
     private fun launchApp(item: AppListItem) {
