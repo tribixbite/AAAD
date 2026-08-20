@@ -40,10 +40,17 @@ Three goals, in priority order. Task breakdown in [TASKS.md](TASKS.md).
 `sksa.aa.customapps.dev`, targetSdk 36, debug-signed). Building needs **no secrets**: no
 `google-services.json`, no Stripe keys, and `local.properties` is optional.
 
-**The app runs.** `LauncherActivity` → `MainActivityNew` shows the catalog, resolves install state
-against the device, and refreshes on package changes — verified on SM_S938U1 / Android 16
-([TASKS.md](TASKS.md) T-04). Downloading and installing are **not** wired yet (T-06); the action
-button launches installed apps and otherwise says so plainly.
+**The app runs and does its job.** `LauncherActivity` → `MainActivityNew` shows the catalog,
+resolves install state, and refreshes on package changes. Three flows work:
+
+- **Install** — resolve a publisher's latest GitHub release, download, install through a
+  Play-attributed Shizuku session so Android Auto lists it (T-06).
+- **Convert** — reinstall an already-installed AA-capable app's own APKs with attribution, fixing
+  apps AA ignores. Data survives; there is deliberately no fallback (T-30a).
+- **Discover** — search GitHub or paste a repo URL to add apps, Obtainium-style (T-31a).
+
+Everything Shizuku cannot do falls back to the system installer, which **cannot** set attribution;
+the app says so plainly rather than implying success.
 
 Still unimplemented: onboarding (T-08), support and the AA setup guide (T-09). Their manifest
 entries are **omitted, not stubbed** — a declared component with no class is a crash waiting for
@@ -103,17 +110,29 @@ app/src/main/
   java/com/legs/appsforaa/
     LauncherActivity.kt      MAIN/LAUNCHER routing seam; onboarding check belongs here (T-08)
     MainActivityNew.kt       The catalog screen
+    ConvertActivity.kt       Fix installed apps AA ignores (reinstall with attribution)
+    DiscoverActivity.kt      Find apps on GitHub, Obtainium-style
     AboutDialog.java         About / privacy dialog (upstream, not yet rewired)
     adapters/
       AppListAdapter.kt      ListAdapter + DiffUtil over AppListItem
+      InstalledAppAdapter.kt Installed AA-capable apps + their conversion state
+      RepoAdapter.kt         GitHub search results
     data/
       CatalogModels.kt       AppEntry / AppSource / Catalog / InstallState, org.json parsing
-      CatalogRepository.kt   Bundled asset + optional CATALOG_URL override; install-state resolve
+      CatalogRepository.kt   Bundled asset + optional CATALOG_URL + user entries; install state
+      UserCatalogStore.kt    User-added entries, same JSON shape as the bundled catalog
+      ReleaseResolver.kt     Catalog entry → concrete APK via GitHub releases
+      GitHubSearch.kt        Repo search + "owner/repo or URL" parsing
+      InstalledAppScanner.kt Installed AA-capable apps and whether AA will list them
     receivers/
       PackageInstallReceiver.kt  Runtime-registered ONLY — see its class doc
     utils/
       Logger.kt              Facade; all tags prefixed AAAD/ for `adb logcat -s AAAD:V`
       ViewExtensions.kt      applyTopInsetPadding / applyBottomInsetPadding
+      InstallManager.kt      resolve → download → install, picks the path per attempt
+      ShizukuInstaller.kt    The Play-attributed session install, and conversion
+      SystemInstaller.kt     Fallback; explicitly NOT equivalent (no attribution)
+      ApkDownloader.kt       Cancellable download with progress
       BottomDialog.java      Vendored fork of iGio90/BottomDialogs (unused; see T-19)
       UtilsLibrary.java      dp→px + button drawable helpers for BottomDialog
       Version.java           Dotted-version comparator for update checks

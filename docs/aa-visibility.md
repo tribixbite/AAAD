@@ -229,6 +229,37 @@ Android Auto or Play Protect rejects them under their real identity is the open 
 it needs the observation channel below. This unblocks T-15 more than expected: the mirroring family
 can be catalogued from publisher sources and flagged as AA-visibility-unverified.
 
+## Converting an app that is already installed
+
+The corollary of "attribution can only be declared at session creation": an AA-capable app that
+was sideloaded from anywhere else — F-Droid, Obtainium, a browser download, another installer, or
+this app's own fallback path — is invisible in the car and **cannot be repaired in place**.
+
+The fix is to reinstall the app's *own* APKs through an attributed session. Nothing is
+re-downloaded, patched, or re-signed:
+
+1. Enumerate installed apps declaring `com.google.android.gms.car.application`
+   (`data/InstalledAppScanner`, needs `QUERY_ALL_PACKAGES`).
+2. Read each one's installer with `PackageManager.getInstallSourceInfo`. Anything other than
+   `com.android.vending` is convertible.
+3. Collect `applicationInfo.sourceDir` **and `splitSourceDirs`**. Split apps are the trap here:
+   a session containing only the base of a split app fails to commit, or commits an app missing
+   its resources.
+4. Stage all of them into one attributed session and commit
+   (`ShizukuInstaller.convertInstalled`). The shell uid can already read `/data/app`, so the paths
+   are handed to `pm install-write` directly rather than streamed — and with a path, `install-write`
+   sizes the file itself, so no `-S` is needed.
+
+Because the APKs and therefore the signature are unchanged, this is an update over the top:
+**app data and settings survive**.
+
+Conversion has no fallback, and should not grow one. The entire point is the attribution, and the
+platform `PackageInstaller` cannot provide it — an app may only attribute an install to itself.
+Offering a fallback here would produce exactly the invisible install the user is trying to fix.
+
+Scale of the problem on one real device: 556 apps from Play, and ~136 sideloaded — 36 via
+Obtainium, 26 F-Droid, 26 packageinstaller, 19 Chrome, 16 AppManager, 13 with no installer at all.
+
 ## Observability: AA's app list needs a live projection session [V]
 
 Checked on the test device with Android Auto installed but not projecting:
