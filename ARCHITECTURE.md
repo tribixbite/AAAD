@@ -1,7 +1,12 @@
-# AAAD — Architecture Spec (as of fork point `0c33a2b`)
+# AAAD — Architecture Spec
 
-Describes the app **as this repository actually stands**, not as it would stand after the fork
-work in [TASKS.md](TASKS.md).
+**§1–§9 describe upstream AAAD 2.1 as published at the fork point `0c33a2b`.** That is the
+subject of this document: how the app that exists in the wild works, including the PRO/quota
+gate in §7.
+
+**§10 records what this fork has changed.** The tree no longer matches §1–§9 — the backend is
+gone. The target design is [docs/standalone.md](docs/standalone.md); the current divergence is
+summarized in §10.
 
 ## Evidence policy
 
@@ -57,6 +62,11 @@ Support classes referenced but absent: `managers.AuthManager`, `utils.Logger`,
 The `res/` tree is complete for the published classes: every layout id and string they reference
 resolves. Resources for the absent activities are also largely present, which makes `strings.xml`
 the best available specification of the missing code.
+
+> **Fork note.** `AboutPaymentActivity.kt`, `EnterProCode.java`, `TransferLicense.java`, and
+> `User.java` are described here as upstream ships them, but **this fork has deleted them** along
+> with their layouts and manifest entries (§10). Recover any of them with
+> `git show 0c33a2b:<path>`.
 
 ## 3. Build configuration **[V]**
 
@@ -350,22 +360,33 @@ reconstructable from this tree.
 carries a full Material 3 light/dark token set. `MissingTranslation` is lint-disabled because the
 app falls back to English.
 
-## 10. Cut points for a de-gated dev build
+## 10. What this fork changed
 
-The minimum set of seams to sever for goal 1 in [CLAUDE.md](CLAUDE.md#fork-intent). Ordered by
-how much they buy you.
+The fork does not sever the gate seam by seam — **it removes the backend entirely.** There is no
+entitlement, no identity, no quota, and no server to call, so §6 and §7 above describe upstream
+only. Full rationale, the catalog format that replaces the remote metadata, and the
+behavioural diff: [docs/standalone.md](docs/standalone.md).
 
-| # | Seam | Change |
+Applied to the tree:
+
+| Area | Upstream (§1–§9) | This fork |
 | --- | --- | --- |
-| 1 | The `eligible` boolean (or its 2.1 authorization result) | Force `true` behind a build-flavor flag. One value feeds every download entry point — this alone de-gates the app. |
-| 2 | `registerDownload()` / the consume call | No-op in the dev flavor, so no quota state is ever written. |
-| 3 | `AuthManager` | Provide a local identity that never contacts Firebase, so the app runs offline. |
-| 4 | RTDB reads of `users/` and `lastdownload/` | Behind an interface with an in-memory/DataStore implementation for dev. |
-| 5 | Stripe + `AboutPaymentActivity` | Not reachable once #1 is forced; keep it compiling behind stub BuildConfig values rather than deleting it, so upstream merges stay clean. |
-| 6 | `google-services.json` | A dev build must not carry upstream's. Generate your own Firebase project, or stub the plugin out in the dev flavor. |
+| Backend | Firebase Auth + RTDB + Storage + Functions | none — dependencies and plugin removed |
+| Payment | Stripe PaymentSheet + Cloud Function | none — `AboutPaymentActivity` deleted |
+| Entitlement | `users/<id>` boolean, promo codes, QR transfer | none — `EnterProCode`, `TransferLicense` deleted |
+| Quota | 1 / 30.44 days, NTP-anchored | none — `commons-net` removed |
+| Catalog | `APP_CATALOG_URL` + 8 hardcoded `*_LINK` fields | bundled `assets/catalog.json`, optional `CATALOG_URL` override |
+| Build inputs | 15 `local.properties` keys + `google-services.json` | none required; `local.properties` is optional |
+| Build scaffolding | absent | `settings.gradle`, wrapper (Gradle 8.13), `gradle.properties`, `proguard-rules.pro`, `build-on-termux.sh`, GitHub Actions |
+| Debug package id | `sksa.aa.customapps` | `sksa.aa.customapps.dev` — coexists with an official install |
 
-**Hard constraint:** a de-gated build must never write to upstream's Firebase project. Those nodes
-hold real users' license state. Point dev builds at your own project or at nothing.
+Unchanged: the install pipeline (§8), Shizuku, BouncyCastle, the `<queries>` package list, and
+the `res/` tree including all 30 locales.
+
+Still missing, exactly as in §2: `LauncherActivity`, `MainActivityNew`, the onboarding and
+support activities, `PackageInstallReceiver`, and the APK patching/re-signing logic that is the
+app's actual core. Removing the backend shrank that list — `AuthManager` is no longer needed —
+but it did not produce a working app. See [TASKS.md](TASKS.md) Phase 2.
 
 Distribution stays out of scope: personal use only (see
 [CLAUDE.md § Working agreements](CLAUDE.md#working-agreements)).

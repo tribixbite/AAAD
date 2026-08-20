@@ -1,152 +1,159 @@
-# Build setup — from partial source drop to a compiling APK
+# Build setup — local (Termux) and CI
 
-Covers [TASKS.md](../TASKS.md) Phase 1. Read
-[CLAUDE.md § Buildability](../CLAUDE.md#buildability-read-before-you-try-to-build) first for the
-full list of what is missing.
+Covers [TASKS.md](../TASKS.md) Phase 1. Target design: [standalone.md](standalone.md).
 
-## Why it doesn't build
+## Status
 
-Two independent gaps:
+**Scaffolding is in place and verified.** `./gradlew projects` succeeds on-device with Gradle
+8.13 + AGP 8.13.1 and lists `:app`.
 
-1. **No Gradle scaffolding.** No `settings.gradle`, so `:app` is never included. No wrapper. No
-   `local.properties`, which `app/build.gradle:47` reads unconditionally — its absence fails at
-   configuration time, before any compilation error is reachable. No `google-services.json`, which
-   the `com.google.gms.google-services` plugin requires. No `proguard-rules.pro`, referenced at
-   `app/build.gradle:110`.
-2. **No source for 12 of 16 components.** The manifest declares nine activities/receivers with no
-   file in the tree, and the four published classes import three more absent symbols.
+| Piece | State |
+| --- | --- |
+| `settings.gradle`, `gradle.properties`, wrapper (8.13), `app/proguard-rules.pro` | committed |
+| `build-on-termux.sh` | committed |
+| `.github/workflows/build-apk.yml`, `release.yml` | committed |
+| `local.properties` | **optional** — `local.properties.example` documents the few keys |
+| `google-services.json` | **no longer needed** — no Firebase |
+| Missing source (12 components) | still missing; see [Recovering the missing classes](#recovering-the-missing-classes) |
 
-Gap 1 is mechanical. Gap 2 is the real work.
+An APK will not run until the missing classes exist: the manifest points `LauncherActivity` and
+friends at classes with no source, so an installed build has no entry point.
 
-## Step 1 — Gradle scaffolding (T-01)
+## Local build on Termux
 
-`settings.gradle`:
-
-```groovy
-pluginManagement {
-    repositories { google(); mavenCentral(); gradlePluginPortal() }
-}
-rootProject.name = 'AAAD'
-include ':app'
+```bash
+./build-on-termux.sh                    # debug, incremental, installs if a device is connected
+./build-on-termux.sh debug --no-install
+./build-on-termux.sh release            # debug-signed unless RELEASE_KEYSTORE is set
+./build-on-termux.sh --clean --low-mem  # after a toolchain change, on a memory-tight device
 ```
 
-`gradle.properties` — at minimum `android.useAndroidX=true`, plus a JVM heap suited to this device
-if building in Termux. Wrapper: match AGP 8.13.1 (Gradle 8.x; check AGP's compatibility table
-rather than guessing). `app/proguard-rules.pro` can start empty — the release type sets
-`minifyEnabled false`, so it is referenced but not used.
+### Why the wrapper script exists
 
-Commit a `local.properties.example` alongside, so the key list is discoverable without leaking
-values:
+`./gradlew assembleDebug` on its own **fails here**. AGP resolves an `aapt2` from Maven that is an
+**x86_64 glibc binary** — it cannot execute on Android ARM64. The build must be pointed at an
+aapt2 that runs on this device:
 
-```properties
-# Signing — app/build.gradle:61-68 (keyAlias is hardcoded to 'key3')
-STORELOCATION=/absolute/path/to/keystore.jks
-STOREPASSWORD=
-KEYPASSWORD=
-
-# Stripe — app/build.gradle:89-91
-STRIPE_PUBLISHABLE_KEY=pk_test_xxx
-STRIPE_PRICE_ID=price_xxx
-STRIPE_PRICE_ID_PROMO=price_xxx
-
-# Firebase — used to build the Cloud Function URL at AboutPaymentActivity.kt:178
-FIREBASE_INSTANCE=https://xxx.firebaseio.com
-FIREBASE_PROJECT_ID=xxx
-FIREBASE_REGION=us-central1
-
-# Catalog + per-app APK links — app/build.gradle:95-103
-APP_CATALOG_URL=
-AAPASSENGER_LINK=
-CARSTREAM205_LINK=
-CARSTREAM204_LINK=
-CARSTREAM202_LINK=
-AAMP_LINK=
-AAMIRROR_LINK=
-AAWIDGETS_LINK=
-AASTREAM_LINK=
+```
+-Pandroid.aapt2FromMavenOverride=<path>
 ```
 
-`sdk.dir` also belongs in the real `local.properties` if the SDK location isn't set by env.
+The script resolves that path itself, preferring a native binary:
 
-> `local.properties`, `google-services.json`, and `*.jks`/`*.keystore` are gitignored. Keep it
-> that way — the Stripe key and Firebase coordinates are in there.
+1. `$AAPT2_BIN` if you export it.
+2. A native **aarch64** ELF. On this device: `~/git/Embeddy/tools/aapt2-arm64/aapt2`
+   (aapt2 2.19, statically linked aarch64).
+3. `$PREFIX/bin/aapt2` — the Termux `aapt2` package. **This is not native**: it is a bash script
+   that runs an x86_64 `aapt2.elf` under `qemu-x86_64` with libraries from
+   `~/git/for-android/tools/x86_64-libs`. Correct, but much slower. Fine as a fallback.
 
-## Step 2 — Firebase project (T-02)
+There is also a **device-global** override in `~/.gradle/gradle.properties` pointing at the
+Embeddy binary, which applies to every Gradle project on this box. Its inline comment calls that
+binary "qemu-wrapped" — that comment is wrong; the binary is native aarch64. The script passes an
+explicit `-P` override anyway so the build does not silently depend on machine-global state.
 
-Do **not** reuse upstream's `google-services.json`, even if you can extract one from a released
-APK. It points at a production database holding other people's license state, and this app writes
-entitlement values from the client ([ARCHITECTURE.md § 6](../ARCHITECTURE.md#6-data-model--firebase-realtime-database)).
+### Verified toolchain on this device
 
-Create your own project with an app registered under `sksa.aa.customapps` (or your dev
-`applicationId`), enable Anonymous Auth and Realtime Database, and use the emulator suite for
-local work. Long term, the `dev` flavor (T-10/T-11) should not need Firebase at all.
+| Tool | Where | Notes |
+| --- | --- | --- |
+| JDK 21 | `$PREFIX/lib/jvm/java-21-openjdk` | `pacman -S openjdk-21` |
+| Gradle 8.13 | wrapper (`./gradlew`) | pinned; matches AGP 8.13.1's minimum |
+| Gradle 9.5.1 | `$PREFIX/bin/gradle` | system install; also configures this project successfully |
+| Android SDK | `~/android-sdk` | platforms 19/30/34/35/**36**; build-tools 30.0.3, 34.0.0, 34.0.0-arm64, 35.0.0 |
+| aapt2 | see above | the one real trap |
+| `apksigner`, `zipalign` | `$PREFIX/bin` | Termux packages |
 
-## Step 3 — Recover the missing classes (T-03/T-04)
+`compileSdk = 36` is satisfied by `platforms/android-36`, which is already installed.
 
-Two viable strategies. Pick one, write the choice into this file, and note it in
-[TASKS.md § Notes](../TASKS.md#notes-and-decisions).
+Note the SDK's own `build-tools/*/aapt2` and `zipalign` are x86_64 — including inside the
+`34.0.0-arm64` directory, which only contains an `aapt2-wrapper` shell script, not a native
+aapt2. Use Termux's `$PREFIX/bin/zipalign` rather than the SDK copy.
 
-**A. Reimplement against the published contract.** The `res/` tree is a surprisingly complete
-specification: `strings.xml` names every state, error, and onboarding step; the layouts define the
-ids; the manifest defines the components, intents, and the package list the installed-state logic
-tracks. Slower, but you end up owning code you understand, and it makes the de-gating in Phase 2
-trivial rather than surgical.
+### Memory
 
-**B. Decompile the official release APK for reference.** `LICENSE.md` is MIT and this fork is
-personal-use only, so reading the shipped bytecode to recover behaviour is fine for your own build.
-Fastest way to answer the [§ 7.3 open questions](../ARCHITECTURE.md#73-v21--what-changed) (T-12),
-because the authorization call is right there. `minifyEnabled false` means the release APK is
-unobfuscated — class and method names survive.
+`gradle.properties` sets `-Xmx1536m` and `org.gradle.workers.max=2`, with a 15-minute daemon
+idle timeout (the 3-hour default holds ~250 MB resident for nothing). `--low-mem` drops to
+`-Xmx768m` and a single worker; `--slow` also disables the daemon and drops CPU/IO priority.
 
-Recommended: **B for evidence, A for code.** Decompile to answer specific questions and to confirm
-the gating contract, then write your own implementation. Do not paste decompiled output into the
-tree — it's unreadable, it will not merge with upstream, and it drags the unpublished patching
-logic in with it.
+## CI/CD
+
+Two workflows, both x86_64 Linux runners where the stock Maven aapt2 works — no override, no
+per-environment branching.
+
+**`.github/workflows/build-apk.yml`** — push to `main`, PRs, manual dispatch. Builds
+`assembleDebug`, runs lint (non-fatal, report uploaded), uploads the APK as an artifact, and on
+`main` publishes a `dev-<sha>` prerelease. **Requires no secrets at all** — a direct consequence
+of the standalone design; nothing to configure for the build to go green.
+
+**`.github/workflows/release.yml`** — `v*` tags. Refuses to run without `SIGNING_KEY`, verifies
+the tag matches `versionName` in `app/build.gradle`, builds a signed `assembleRelease` with
+reproducibility flags (`--no-daemon --no-parallel --no-build-cache`, commit-derived
+`SOURCE_DATE_EPOCH`, `TZ=UTC`), confirms the signature with `apksigner verify --print-certs`,
+shreds the keystore, and publishes the release.
+
+Secrets for `release.yml` only:
+
+| Secret | Contents |
+| --- | --- |
+| `SIGNING_KEY` | `base64 -w0 release.keystore` |
+| `KEYSTORE_PASSWORD` | keystore password |
+| `KEY_ALIAS` | key alias |
+| `KEY_PASSWORD` | key password |
+
+Neither workflow runs until this repo is pushed, which needs explicit permission.
+
+## Signing
+
+Env-var driven, same contract as `../swype/cleverkeys` and the `android-termux-build` skill:
+
+```
+RELEASE_KEYSTORE  RELEASE_KEYSTORE_PASSWORD  RELEASE_KEY_ALIAS  RELEASE_KEY_PASSWORD
+```
+
+Environment beats `local.properties`. With `RELEASE_KEYSTORE` unset, release builds fall back to
+the debug key so a local build always yields an installable APK — that APK is not distributable.
+
+Setting a real `RELEASE_KEYSTORE` also flips `build-on-termux.sh` into distribution mode:
+no daemon, no parallelism, no build cache, for byte-determinism.
+
+Two consequences of using your own key, both intentional:
+
+- A different signing key means a different `ANDROID_ID` for the app on Android 8+.
+- Debug builds carry `applicationIdSuffix '.dev'`, so `sksa.aa.customapps.dev` installs
+  **alongside** any official AAAD and can never overwrite its data. The test harness depends on
+  this. `build-on-termux.sh` never runs `adb uninstall`.
+
+## Recovering the missing classes
+
+Removing the backend shrank the gap — `AuthManager` is no longer needed — but nine manifest
+components and two utility symbols still have no source. Strategy, unchanged from the first pass:
+**decompile the official APK for evidence, write your own code.**
+
+`LICENSE.md` is MIT and this fork is personal-use only, so reading the shipped bytecode to
+recover behaviour is fine; `minifyEnabled false` upstream means the release APK is unobfuscated.
+Do not paste decompiled output into the tree — it will not merge and it drags the unpublished
+patching logic in with it. `~/git/termux-tools/.claude/skills/smali-dex-patching.md` and
+`~/git/termux-tools/docs/APKTOOL_TERMUX.md` cover doing this on-device.
 
 Minimum spine to a running app (T-04), in dependency order:
 
-1. `utils/Logger` — trivial; `AboutPaymentActivity.kt` calls `Logger.d/e`.
-2. `utils/applyBottomInsetPadding` — a `View` extension applying `WindowInsets` bottom padding
-   (edge-to-edge is enabled at `AboutPaymentActivity.kt:45`).
-3. `managers/AuthManager` — Kotlin `object` with `suspend fun ensureAuthenticated(): String` and
-   `fun getCurrentUid(): String?`. Both call sites treat the UID as the entitlement key.
-4. `LauncherActivity` — decides onboarding vs. main; the onboarding-completion flag's storage is
-   unknown, DataStore is the reasonable choice given the dependency set.
-5. `MainActivityNew` — the catalog. Must honour `refresh_pro_status` (see
-   [ARCHITECTURE.md § 5](../ARCHITECTURE.md#5-navigation-graph)) and the
+1. `utils/Logger` — trivial wrapper; `BuildConfig.DEBUG`-gated.
+2. `utils/applyBottomInsetPadding` — `View` extension applying `WindowInsets` bottom padding.
+3. `LauncherActivity` — onboarding-vs-main routing; the completion flag belongs in DataStore.
+4. `MainActivityNew` — the catalog screen. Reads `assets/catalog.json`
+   ([standalone.md](standalone.md#catalog-format)), honours the
    `inceptive.ru/projects/s2a/download/` deep link.
-6. `receivers/PackageInstallReceiver` — broadcast → refresh installed state.
+5. `receivers/PackageInstallReceiver` — broadcast → refresh installed state.
 
-Stub the remaining five activities (`OnboardingActivity`, `OnboardingActivityNew`,
-`ProVersionActivity`, `LicenseTransferActivity`, `SupportActivity`, `AndroidAutoSetupActivity`) as
-`finish()`-immediately shells so the manifest resolves, then fill them in as needed.
-
-## Step 4 — Signing and coexistence (T-05)
-
-`app/build.gradle` has exactly one signing config (`nuova`) and applies it to `defaultConfig`, so
-every build type wants the upstream keystore. Add a debug config using a locally generated key.
-
-Two consequences worth planning around:
-
-- A different signing key changes `ANDROID_ID` for the app on Android 8+, so a dev build gets a
-  different device identity than an installed official build.
-- The dev build cannot upgrade over an installed official build. Give it an `applicationIdSuffix`
-  (e.g. `.dev`) so both can be installed at once — which the test harness wants anyway.
-
-## Building on this device
-
-Termux specifics that matter: `bun`/`bunx` rather than npm for the harness and dash; `$PREFIX/tmp`
-rather than `/tmp`; `rg` rather than `grep` (the shell wraps `grep` and injects `-G`). Whether the
-full Android toolchain runs locally or the APK is built elsewhere and side-loaded is an open
-question — resolve it during T-01 and record the answer here.
+Then stub `OnboardingActivity`, `OnboardingActivityNew`, `SupportActivity`, and
+`AndroidAutoSetupActivity` as `finish()` shells so the manifest resolves, and fill them in later.
 
 ## Verification checklist
 
 ```bash
-./gradlew projects                      # T-01: :app is listed
-./gradlew :app:processDebugResources    # T-02: google-services + local.properties resolve
-./gradlew :app:assembleDebug            # T-04: compiles
+./gradlew projects                      # ✅ verified: lists :app
+./build-on-termux.sh debug --no-install # produces app/build/outputs/apk/debug/AAAD-2.1-*.apk
 adb install -r app/build/outputs/apk/debug/*.apk
-adb shell am start -n sksa.aa.customapps/com.legs.appsforaa.LauncherActivity
-adb logcat -d -s AndroidRuntime:E       # no crash on launch
+adb shell am start -n sksa.aa.customapps.dev/com.legs.appsforaa.LauncherActivity
+adb logcat -d -s AndroidRuntime:E       # will crash until T-04 lands — expected
 ```

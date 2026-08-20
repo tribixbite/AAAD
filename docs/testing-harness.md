@@ -93,8 +93,19 @@ Install path matters: the Shizuku silent path (T-41) is what makes step 3 unatte
 installer path needs UI automation to tap through, and Play Protect can inject an extra dialog —
 that is a per-device, per-Android-version variable the harness should record rather than hide.
 
-## Interaction with the de-gated build
+## Interaction with the standalone build
 
-The harness is only practical against a build with the download gate removed — one install per
-30.44 days makes a matrix run impossible. Phase 2 is therefore a hard prerequisite for Phase 3,
-and the harness should refuse to run against a gated build rather than burning a real quota.
+A matrix run is only possible because the fork is standalone: upstream's one-install-per-30.44-days
+quota would make it a non-starter, and its mandatory Firebase auth would make offline runs
+impossible ([docs/standalone.md](standalone.md)). Two consequences the harness should encode:
+
+- **Target `sksa.aa.customapps.dev`, not `sksa.aa.customapps`.** Debug builds carry the `.dev`
+  suffix so they coexist with any official install. A harness that drives the official package id
+  is touching an app it did not build.
+- **Refuse to run against a build that is not from this tree.** Check the installed signer or
+  the `.dev` suffix before doing anything destructive, so a stray run cannot uninstall or
+  overwrite a real install.
+
+Phase 2 remains a hard prerequisite for a different reason now: until T-04 and T-06 land, the app
+has no entry point and cannot make an installed app visible to Android Auto — there is nothing
+for the matrix to assert.

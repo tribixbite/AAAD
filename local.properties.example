@@ -1,0 +1,22 @@
+# Copy to local.properties. EVERY key here is optional — the standalone build works with no
+# local.properties at all. (Upstream required 15 keys, including Stripe and Firebase
+# credentials; this fork has no backend, so they are gone.)
+#
+# local.properties is gitignored. Keep it that way.
+
+# Android SDK location. Only needed if ANDROID_HOME / ANDROID_SDK_ROOT are not exported.
+# On this device: sdk.dir=/data/data/com.termux/files/home/android-sdk
+#sdk.dir=
+
+# Optional remote app catalog. Leave unset to use the catalog bundled in app assets and make
+# zero metadata network calls. Any URL serving the schema in docs/standalone.md works —
+# a GitHub raw file is enough; no server to run.
+#CATALOG_URL=https://raw.githubusercontent.com/<you>/<repo>/main/catalog.json
+
+# Release signing. Environment variables of the same names take precedence, which is what CI
+# and build-on-termux.sh use. Unset => release builds fall back to the debug key and are not
+# distributable.
+#RELEASE_KEYSTORE=/absolute/path/to/release.keystore
+#RELEASE_KEYSTORE_PASSWORD=
+#RELEASE_KEY_ALIAS=release
+#RELEASE_KEY_PASSWORD=

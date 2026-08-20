@@ -10,9 +10,7 @@
         android:id="@+id/help"
         android:title="@string/help"/>
 
-    <item
-        android:id="@+id/transfer_license"
-        android:title="@string/transfer_license"/>
+    <!-- transfer_license removed: no license exists in the standalone fork. -->
 
     <item
         android:id="@+id/show_intro"

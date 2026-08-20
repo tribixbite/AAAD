@@ -1,3 +1,16 @@
+> **This is a personal, standalone fork of [shmykelsa/AAAD](https://github.com/shmykelsa/AAAD),
+> not upstream.** The Firebase/Stripe backend, the PRO tier, and the one-download-per-month quota
+> have been removed; the app is being reworked as an Android Auto app testing platform for
+> personal use. The README below is upstream's and describes the official app — parts of it no
+> longer apply here.
+>
+> Start at **[CLAUDE.md](CLAUDE.md)** · design: [docs/standalone.md](docs/standalone.md) ·
+> architecture: [ARCHITECTURE.md](ARCHITECTURE.md) · backlog: [TASKS.md](TASKS.md)
+>
+> Do not download builds from this fork; use upstream's releases.
+
+---
+
 # AAAD [![Crowdin](https://badges.crowdin.net/aaad/localized.svg)](https://crowdin.com/project/aaad)
 
 

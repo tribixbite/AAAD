@@ -5,138 +5,151 @@ from the index below.
 
 ## What this repo is
 
-A personal fork of [`shmykelsa/AAAD`](https://github.com/shmykelsa/AAAD) (Android Auto Apps
-Downloader) — an Android app that downloads third-party Android Auto APKs and installs them
-so Android Auto will list them, without root.
+A personal, **standalone** fork of [`shmykelsa/AAAD`](https://github.com/shmykelsa/AAAD)
+(Android Auto Apps Downloader) — an Android app that downloads third-party Android Auto APKs and
+installs them so Android Auto will list them, without root.
 
-**Fork point:** `0c33a2b` (upstream `main`, 2026-02-16). Every commit in history is upstream's;
-nothing has been forked-off yet. Upstream `versionName` 2.1 / `versionCode` 18.
+**Fork point:** `0c33a2b` (upstream `main`, 2026-02-16). Upstream `versionName` 2.1 /
+`versionCode` 18.
 
-**Upstream publishes a *partial* source drop, not the app.** Of the 12 components declared in
-`AndroidManifest.xml`, only 4 have source here. The whole "new" Material You UI, the catalog
-layer, the auth manager, the installer, and the download-authorization client are absent, along
-with all Gradle scaffolding. See [Buildability](#buildability-read-before-you-try-to-build).
+**Standalone means: no server, no accounts, no entitlement, no quota, no payment.** Upstream's
+Firebase + Stripe backend has been removed from this tree, not flag-gated. The app's only network
+traffic is fetching app metadata (optional) and downloading APKs from their publishers.
+Rationale and the full diff: [docs/standalone.md](docs/standalone.md).
+
+**Upstream publishes a partial source drop, not the app.** Nine manifest components and two
+utility symbols still have no source here. See [Buildability](#buildability).
 
 ## Fork intent
 
-Three goals, in priority order. Detail and task breakdown in [TASKS.md](TASKS.md).
+Three goals, in priority order. Task breakdown in [TASKS.md](TASKS.md).
 
-1. **A buildable, de-gated personal build.** Restore the missing scaffolding + classes so the
-   app compiles from this tree, with the PRO/quota gate cut out and the Firebase/Stripe backend
-   dependency made optional. Personal-use modification only.
-2. **An Android Auto app testing platform.** Turn the app + a host-side (Termux) harness into a
-   repeatable way to install, launch, screenshot, and regression-check AA third-party apps
-   across devices — the thing the upstream app does by hand, driven by `adb` instead.
-3. **A Claude/agent dashboard.** The `../operad` equivalent, scoped to Android Auto work:
-   a Termux-hosted web dash over the test harness (device inventory, catalog state, install
-   matrix, run history, agent task queue).
+1. **A buildable standalone build.** Backend removed (done); missing classes reimplemented so the
+   app compiles and runs from this tree. Personal use only.
+2. **An Android Auto app testing platform.** The app plus a host-side (Termux) harness that
+   installs, launches, screenshots, and regression-checks AA third-party apps across devices —
+   what upstream does by hand, driven by `adb` instead.
+3. **A Claude/agent dashboard.** The `../operad` equivalent, scoped to Android Auto work: a
+   Termux-hosted web dash over the harness (device inventory, catalog state, install matrix,
+   run history, task queue).
 
-## Buildability (read before you try to build)
+## Buildability
 
-This tree **does not compile as checked out.** Do not report a build failure as a bug until the
-gaps below are closed — they are the starting condition, not a regression.
+**Scaffolding works.** `./gradlew projects` is verified on-device (Gradle 8.13 + AGP 8.13.1).
+Building needs **no secrets**: no `google-services.json`, no Stripe keys, and `local.properties`
+is optional.
 
-Missing build scaffolding (all absent from git):
-`settings.gradle` · `gradlew` + `gradle/wrapper/` · `gradle.properties` · `local.properties`
-(required — `app/build.gradle:47` reads it unconditionally) · `app/google-services.json`
-(required by the `com.google.gms.google-services` plugin) · `app/proguard-rules.pro`
-(referenced at `app/build.gradle:110`).
-
-Missing source — declared in `AndroidManifest.xml`, no file in tree:
+**The app does not run yet.** These are declared in `AndroidManifest.xml` with no source in tree:
 `LauncherActivity` · `MainActivityNew` · `OnboardingActivity` · `OnboardingActivityNew` ·
-`ProVersionActivity` · `LicenseTransferActivity` · `SupportActivity` ·
-`AndroidAutoSetupActivity` · `receivers.PackageInstallReceiver`
+`SupportActivity` · `AndroidAutoSetupActivity` · `receivers.PackageInstallReceiver`,
+plus `utils.Logger` and `utils.applyBottomInsetPadding`. An installed build therefore has no
+entry point. That is the starting condition, not a regression — see [TASKS.md](TASKS.md) T-04.
 
-Missing source — referenced by the published classes, no file in tree:
-`managers.AuthManager` (`EnterProCode.java:20`, `TransferLicense.java:33`,
-`AboutPaymentActivity.kt:75`) · `utils.Logger` (`AboutPaymentActivity.kt:19`) ·
-`utils.applyBottomInsetPadding` (`AboutPaymentActivity.kt:20`).
+The `res/` tree is complete and is the best available specification of what the missing classes
+did: `strings.xml` names every state, error, and onboarding step; the manifest `<queries>` block
+is the authoritative list of catalog packages.
 
-The `res/` tree, by contrast, is **complete for the published classes** — every layout id and
-string they reference exists. Resources for the missing activities are largely present too
-(strings, styles, drawables), which is the best available specification of what those classes did.
+## Building
 
-Recovery options and the exact `local.properties` key list: [docs/build-setup.md](docs/build-setup.md).
+```bash
+./build-on-termux.sh                    # debug; installs if a device is connected
+./build-on-termux.sh debug --no-install
+./build-on-termux.sh release            # debug-signed unless RELEASE_KEYSTORE is set
+./build-on-termux.sh --clean --low-mem
+```
+
+**Do not call `./gradlew assembleDebug` directly on this device.** AGP resolves an `aapt2` from
+Maven that is an x86_64 glibc binary and cannot execute on Android ARM64. The script passes
+`-Pandroid.aapt2FromMavenOverride=<path>` after probing for a usable aapt2. Note that
+`$PREFIX/bin/aapt2` is **not** native — it is a `qemu-x86_64` wrapper; the native aarch64 binary
+on this device is `~/git/Embeddy/tools/aapt2-arm64/aapt2`. Details:
+[docs/build-setup.md](docs/build-setup.md).
+
+CI (`.github/workflows/`) runs on x86_64 Linux where the stock aapt2 works, so no override there.
 
 ## Repo map
 
 ```
-build.gradle                 Root Gradle: AGP 8.13.1, Kotlin 2.2.21, google-services 4.4.3
-app/build.gradle             Module: compileSdk 36, minSdk 24, appId sksa.aa.customapps,
-                             15 buildConfigField secrets sourced from local.properties
+build.gradle                 Plugin versions only (AGP 8.13.1, Kotlin 2.2.21)
+settings.gradle              Repos incl. JitPack (BottomDialogs); includes :app
+gradle.properties            On-device memory/worker tuning + reproducibility flags
+build-on-termux.sh           The supported local build path
+local.properties.example     Every key optional; documents the few that exist
+.github/workflows/           build-apk.yml (no secrets) · release.yml (tag → signed)
+app/build.gradle             compileSdk 36, minSdk 24, appId sksa.aa.customapps (.dev on debug)
 app/src/main/
-  AndroidManifest.xml        12 app components, 14 permissions, <queries> for the AA catalog
+  AndroidManifest.xml        7 app components, 13 permissions, <queries> = the catalog packages
   java/com/legs/appsforaa/
-    AboutPaymentActivity.kt  PRO purchase screen — Stripe PaymentSheet + Cloud Function
-    EnterProCode.java        Promo-code redemption against RTDB `pc/`
-    TransferLicense.java     Legacy QR license transfer (superseded by LicenseTransferActivity)
-    AboutDialog.java         About / privacy dialog; leaks the device id into the UI
-    User.java                Vestigial 12-line stub, unused
+    AboutDialog.java         About / privacy dialog
     utils/
       BottomDialog.java      Vendored fork of iGio90/BottomDialogs
       UtilsLibrary.java      dp→px + button drawable helpers for BottomDialog
-      Version.java           Dotted-version comparator used by the update checker
-  res/                       Complete for published classes; 30 locales via Crowdin
+      Version.java           Dotted-version comparator for update checks
+  res/                       Complete; 30 locales via Crowdin
 ```
 
-Historical source worth knowing about: **`b5198bb` ("Source code version 1.3", 2021-05-12) still
-contains `MainActivity.java` (1641 lines), `Downloader.java`, `GitHubDownloader.java`, and
-`ContactDialog.java`.** That commit is the only complete, readable implementation of the download
-gate anywhere in this repo, and it is the primary evidence behind
-[ARCHITECTURE.md § Download gating](ARCHITECTURE.md#7-download-gating-via-pro-subscription).
-Read it with `git show b5198bb:app/src/main/java/com/legs/appsforaa/MainActivity.java`.
+Two commits are worth knowing about:
+
+- **`b5198bb`** ("Source code version 1.3", 2021-05-12) still contains `MainActivity.java`
+  (1641 lines), `Downloader.java`, `GitHubDownloader.java`. It is the only complete, readable
+  implementation of the download gate anywhere in this repo and the primary evidence behind
+  [ARCHITECTURE.md § 7](ARCHITECTURE.md#7-download-gating-via-pro-subscription).
+  `git show b5198bb:app/src/main/java/com/legs/appsforaa/MainActivity.java`
+- **`0c33a2b`** — the fork point. `git show 0c33a2b:app/src/main/java/com/legs/appsforaa/AboutPaymentActivity.kt`
+  and its siblings recover the payment/license classes this fork deleted.
 
 ## Docs index
 
 | Doc | What it covers |
 | --- | --- |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | Current architecture spec + the exact PRO/quota gating mechanism |
-| [TASKS.md](TASKS.md) | Prioritized backlog. `go` = take the next unchecked task |
-| [docs/build-setup.md](docs/build-setup.md) | Getting from this partial tree to a compiling APK |
+| [docs/standalone.md](docs/standalone.md) | The no-server design: what was removed, catalog format, behavioural diff |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Upstream 2.1 architecture + the exact PRO/quota gating mechanism; §10 is this fork's divergence |
+| [TASKS.md](TASKS.md) | Prioritized backlog + decision log. `go` = take the next unchecked task |
+| [docs/build-setup.md](docs/build-setup.md) | Local Termux build, CI/CD, signing, recovering the missing classes |
 | [docs/testing-harness.md](docs/testing-harness.md) | Android Auto app testing platform design |
 | [docs/agent-dash.md](docs/agent-dash.md) | Claude/agent dashboard design |
 
 ## Working agreements
 
-- **Never commit secrets.** `local.properties`, `google-services.json`, and any keystore are
-  gitignored. The 15 `buildConfigField` values include the Stripe publishable key, price ids, and
-  the Firebase instance/project/region. If you need them in a doc, use placeholders.
-- **Never touch the upstream backend from a dev build.** Upstream's Firebase RTDB is a live
-  production database holding other people's license state. Writes from a test build corrupt real
-  users' entitlements. Dev builds must point at a stub/local backend or at nothing —
-  see [ARCHITECTURE.md § Cut points](ARCHITECTURE.md#10-cut-points-for-a-de-gated-dev-build).
-- **Verified vs inferred.** ARCHITECTURE.md marks every claim. When you learn something new about
-  the missing classes (from a decompile, a log, or a runtime probe), move the claim from inferred
-  to verified and cite the evidence. Do not silently upgrade a guess.
-- **Personal use only.** `LICENSE.md` is MIT (since `b374904`, 2025-12-06). `README.md`'s License
-  section still asserts the older restrictive EULA — no redistribution of modified builds. These
-  two conflict; this fork stays private and personal, which is fine under either reading. Do not
-  publish builds or reason about which text wins.
+- **Do not add a backend.** If something seems to need a server, it belongs in the harness or the
+  dash, which run on your own machine. The app stays offline-capable.
+- **Never commit secrets.** `local.properties`, keystores, and `google-services.json` are
+  gitignored. Release signing comes from environment variables; CI uses repository secrets.
+- **Verified vs inferred.** ARCHITECTURE.md tags every claim **[V]** / **[H]** / **[I]**. When you
+  learn something new — from a decompile, a log, a runtime probe — move the claim and cite the
+  evidence. Do not silently upgrade a guess.
+- **Don't invent data.** Catalog URLs and package attributions must come from the publisher.
+  A plausible-looking wrong URL is worse than a missing entry.
+- **Personal use only.** `LICENSE.md` is MIT (since `b374904`, 2025-12-06); `README.md`'s License
+  section still asserts the older restrictive EULA. The two conflict; the fork sidesteps it by
+  staying private. Do not publish builds or argue about which text wins.
 - **Commits:** conventional commits, signed with an em-dash + model version, no `Claude` mention,
   no co-authored-by trailer. Never push, tag, or release without explicit per-instance permission.
-- **ADB rules for this device** (port rotation, the banned `stop; start`, screenshot size limits)
-  live in `~/.claude/CLAUDE.md`. They apply here — this repo drives a phone constantly.
+- **ADB rules for this device** (rotating wireless-debugging port, the banned `stop; start`,
+  screenshot size limits, leave-no-trace) live in `~/.claude/CLAUDE.md`. They apply here — this
+  repo drives a phone constantly. `build-on-termux.sh` never runs `adb uninstall`.
 
-## Commands
+## Reference repos on this box
 
-None of these work until [TASKS.md](TASKS.md) Phase 1 lands (see
-[docs/build-setup.md](docs/build-setup.md)). Recorded here so there is one place to update.
-
-```bash
-./gradlew :app:assembleDebug          # build
-./gradlew :app:lint                   # lint (abortOnError is false — read the report)
-adb install -r app/build/outputs/apk/debug/AAAD-2.1-debug.apk
-adb shell am start -n sksa.aa.customapps/com.legs.appsforaa.LauncherActivity
-adb logcat -s AAAD:V AboutPaymentActivity:V Stripe:V Firebase:V
-```
+| Repo | What to take from it |
+| --- | --- |
+| `../swype/cleverkeys` | `build-on-termux.sh` shape, env-var signing, `build-apk.yml` / `release.yml` patterns for an Android app built on Termux |
+| `../termux-tools` | `.claude/skills/android-termux-build.md`, `smali-dex-patching.md`, `docs/APKTOOL_TERMUX.md` |
+| `../operad` | The dash this fork's Phase 4 is modelled on |
+| `../x2d` | Termux/Android runtime spelunking (APK patching, signing helpers under `runtime/handy_extract/`) |
 
 ## Glossary
+
+Terms below describe **upstream** and are here so ARCHITECTURE.md §1–§9 reads cleanly. None of
+them exist in this fork.
 
 | Term | Meaning |
 | --- | --- |
 | `deviceId` | The gate's identity key. `ANDROID_ID` in v1.3; a Firebase Anonymous Auth UID in 2.1 |
 | PRO | Lifetime unlimited-download entitlement. One boolean at RTDB `users/<deviceId>` |
 | Free quota | 1 download per ~30.44 days, tracked at RTDB `lastdownload/<deviceId>` |
-| `pc/` | RTDB node of unredeemed promo codes; a code is deleted on redemption |
-| Catalog | The remote list of installable AA apps, fetched from `APP_CATALOG_URL` |
-| Shizuku | Optional privileged bridge enabling silent installs on Android 14+ without root |
+| `pc/` | RTDB node of unredeemed promo codes; deleted on redemption |
+
+Still current: **Catalog** — the list of installable AA apps, now bundled in
+`app/src/main/assets/`. **Shizuku** — optional privileged bridge for silent installs on
+Android 14+ without root.

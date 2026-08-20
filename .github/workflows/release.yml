@@ -1,0 +1,101 @@
+# Signed release APK, triggered by a v* tag.
+#
+# Required repository secrets (none are needed by build-apk.yml):
+#   SIGNING_KEY            base64 of your release keystore:  base64 -w0 release.keystore
+#   KEYSTORE_PASSWORD      keystore password
+#   KEY_ALIAS              key alias
+#   KEY_PASSWORD           key password
+#
+# Without those secrets the job stops before building rather than shipping a debug-signed APK
+# under a release tag.
+
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0          # full history for the changelog
+
+      - name: Require signing secrets
+        env:
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+        run: |
+          if [ -z "$SIGNING_KEY" ]; then
+            echo "::error::SIGNING_KEY secret is not set — refusing to publish an unsigned or debug-signed release."
+            exit 1
+          fi
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install pinned SDK components
+        run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Verify the tag matches versionName
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          VERSION=$(sed -n 's/.*versionName *= *"\(.*\)".*/\1/p' app/build.gradle | head -1)
+          echo "tag=$TAG versionName=$VERSION"
+          if [ "$TAG" != "$VERSION" ]; then
+            echo "::error::tag v$TAG does not match versionName $VERSION in app/build.gradle"
+            exit 1
+          fi
+
+      - name: Decode keystore
+        run: echo "${{ secrets.SIGNING_KEY }}" | base64 -d > "$RUNNER_TEMP/release.keystore"
+
+      - name: Build signed release APK
+        env:
+          RELEASE_KEYSTORE: ${{ runner.temp }}/release.keystore
+          RELEASE_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          # Deterministic output: same reproducibility settings build-on-termux.sh uses for a
+          # distribution build (commit-derived timestamp, no daemon/parallel/cache).
+          export SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)
+          export TZ=UTC LANG=C.UTF-8 LC_ALL=C.UTF-8
+          ./gradlew assembleRelease --no-daemon --no-parallel --no-build-cache \
+            --stacktrace --console=plain
+
+      - name: Verify the APK is signed with the release key
+        run: |
+          APK=$(find app/build/outputs/apk/release -name '*.apk' | head -1)
+          "$ANDROID_HOME"/build-tools/36.0.0/apksigner verify --print-certs "$APK"
+
+      - name: Shred the keystore
+        if: always()
+        run: rm -f "$RUNNER_TEMP/release.keystore"
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: app/build/outputs/apk/release/*.apk
+          name: AAAD ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
+          generate_release_notes: true
+          body: |
+            Standalone AAAD fork — no backend, no PRO tier, unlimited downloads.
+
+            Personal-use build. This is not a redistribution of upstream AAAD; see LICENSE.md
+            and the README's License section before sharing anything built from this repo.

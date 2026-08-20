@@ -1,22 +1,27 @@
 plugins {
     id 'com.android.application'
-    id 'kotlin-android'
-    id 'kotlin-kapt'
-    id 'com.google.gms.google-services'
+    id 'org.jetbrains.kotlin.android'
+    id 'org.jetbrains.kotlin.kapt'
 }
 
-allprojects {
-    repositories {
-        maven {
-            url = 'https://jitpack.io'
-        }
-        mavenCentral()
-    }
+// local.properties is OPTIONAL in this fork. Upstream read it unconditionally, so a missing
+// file failed configuration before any compile error was reachable. Standalone builds need
+// nothing from it; it only carries an optional catalog URL and optional signing overrides.
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withInputStream { localProperties.load(it) }
+}
+
+/** Env var wins over local.properties, so CI can inject without writing files. */
+def cfg = { String key, String fallback ->
+    System.getenv(key) ?: localProperties.getProperty(key, fallback)
 }
 
 android {
     namespace = 'com.legs.appsforaa'
-    
+    compileSdk = 36
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -24,6 +29,11 @@ android {
 
     kotlinOptions {
         jvmTarget = '11'
+    }
+
+    buildFeatures {
+        viewBinding = true
+        buildConfig = true
     }
 
     packaging {
@@ -38,76 +48,64 @@ android {
                 'META-INF/notice.txt',
                 'META-INF/ASL2.0',
                 'META-INF/*.kotlin_module',
-                'META-INF/versions/9/OSGI-INF/MANIFEST.MF'  // BouncyCastle 1.78 conflict fix
+                'META-INF/versions/9/OSGI-INF/MANIFEST.MF'  // BouncyCastle 1.78+ conflict fix
             ]
         }
     }
 
-    def localProperties = new Properties()
-    localProperties.load(new FileInputStream(rootProject.file("local.properties")))
-
-    buildFeatures {
-        viewBinding = true
-        buildConfig = true
-    }
-
     lint {
-        // Disable translation-related errors (app falls back to English)
+        // App falls back to English when a locale is incomplete (30 locales via Crowdin).
         disable 'MissingTranslation', 'ImpliedQuantity'
         abortOnError false
         checkReleaseBuilds true
     }
 
-    signingConfigs {
-        nuova {
-            storeFile file(localProperties['STORELOCATION'])
-            storePassword localProperties['STOREPASSWORD']
-            keyAlias 'key3'
-            keyPassword localProperties['KEYPASSWORD']
-        }
-    }
-
-
-
-
-
-    compileSdk = 36
-
     defaultConfig {
-
-        localProperties.load(new FileInputStream(rootProject.file("local.properties")))
-
         applicationId = "sksa.aa.customapps"
-        minSdk = 24  // Increased for Shizuku support (Android 7.0+)
+        minSdk = 24            // Shizuku floor (Android 7.0+)
         targetSdk = 36
         versionCode = 18
         versionName = "2.1"
-        signingConfig = signingConfigs.nuova
         base.archivesName = "AAAD-" + versionName
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField "String", "STRIPE_PUBLISHABLE_KEY", "\"${localProperties['STRIPE_PUBLISHABLE_KEY']}\""
-        buildConfigField "String", "STRIPE_PRICE_ID", "\"${localProperties['STRIPE_PRICE_ID']}\""
-        buildConfigField "String", "STRIPE_PRICE_ID_PROMO", "\"${localProperties['STRIPE_PRICE_ID_PROMO']}\""
-        buildConfigField "String", "FIREBASE_INSTANCE", "\"${localProperties['FIREBASE_INSTANCE']}\""
-        buildConfigField "String", "FIREBASE_PROJECT_ID", "\"${localProperties['FIREBASE_PROJECT_ID']}\""
-        buildConfigField "String", "FIREBASE_REGION", "\"${localProperties['FIREBASE_REGION']}\""
-        buildConfigField "String", "AAPASSENGER_LINK", "\"${localProperties['AAPASSENGER_LINK']}\""
-        buildConfigField "String", "CARSTREAM205_LINK", "\"${localProperties['CARSTREAM205_LINK']}\""
-        buildConfigField "String", "CARSTREAM204_LINK", "\"${localProperties['CARSTREAM204_LINK']}\""
-        buildConfigField "String", "CARSTREAM202_LINK", "\"${localProperties['CARSTREAM202_LINK']}\""
-        buildConfigField "String", "AAMP_LINK", "\"${localProperties['AAMP_LINK']}\""
-        buildConfigField "String", "AAMIRROR_LINK", "\"${localProperties['AAMIRROR_LINK']}\""
-        buildConfigField "String", "AAWIDGETS_LINK", "\"${localProperties['AAWIDGETS_LINK']}\""
-        buildConfigField "String", "AASTREAM_LINK", "\"${localProperties['AASTREAM_LINK']}\""
-        buildConfigField "String", "APP_CATALOG_URL", "\"${localProperties['APP_CATALOG_URL']}\""
+        // The ONLY remaining external configuration. Empty is valid and supported: the app
+        // then uses the catalog bundled in assets and never contacts a server for metadata.
+        // Set CATALOG_URL in local.properties or the environment to point at a remote catalog.
+        buildConfigField "String", "CATALOG_URL", "\"${cfg('CATALOG_URL', '')}\""
+    }
 
+    // Signing is env-var driven (same contract as ../swype/cleverkeys and the
+    // android-termux-build skill) so no keystore path is ever committed:
+    //   RELEASE_KEYSTORE, RELEASE_KEYSTORE_PASSWORD, RELEASE_KEY_ALIAS, RELEASE_KEY_PASSWORD
+    // When RELEASE_KEYSTORE is unset, release falls back to the debug key so a local build
+    // always produces an installable APK. Such an APK is NOT distributable.
+    signingConfigs {
+        release {
+            def keystorePath = cfg('RELEASE_KEYSTORE', '')
+            if (keystorePath.trim().length() > 0 && file(keystorePath).exists()) {
+                storeFile file(keystorePath)
+                storePassword cfg('RELEASE_KEYSTORE_PASSWORD', '')
+                keyAlias cfg('RELEASE_KEY_ALIAS', 'release')
+                keyPassword cfg('RELEASE_KEY_PASSWORD', '')
+            }
+        }
     }
 
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release.storeFile != null
+                ? signingConfigs.release
+                : signingConfigs.debug
+        }
+        debug {
+            // Distinct applicationId so a dev build coexists with an official AAAD install
+            // and can never overwrite or wipe its data. The test harness relies on this.
+            applicationIdSuffix '.dev'
+            debuggable true
+            resValue "string", "app_name", "AAAD (dev)"
         }
     }
 }
@@ -115,71 +113,62 @@ android {
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
 
-    // AndroidX Core Libraries (Updated to latest)
+    // AndroidX core
     implementation 'androidx.appcompat:appcompat:1.7.1'
     implementation 'com.google.android.material:material:1.13.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
     implementation 'androidx.core:core-ktx:1.17.0'
-
-    // Firebase - Using BoM for version management (Updated to 34.6.0)
-    implementation platform('com.google.firebase:firebase-bom:34.6.0')
-    implementation 'com.google.firebase:firebase-database'
-    implementation 'com.google.firebase:firebase-storage'
-    implementation 'com.google.firebase:firebase-auth'
-    implementation 'com.google.firebase:firebase-functions'
-
-    // Networking and HTTP
-    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
-    implementation 'com.android.volley:volley:1.2.1'
-    implementation 'commons-net:commons-net:3.12.0'
-    implementation 'commons-io:commons-io:2.21.0'
-
-    // Payment Processing (Updated to 22.2.0)
-    implementation 'com.stripe:stripe-android:22.2.0'
-
-    // HTML Parsing
-    implementation 'org.jsoup:jsoup:1.21.2'
-
-    // Kotlin Standard Library
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:2.2.21"
-
-    // UI Components and Utilities
-    implementation 'com.github.iGio90:BottomDialogs:master-SNAPSHOT'
-    implementation 'com.github.blikoon:QRCodeScanner:0.1.2'
-
-    // RecyclerView and UI components
     implementation 'androidx.recyclerview:recyclerview:1.4.0'
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
 
-    // Image loading and caching
-    implementation 'com.github.bumptech.glide:glide:5.0.5'
+    // Kotlin
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:2.2.21"
 
-    // WorkManager for background tasks
-    implementation 'androidx.work:work-runtime:2.11.0'
-    implementation 'androidx.work:work-runtime-ktx:2.11.0'
+    // Networking: catalog fetch + APK download. Jsoup scrapes publisher pages that have no API.
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+    implementation 'commons-io:commons-io:2.21.0'
+    implementation 'org.jsoup:jsoup:1.21.2'
 
-    // Room for local caching
+    // Local state: catalog cache, prefs, background refresh
     implementation 'androidx.room:room-runtime:2.8.4'
     implementation 'androidx.room:room-ktx:2.8.3'
     kapt 'androidx.room:room-compiler:2.8.4'
-
-    // Preferences DataStore
     implementation 'androidx.datastore:datastore-preferences:1.2.0'
+    implementation 'androidx.work:work-runtime:2.11.0'
+    implementation 'androidx.work:work-runtime-ktx:2.11.0'
 
-    // Shizuku for Android 14+ silent installation
+    // UI
+    implementation 'com.github.bumptech.glide:glide:5.0.5'
+    // Used by utils/BottomDialog, which vendors the library's Java and needs only its
+    // resources. The AAR predates AndroidX and pulls com.android.support:support-compat:27.0.2,
+    // which collides with androidx.core (duplicate android.support.v4.* classes). The app is
+    // AndroidX-only and never touches the AAR's own classes, so the transitive is excluded
+    // rather than enabling the deprecated Jetifier. Vendoring the resources and dropping this
+    // dependency outright is TASKS.md T-19.
+    implementation('com.github.iGio90:BottomDialogs:master-SNAPSHOT') {
+        exclude group: 'com.android.support'
+    }
+
+    // Silent install on Android 14+ without root
     def shizuku_version = "13.1.5"
     implementation "dev.rikka.shizuku:api:$shizuku_version"
     implementation "dev.rikka.shizuku:provider:$shizuku_version"
 
-    // BouncyCastle for APK signing and certificate generation
+    // On-device APK signing / certificate generation
     configurations.all {
         exclude group: 'org.bouncycastle', module: 'bcprov-jdk15to18'
     }
     implementation('org.bouncycastle:bcpkix-jdk18on:1.82')
     implementation('org.bouncycastle:bcprov-jdk18on:1.82')
 
-    // Testing
+    // REMOVED for the standalone fork (see docs/standalone.md):
+    //   firebase-bom + database/storage/auth/functions  — backend entitlement + catalog
+    //   com.stripe:stripe-android                        — PRO purchase
+    //   com.github.blikoon:QRCodeScanner (+ zxing)       — QR license transfer
+    //   com.android.volley:volley                        — superseded by OkHttp
+    //   commons-net:commons-net                          — NTP clock for the quota gate
+
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.3.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.7.0'

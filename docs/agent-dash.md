@@ -44,7 +44,8 @@ Do not commit a `package-lock.json` pinning device-only natives, and put any
 The dash should be able to start a harness run and stream its output, with two hard guards
 inherited from [docs/testing-harness.md](testing-harness.md):
 
-1. Refuse to run against a build that still has the download gate enabled.
+1. Only ever target `sksa.aa.customapps.dev` — the `.dev`-suffixed build from this tree. Never
+   drive the official `sksa.aa.customapps` package id.
 2. Never uninstall, reboot, or clear app data without an explicit per-run confirmation — and never
    `stop; start` the framework on the Saga test phone under any circumstance.
 
