@@ -73,24 +73,23 @@ Design and rationale: [docs/standalone.md](docs/standalone.md).
   For the mirroring family: T-07 established that renaming adds no AA capability, so catalogue
   them from **publisher** sources under their real package names and mark AA visibility unverified.
   Do not copy upstream's renamed builds — they are signed with the public AOSP test key.
-- [ ] **T-06** Android Auto visibility: **installer attribution, not APK patching.** The mechanism
-  is fully recovered — spec in [docs/aa-visibility.md](docs/aa-visibility.md). Implement:
-  a Shizuku session install (`pm install-create -i com.android.vending --originating-uri
-  'https://play.google.com/store' --install-reason 0`, `install-write`, `install-commit`,
-  `install-abandon` on failure, `--bypass-low-target-sdk-block` on SDK ≥ 34); a
-  `pm set-installer` repair path plus verification; an honest capability check; and a clear
-  message when Shizuku is absent, since AA visibility then genuinely depends on the user enabling
-  AA's *Unknown sources*.
-  **Do not** reimplement upstream's *v2.1* repackaging chain — it is dead code (no `apktool` on a
-  stock device; the bundled `apksigner.jar` has no `classes.dex`). Shape the strategy ladder after
-  v2.8.5's `SmartInstaller`: Shizuku+Play attribution → Shizuku direct → plain `PackageInstaller`,
-  with an honest capability report
-  ([upstream-2.8.5-diff.md](docs/upstream-2.8.5-diff.md#install-is-now-a-strategy-ladder-v)).
-  **Do not implement a `pm set-installer` repair path** — verified impossible on Android 16:
-  `SecurityException: Caller does not have same cert as new installer package`. Attribution can
-  only be declared at session creation, never changed afterwards, so a wrongly-installed app must
-  be uninstalled and reinstalled.
-  *Done when:* an app installed by this build is listed by Android Auto on the test device.
+- [~] **T-06** Android Auto visibility: **installer attribution, not APK patching.**
+  **Implemented**: `data/ReleaseResolver` (GitHub releases → concrete APK), `utils/ApkDownloader`
+  (cancellable, progress), `utils/ShizukuInstaller` (`pm install-create -r -i com.android.vending
+  --originating-uri … --install-reason 0` + `--bypass-low-target-sdk-block` on SDK ≥ 34, APK
+  streamed over stdin, session abandoned on failure), `utils/SystemInstaller` (fallback, states
+  plainly that its result is *not* Play-attributed), `utils/InstallManager` (picks per attempt).
+  No `pm set-installer` repair path exists, by design — verified impossible on Android 16
+  (`SecurityException: Caller does not have same cert as new installer package`), so attribution is
+  declared at session creation or not at all.
+  **Verified on device:** resolve → download end to end (correct asset, version, byte count); the
+  fallback path; and correct availability reporting.
+  **Blocked on device config for sign-off:** Shizuku's server will not stay alive on the SM_S938U1
+  — Samsung's `FreecessHandler` freezes `moe.shizuku.privileged.api` and `start.sh` leaves no
+  process (it survived exactly once across many attempts). Start Shizuku from its own UI with
+  battery optimisation disabled, then re-run `scratchpad/t06test.sh`.
+  *Done when:* an app installed by this build reports `installer=com.android.vending`, and — once
+  T-22 exists — is listed by Android Auto.
 - [~] **T-07** Determine whether the mirroring family needs **package renaming** to be visible to
   Android Auto. **Half answered** — see
   [aa-visibility.md](docs/aa-visibility.md#package-renaming-what-it-actually-does-t-07-partial-v).
