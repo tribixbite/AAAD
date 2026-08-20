@@ -1,0 +1,37 @@
+# --- Secrets: never commit ---
+# local.properties carries the Stripe publishable key, price ids, Firebase coordinates,
+# the catalog URL, and the keystore path + passwords (app/build.gradle:46-103).
+local.properties
+# Firebase config for a live project.
+google-services.json
+app/google-services.json
+*.jks
+*.keystore
+
+# --- Gradle / Android build output ---
+.gradle/
+build/
+app/build/
+captures/
+local.properties.bak
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# --- IDE ---
+.idea/
+*.iml
+.kotlin/
+
+# --- Harness / dash (Phases 3-4) ---
+node_modules/
+harness/runs/
+dist/
+.env
+.env.*
+!.env.example
+
+# --- Scratch ---
+*.log
+.DS_Store
