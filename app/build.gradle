@@ -48,7 +48,9 @@ android {
                 'META-INF/notice.txt',
                 'META-INF/ASL2.0',
                 'META-INF/*.kotlin_module',
-                'META-INF/versions/9/OSGI-INF/MANIFEST.MF'  // BouncyCastle 1.78+ conflict fix
+                // Kept from upstream as a defensive exclude; its original cause (BouncyCastle)
+                // is no longer a dependency, but multi-release jars still trip over this entry.
+                'META-INF/versions/9/OSGI-INF/MANIFEST.MF'
             ]
         }
     }
@@ -155,14 +157,12 @@ dependencies {
     implementation "dev.rikka.shizuku:api:$shizuku_version"
     implementation "dev.rikka.shizuku:provider:$shizuku_version"
 
-    // On-device APK signing / certificate generation
-    configurations.all {
-        exclude group: 'org.bouncycastle', module: 'bcprov-jdk15to18'
-    }
-    implementation('org.bouncycastle:bcpkix-jdk18on:1.82')
-    implementation('org.bouncycastle:bcprov-jdk18on:1.82')
-
     // REMOVED for the standalone fork (see docs/standalone.md):
+    //   org.bouncycastle bcpkix/bcprov 1.82                — on-device APK re-signing
+    //     Upstream carried these only for ApkRepackager/ApkSigner/BundledApkSigner, a chain that
+    //     cannot execute on a stock device: the bundled apksigner.jar has no classes.dex, so
+    //     `dalvikvm -cp` aborts. AA visibility comes from installer attribution, not re-signing.
+    //     Evidence: docs/aa-visibility.md.
     //   firebase-bom + database/storage/auth/functions  — backend entitlement + catalog
     //   com.stripe:stripe-android                        — PRO purchase
     //   com.github.blikoon:QRCodeScanner (+ zxing)       — QR license transfer

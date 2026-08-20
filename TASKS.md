@@ -52,12 +52,23 @@ Design and rationale: [docs/standalone.md](docs/standalone.md).
   `receivers/PackageInstallReceiver`; stub the four remaining activities as `finish()` shells.
   *Done when:* `./build-on-termux.sh debug` produces an APK that launches to a catalog screen.
 - [ ] **T-15** Build the real catalog: `app/src/main/assets/catalog.json` per the schema in
-  [standalone.md](docs/standalone.md#catalog-format). Every `source` URL must be established
-  from the publisher's own release page — **do not invent URLs**. Also resolve the four
-  unattributed mirroring package names before writing them in.
-- [ ] **T-06** On-device APK patching / re-signing (BouncyCastle). This is the app's actual core,
-  is unpublished upstream, and is not inferable from this tree. Without it an installed app will
-  not appear in Android Auto.
+  [standalone.md](docs/standalone.md#catalog-format). Upstream's own catalog (14 apps, with
+  package names and categories) is recovered in
+  [aa-visibility.md](docs/aa-visibility.md#also-recovered) — use it for structure and package
+  names, which are now all resolved. **Do not copy its `download_url`s**: they point at upstream's
+  Firebase Storage bucket with embedded access tokens. Establish each `source` from the
+  publisher's own release page instead, and do not invent URLs to fill gaps.
+- [ ] **T-06** Android Auto visibility: **installer attribution, not APK patching.** The mechanism
+  is fully recovered — spec in [docs/aa-visibility.md](docs/aa-visibility.md). Implement:
+  a Shizuku session install (`pm install-create -i com.android.vending --originating-uri
+  'https://play.google.com/store' --install-reason 0`, `install-write`, `install-commit`,
+  `install-abandon` on failure, `--bypass-low-target-sdk-block` on SDK ≥ 34); a
+  `pm set-installer` repair path plus verification; an honest capability check; and a clear
+  message when Shizuku is absent, since AA visibility then genuinely depends on the user enabling
+  AA's *Unknown sources*.
+  **Do not** reimplement upstream's repackaging chain — it is dead code (no `apktool` on a stock
+  device; the bundled `apksigner.jar` has no `classes.dex`). No re-signing also means installed
+  apps keep their original publisher signature.
   *Done when:* an app installed by this build is listed by Android Auto on the test device.
 - [ ] **T-17** Self-update against this fork's own GitHub releases, using `utils/Version.java`.
   Replaces upstream's update check, which pointed at upstream's releases.
@@ -71,9 +82,13 @@ a matrix run is impossible against a quota-gated build, and that is now moot.
   rotating-port rediscovery this box needs, structured run logging to JSONL.
 - [ ] **T-21** Catalog-driven install matrix: for each catalog app × each connected device,
   install → launch → screenshot → record result.
-- [ ] **T-22** Android Auto visibility probe — the assertion that actually matters. Choose
-  between `dumpsys` against `gearhead`, the Desktop Head Unit, and on-device capture, and write
-  down why. Until then, report visibility as `unknown` rather than implying success.
+- [ ] **T-22** Android Auto visibility probe — the assertion that actually matters. Upstream's
+  `AndroidAutoCompatChecker` is a working model: per package it checks AA meta-data, Play Store
+  stamps, **installer source**, and the unknown-source flag
+  ([aa-visibility.md](docs/aa-visibility.md#diagnostics-worth-keeping)). Installer source is the
+  cheap high-signal check — `pm` reports it directly. Decide whether that suffices or whether the
+  Desktop Head Unit is needed for ground truth, and write down why. Until then report visibility
+  as `unknown` rather than implying success.
 - [ ] **T-23** Screenshot pipeline honouring this device's constraints: no dimension ≥ 2000 px,
   file < 4 MB, auto-compress, per-run directory.
 - [ ] **T-24** Regression baselines: per-app expected outcomes, diffed each run.
@@ -101,11 +116,10 @@ Design: [docs/agent-dash.md](docs/agent-dash.md).
 
 ## Low priority
 
-- [ ] **T-12** Resolve the three open questions about upstream's 2.1 server-side authorization
-  ([ARCHITECTURE.md § 7.3](ARCHITECTURE.md#73-v21--what-changed)): callable function name and
-  payload, whether `lastdownload` survives as the storage key, and the unit of the `"date"`
-  extra. Documentation completeness only — the fork has no gate. Fold into T-04's decompile pass
-  if that happens anyway.
+- [x] **T-12** Upstream's 2.1 server-side authorization, resolved by decompile: the callable is
+  **`requestAuthorizedDownload`**, the client reads an **`authorized`** field, and `users` /
+  `lastdownload` remain the RTDB keys. The `"date"` extra's unit is still unconfirmed and not
+  worth pursuing — it is a cosmetic countdown and the fork has no gate.
 - [ ] **T-18** Prune the now-unreferenced PRO/payment strings across `res/values*`. Deliberately
   deferred: it churns 30 locale files for no functional gain.
 - [ ] **T-19** Vendor BottomDialogs and drop the JitPack dependency. It has now broken the build
@@ -141,6 +155,14 @@ Append dated entries as decisions are made — this is the fork's decision log.
 - **2026-08-20** — Build toolchain established from `../swype/cleverkeys` (`build-on-termux.sh`,
   env-var signing, CI shape) and `~/git/termux-tools/.claude/skills/android-termux-build.md`.
   Verified on-device: Gradle 8.13 + AGP 8.13.1 configure `:app` successfully.
+- **2026-08-20** — **The Android Auto mechanism is recovered** by decompiling the v2.1 release APK
+  (`gh release download v2.1` → baksmali → filtered dex → jadx). It is **installer attribution**,
+  not APK patching: a Shizuku `pm install-create -i com.android.vending` session. Upstream's
+  repackaging/re-signing chain is dead code — stamp injection needs `apktool` on `$PATH`, and the
+  bundled `apksigner.jar` has no `classes.dex` (verified: `dalvikvm -cp` → SIGABRT). Consequences:
+  BouncyCastle dropped, T-06 is now ordinary work, T-12 closed, and upstream's real catalog gives
+  T-15 its package names. Full spec: [docs/aa-visibility.md](docs/aa-visibility.md).
+  Note upstream is at v2.8.5 while the published source is v2.1 — seven versions of unexamined drift.
 - **2026-08-20** — **First APK built on-device.** 11 min clean, `mergeExtDexDebug` and dependency
   downloads dominate. Two failures on the way, both from
   `com.github.iGio90:BottomDialogs:master-SNAPSHOT` (T-19): a JitPack read timeout, then

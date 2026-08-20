@@ -28,12 +28,17 @@ Already applied to the tree:
 | `transfer_license` menu item | Target activity is gone | `res/menu/menu.xml` |
 | 14 `buildConfigField` secrets | Stripe keys, Firebase coordinates, 8 per-app APK links | `app/build.gradle` |
 
+Also removed once the mechanism was actually known:
+
+| Removed | Why |
+| --- | --- |
+| `org.bouncycastle:bcpkix/bcprov:1.82` | Upstream used them only for on-device APK re-signing — a chain that cannot execute on a stock device. Android Auto visibility comes from **installer attribution**, not from patching or re-signing the app. Evidence: [aa-visibility.md](aa-visibility.md) |
+
 Deliberately kept:
 
-- **Shizuku** — silent install on Android 14+ is what makes unattended harness runs possible.
-- **BouncyCastle** — on-device certificate generation / APK re-signing, the mechanism that makes
-  an app visible to Android Auto. Not published by upstream and not reconstructable from this
-  tree; it still has to be written ([TASKS.md](../TASKS.md) T-06).
+- **Shizuku** — the load-bearing dependency. It is how the install session sets
+  `-i com.android.vending`, which is what makes Android Auto list the app, and it is what makes
+  unattended harness runs possible.
 - **Room / DataStore / WorkManager / Glide** — local catalog cache, preferences, background
   refresh, icons. All local; none of them imply a server.
 - **Jsoup / OkHttp** — resolving and downloading APKs from publisher pages that have no API.
@@ -103,19 +108,20 @@ state for exactly this set:
 | `com.mqbcoding.stats` | Performance Monitor (VAG/MIB2) |
 | `com.aatorque.stats` | AATorque |
 | `com.kododake.aabrowser` | AA Browser |
-| `android.loandamaps.it` | mirroring family — **attribution unverified** |
-| `maps.kiao2client.android` | mirroring family — **attribution unverified** |
-| `maps.mobilejiohubclient.android` | mirroring family — **attribution unverified** |
-| `maps.mobilejiohub.android` | mirroring family — **attribution unverified** |
+| `maps.kiao2client.android` | AAMirror |
+| `maps.mobilejiohubclient.android` | AAStream |
+| `maps.mobilejiohub.android` | AA Mirror Plus |
+| `android.loandamaps.it` | legacy — not in the 2.1 catalog; retained for installed-state detection |
 
-The four mirroring entries correspond to Screen2Auto / AAMirror / AAStream / AA Mirror Plus, but
-which package belongs to which app is not determinable from this tree. Confirm before writing
-them into the catalog rather than guessing — a wrong `packageName` silently breaks
-installed-state detection for that app.
+Resolved from upstream's own `assets/app_catalog.json` ([aa-visibility.md](aa-visibility.md#also-recovered)),
+which also names `com.carstream` (CarStream 2.0.x), `ru.inceptive.screentwoauto` (Screen2Auto),
+`com.aapassenger`, and `com.aawidgets`. `maps.jaoloonda.android` in `<queries>` is likewise a
+legacy CarStream package.
 
-**Download URLs are not in this repo.** Upstream kept them in `local.properties`, which was never
-committed. Every `source` entry has to be established from the publisher's own release page
-([TASKS.md](../TASKS.md) T-15). Do not invent URLs to make the file look complete.
+**Download URLs still have to be established per app.** Upstream's catalog points at its own
+Firebase Storage bucket (`appsforaa-1b443`) with embedded access tokens; this fork resolves
+publisher sources instead of leeching that bucket ([TASKS.md](../TASKS.md) T-15). Do not invent
+URLs to make the file look complete.
 
 ## Behavioural differences from upstream
 

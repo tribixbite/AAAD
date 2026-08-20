@@ -46,9 +46,25 @@ Three goals, in priority order. Task breakdown in [TASKS.md](TASKS.md).
 plus `utils.Logger` and `utils.applyBottomInsetPadding`. An installed build therefore has no
 entry point. That is the starting condition, not a regression — see [TASKS.md](TASKS.md) T-04.
 
-The `res/` tree is complete and is the best available specification of what the missing classes
-did: `strings.xml` names every state, error, and onboarding step; the manifest `<queries>` block
-is the authoritative list of catalog packages.
+The `res/` tree is complete, and upstream's **full class list and behaviour are now recovered**
+from a decompile of the v2.1 release APK — see
+[docs/aa-visibility.md](docs/aa-visibility.md#upstreams-full-class-list). Reimplementing them is
+ordinary work, not archaeology.
+
+To redo or extend the decompile:
+
+```bash
+gh release download v2.1 -R shmykelsa/AAAD        # v2.1 matches this repo's source drop
+unzip -q AAAD-2.1-release.apk -d x21              # app code is in classes3.dex
+java -jar ~/git/termux-tools/edge-fix/tools/baksmali-3.0.9-fat.jar d x21/classes3.dex -o smali3
+# copy just com/legs/appsforaa/** into mini/, then:
+java -jar ~/git/termux-tools/edge-fix/tools/smali-3.0.9-fat.jar a mini -o mini.dex
+jadx -d java --no-res --show-bad-code mini.dex    # pacman -S jadx
+```
+
+Filtering to a mini dex first is what makes this fast — jadx on all five dex files is not worth
+the wait. Notes: `~/git/termux-tools/docs/APKTOOL_TERMUX.md`,
+`~/git/termux-tools/.claude/skills/smali-dex-patching.md`.
 
 ## Building
 
@@ -103,6 +119,7 @@ Two commits are worth knowing about:
 
 | Doc | What it covers |
 | --- | --- |
+| [docs/aa-visibility.md](docs/aa-visibility.md) | **How an app becomes visible to Android Auto** — the core mechanism, recovered by decompiling the v2.1 release APK. Read before touching install code |
 | [docs/standalone.md](docs/standalone.md) | The no-server design: what was removed, catalog format, behavioural diff |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Upstream 2.1 architecture + the exact PRO/quota gating mechanism; §10 is this fork's divergence |
 | [TASKS.md](TASKS.md) | Prioritized backlog + decision log. `go` = take the next unchecked task |

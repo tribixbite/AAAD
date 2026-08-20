@@ -6,10 +6,6 @@
 -keep class rikka.shizuku.** { *; }
 -keep class moe.shizuku.** { *; }
 
-# BouncyCastle registers providers by name.
--keep class org.bouncycastle.** { *; }
--dontwarn org.bouncycastle.**
-
 # Room generates implementations that are looked up by name at runtime.
 -keep class * extends androidx.room.RoomDatabase { *; }
 

@@ -92,8 +92,8 @@ file is read unconditionally at `:47`, so its absence fails configuration outrig
 Dependency roles: Firebase BoM 34.6.0 (Database, Storage, Auth, Functions) · Stripe Android 22.2.0 ·
 OkHttp + Volley + commons-net + commons-io · Jsoup (HTML scraping of publisher pages) · Glide ·
 Room + DataStore + WorkManager (catalog cache, prefs, background work) · Shizuku 13.1.5 ·
-BouncyCastle `bcpkix`/`bcprov` 1.82 — **APK signing / certificate generation on-device**, which is
-the load-bearing hint for how patched APKs are produced **[I]** · `blikoon:QRCodeScanner` +
+BouncyCastle `bcpkix`/`bcprov` 1.82 — on-device certificate generation for APK re-signing, but
+that whole chain is **dead code** and never executes (§8) **[V]** · `blikoon:QRCodeScanner` +
 `com.google.zxing` for license-transfer QR.
 
 ## 4. Runtime topology
@@ -277,14 +277,14 @@ public void registerDownload() {
 - The NTP dependency (`commons-net`) is still declared, but if authorization is server-side the
   authoritative clock is the function's, making the NTP path redundant or vestigial.
 
-**Open questions to resolve before trusting any of §7.3** — see [TASKS.md](TASKS.md) T-12:
+**Resolved [V]** by decompiling the v2.1 release APK ([docs/aa-visibility.md](docs/aa-visibility.md#also-recovered)):
 
-1. The exact callable function name and payload.
-2. Whether `lastdownload` is still the storage key, or whether 2.1 moved to a server-only record.
-3. **The `"date"` extra's unit.** v1.3 passed the raw `lastdownload` timestamp; 2.1's
-   `AboutPaymentActivity` treats it as an absolute *next-try* time (`nextTry - now`). Either
-   `MainActivityNew` now passes `lastdownload + 2629743000`, or the countdown is off by one
-   cooldown period. Both are plausible; do not assume.
+1. The callable is **`requestAuthorizedDownload`**; the client reads an **`authorized`** field
+   from the response. The server-side authorization hypothesis was correct.
+2. **`lastdownload` is still the storage key** — `MainActivityNew` references both `users` and
+   `lastdownload`. The quota record did not move server-only.
+3. The `"date"` extra's unit remains unconfirmed; it is cosmetic (a countdown label) and the fork
+   has no gate, so it is not worth further effort.
 
 ### 7.4 Purchase → PRO **[V]**
 
@@ -347,11 +347,24 @@ Some links come straight from BuildConfig; Screen2Auto is special-cased through 
 Install **[V]/[H]**: APK lands in `getExternalFilesDir("AAAD")`, is shared through the
 `sksa.aa.customapps.fileProvider` `FileProvider` (`res/xml/paths.xml` exposes files, cache, and
 external roots), and is launched with `ACTION_INSTALL_PACKAGE` +
-`EXTRA_NOT_UNKNOWN_SOURCE` + `EXTRA_INSTALLER_PACKAGE_NAME = "com.android.vending"`. On Android 14+
-the Shizuku path performs a silent install instead **[I]** (`strings.xml:73-99`). BouncyCastle's
-presence implies the APK is re-signed on-device before install **[I]** — the mechanism by which
-these apps become visible to Android Auto is the part upstream does not publish, and it is not
-reconstructable from this tree.
+`EXTRA_NOT_UNKNOWN_SOURCE` + `EXTRA_INSTALLER_PACKAGE_NAME = "com.android.vending"`.
+
+**The Android Auto visibility mechanism is now fully recovered and has its own spec:
+[docs/aa-visibility.md](docs/aa-visibility.md).** Summary, all **[V]** from a decompile of the
+v2.1 release APK:
+
+- AA lists a third-party app when it declares `com.google.android.gms.car.application` meta-data
+  **and** AA trusts the install. Catalog apps already declare the meta-data.
+- **AAAD does not patch or re-sign anything.** It falsifies the *installer attribution*: a Shizuku
+  session install with `pm install-create -i com.android.vending --originating-uri
+  'https://play.google.com/store' --install-reason 0`, with `pm set-installer` as a repair path
+  and a root-only `/data/system/packages.xml` edit as a last resort.
+- The repackaging/re-signing chain (`ApkRepackager`, `ApkStampInjector`, `ApkSigner`,
+  `BundledApkSigner`, `KeystoreManager`) is **dead code**: stamp injection requires `apktool` on
+  `$PATH`, and the bundled `assets/tools/apksigner.jar` contains no `classes.dex`, so
+  `dalvikvm -cp` aborts. BouncyCastle existed only to serve that chain.
+
+This supersedes the earlier inference that the APK is re-signed on-device.
 
 ## 9. Resources and i18n
 
@@ -380,8 +393,11 @@ Applied to the tree:
 | Build scaffolding | absent | `settings.gradle`, wrapper (Gradle 8.13), `gradle.properties`, `proguard-rules.pro`, `build-on-termux.sh`, GitHub Actions |
 | Debug package id | `sksa.aa.customapps` | `sksa.aa.customapps.dev` — coexists with an official install |
 
-Unchanged: the install pipeline (§8), Shizuku, BouncyCastle, the `<queries>` package list, and
-the `res/` tree including all 30 locales.
+Also removed once §8 was verified: **BouncyCastle**, which existed only to serve the dead
+re-signing chain.
+
+Unchanged: the install pipeline (§8), Shizuku, the `<queries>` package list, and the `res/` tree
+including all 30 locales.
 
 Still missing, exactly as in §2: `LauncherActivity`, `MainActivityNew`, the onboarding and
 support activities, `PackageInstallReceiver`, and the APK patching/re-signing logic that is the
@@ -393,7 +409,16 @@ Distribution stays out of scope: personal use only (see
 
 ## 11. Known gaps in this document
 
-- The APK patching/re-signing method — the app's actual core — is unpublished and not inferable here.
-- The Cloud Function contract for download authorization is **[I]** only (§7.3 open questions).
-- `LauncherActivity`'s routing rules and the onboarding completion flag are unknown.
-- Whether 2.1 still uses NTP at all is unknown.
+Most of the original gaps closed once the v2.1 release APK was decompiled
+([docs/aa-visibility.md](docs/aa-visibility.md)). Remaining:
+
+- The Cloud Function's **server side** is not observable — only the client call
+  (`requestAuthorizedDownload` → `authorized`) is known. The quota arithmetic now lives there.
+- The `"date"` extra's unit (§7.3). Cosmetic; not pursued.
+- Whether 2.1 still queries NTP at all. Moot if authorization is server-side.
+- Upstream is at **v2.8.5** (2026-06-17); everything here describes **v2.1** (2025-11-20), the
+  release that matches the published source. Seven minor versions of drift are unexamined.
+
+Closed: the APK patching/re-signing method (it is dead code — visibility comes from installer
+attribution, §8); the authorization contract (§7.3); `LauncherActivity` and the onboarding flow
+(`OnboardingDataStore` holds the completion flag).
