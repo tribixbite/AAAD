@@ -4,6 +4,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.withContext
 import rikka.shizuku.Shizuku
 import java.io.File
@@ -36,6 +37,9 @@ object ShizukuInstaller {
     /** Shizuku's own permission, requested at runtime like any dangerous permission. */
     const val PERMISSION_REQUEST_CODE = 8721
 
+    /** Shizuku normally delivers its binder within a few hundred ms of process start. */
+    private const val BINDER_WAIT_MILLIS = 3000L
+
     sealed interface Availability {
         data object Ready : Availability
         data object NotInstalled : Availability
@@ -67,6 +71,14 @@ object ShizukuInstaller {
      * Android Auto will not list.
      */
     suspend fun ensureReady(): Boolean {
+        // Shizuku hands its binder to the app ASYNCHRONOUSLY, through ShizukuProvider after the
+        // process starts. pingBinder() is false until that lands, so checking it synchronously
+        // reports "NotRunning" on a perfectly healthy Shizuku — and silently downgrades the
+        // install to an unattributed one. Wait for it before deciding anything.
+        if (!isBinderAlive() && shizukuAppInstalled) {
+            awaitBinder(BINDER_WAIT_MILLIS)
+        }
+
         val state = availability()
         // Logged unconditionally: "why did it not use Shizuku" is the single most common
         // question when an install turns out not to be visible in Android Auto.
@@ -109,6 +121,29 @@ object ShizukuInstaller {
 
     private fun isBinderAlive(): Boolean =
         runCatching { Shizuku.pingBinder() }.getOrDefault(false)
+
+    /**
+     * Waits up to [timeoutMillis] for Shizuku's binder to arrive.
+     *
+     * Uses the *sticky* listener so a binder that already arrived fires immediately rather than
+     * waiting for the next delivery, which would never come.
+     */
+    private suspend fun awaitBinder(timeoutMillis: Long) {
+        withTimeoutOrNull(timeoutMillis) {
+            suspendCancellableCoroutine { continuation ->
+                val listener = object : Shizuku.OnBinderReceivedListener {
+                    override fun onBinderReceived() {
+                        Shizuku.removeBinderReceivedListener(this)
+                        if (continuation.isActive) continuation.resume(Unit)
+                    }
+                }
+                Shizuku.addBinderReceivedListenerSticky(listener)
+                continuation.invokeOnCancellation {
+                    Shizuku.removeBinderReceivedListener(listener)
+                }
+            }
+        } ?: Logger.d(TAG, "Shizuku binder did not arrive within ${timeoutMillis}ms")
+    }
 
     /**
      * Shizuku's own app is a separate package. [Shizuku.pingBinder] cannot distinguish
@@ -158,6 +193,54 @@ object ShizukuInstaller {
 
         Logger.i(TAG, "Installed ${apk.name} via session $sessionId")
         Result.Success(null)
+    }
+
+    /**
+     * Re-stages an already-installed app's own APKs through an attributed session — "conversion".
+     *
+     * The APKs are read from `/data/app/...` by the shell uid directly rather than streamed,
+     * because a split app has several of them and they are already readable there. The signature
+     * is unchanged, so this is an update over the top: **app data is preserved**.
+     *
+     * @param apkPaths base APK first, then splits. All must go into one session; committing a
+     *   session with only the base of a split app fails or yields a broken install.
+     */
+    suspend fun convertInstalled(
+        packageName: String,
+        apkPaths: List<String>,
+    ): Result = withContext(Dispatchers.IO) {
+        if (availability() != Availability.Ready) {
+            return@withContext Result.Failure("Shizuku is not ready")
+        }
+        if (apkPaths.isEmpty()) {
+            return@withContext Result.Failure("No APK paths for $packageName")
+        }
+
+        val sessionId = createSession()
+            ?: return@withContext Result.Failure("Could not create an install session")
+
+        apkPaths.forEachIndexed { index, path ->
+            // Names only have to be unique within the session; base first by convention.
+            val name = if (index == 0) "base.apk" else "split_$index.apk"
+            // No -S here: when install-write is given a path it sizes the file itself. Only the
+            // stdin form needs an explicit byte count.
+            val result = runShellCommand("pm install-write $sessionId $name '$path'")
+            if (result.exitCode != 0) {
+                abandonSession(sessionId)
+                return@withContext Result.Failure(
+                    "Could not stage ${path.substringAfterLast('/')}: ${result.errorOrOutput()}"
+                )
+            }
+        }
+
+        val commit = runShellCommand("pm install-commit $sessionId")
+        if (commit.exitCode != 0 || !commit.output.contains("Success")) {
+            abandonSession(sessionId)
+            return@withContext Result.Failure(commit.errorOrOutput().ifBlank { "Conversion failed" })
+        }
+
+        Logger.i(TAG, "Converted $packageName (${apkPaths.size} APK(s)) to Play attribution")
+        Result.Success(packageName)
     }
 
     private fun createSession(): Int? {

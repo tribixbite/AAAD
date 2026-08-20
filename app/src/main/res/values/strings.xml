@@ -316,6 +316,30 @@
     <string name="install_handed_to_system">Confirm the install when Android asks. Without Shizuku the app is not registered for Android Auto — enable \"Unknown sources\" in Android Auto\'s developer settings.</string>
     <string name="install_failed_reason">Install failed: %1$s</string>
 
+    <!-- Converting already-installed apps to Play Store attribution -->
+    <string name="convert_title">Convert installed apps</string>
+    <string name="convert_subtitle">Apps already on this device that Android Auto can show</string>
+    <string name="convert_open">Convert installed apps</string>
+    <string name="convert_scanning">Scanning installed apps…</string>
+    <string name="convert_none_found">No Android Auto capable apps are installed on this device.</string>
+    <plurals name="convert_found">
+        <item quantity="one">%d Android Auto capable app installed</item>
+        <item quantity="other">%d Android Auto capable apps installed</item>
+    </plurals>
+    <string name="convert_installer_none">an unknown source</string>
+    <string name="convert_state_ok">%1$s · already visible in Android Auto</string>
+    <string name="convert_state_needed">Installed by %1$s · Android Auto will not list it</string>
+    <string name="action_convert">Convert</string>
+    <string name="convert_already_running">A conversion is already running</string>
+    <string name="convert_confirm_title">Convert %1$s?</string>
+    <string name="convert_confirm_message">%1$s will be reinstalled from its own APK so Android Auto recognises it. It is the same app and the same signature, so your data and settings are kept.</string>
+    <string name="convert_confirm_message_split">%1$s will be reinstalled from its own APK files so Android Auto recognises it. It is the same app and the same signature, so your data and settings are kept. This app ships as multiple APKs, which all get reinstalled together.</string>
+    <string name="convert_running">Converting %1$s…</string>
+    <string name="convert_done">%1$s converted — Android Auto will now list it</string>
+    <string name="convert_failed">Conversion failed: %1$s</string>
+    <string name="convert_needs_shizuku_title">Shizuku is required</string>
+    <string name="convert_needs_shizuku_message">Converting an app needs Shizuku running, because only a privileged install can register an app with Android Auto. There is no fallback for this — the normal Android installer cannot set the required attribution.\n\nOpen Shizuku, start the service, and try again.</string>
+
     <!-- Server-Side Download Authorization -->
     <string name="verifying_authorization">Verifying download authorization…</string>
     <string name="authorization_failed">Download authorization failed. Please try again.</string>

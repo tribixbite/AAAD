@@ -1,5 +1,6 @@
 package com.legs.appsforaa
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -71,6 +72,9 @@ class MainActivityNew : AppCompatActivity() {
 
         binding.swipeRefresh.setOnRefreshListener { loadCatalog(userInitiated = true) }
         binding.errorRetry.setOnClickListener { loadCatalog(userInitiated = true) }
+        binding.openConvert.setOnClickListener {
+            startActivity(Intent(this, ConvertActivity::class.java))
+        }
 
         loadCatalog(userInitiated = false)
     }

@@ -115,6 +115,15 @@
             </intent-filter>
         </activity>
 
+        <!-- Convert already-installed apps to Play Store attribution -->
+        <activity
+            android:name=".ConvertActivity"
+            android:screenOrientation="portrait"
+            android:exported="false"
+            android:label="@string/convert_title"
+            android:parentActivityName=".MainActivityNew"
+            android:theme="@style/Theme.AA_Apps_Downloader" />
+
         <!-- Onboarding (T-08), Support (T-09) and the Android Auto setup guide (T-09) are not
              implemented yet. Their entries are omitted rather than declared against classes that
              do not exist: a declared-but-missing component is a crash waiting for whoever first
