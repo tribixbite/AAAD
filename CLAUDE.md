@@ -120,6 +120,7 @@ Two commits are worth knowing about:
 | Doc | What it covers |
 | --- | --- |
 | [docs/aa-visibility.md](docs/aa-visibility.md) | **How an app becomes visible to Android Auto** — the core mechanism, recovered by decompiling the v2.1 release APK. Read before touching install code |
+| [docs/upstream-2.8.5-diff.md](docs/upstream-2.8.5-diff.md) | What upstream changed since the source drop: working in-process signing, on-device package renaming, an install strategy ladder, and an in-app AA head unit emulator |
 | [docs/standalone.md](docs/standalone.md) | The no-server design: what was removed, catalog format, behavioural diff |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Upstream 2.1 architecture + the exact PRO/quota gating mechanism; §10 is this fork's divergence |
 | [TASKS.md](TASKS.md) | Prioritized backlog + decision log. `go` = take the next unchecked task |

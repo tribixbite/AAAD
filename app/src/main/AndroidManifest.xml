@@ -58,8 +58,11 @@
         </intent>
 
         <!-- Declare specific packages we want to detect as installed (Android 11+) -->
-        <!-- CarStream versions -->
-        <package android:name="maps.jaoloonda.android" />
+        <!-- CarStream. Upstream v2.1 (this repo's source drop) had a typo here —
+             "jaoloonda" — so CarStream was never detected as installed. Corrected to the
+             real package name, per upstream v2.8.5 and its catalog. See
+             docs/upstream-2.8.5-diff.md. -->
+        <package android:name="maps.jaoolonda.android" />
 
         <!-- Multimedia apps -->
         <package android:name="me.aap.fermata.auto.dear.google.why" />

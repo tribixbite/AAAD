@@ -58,6 +58,9 @@ Design and rationale: [docs/standalone.md](docs/standalone.md).
   names, which are now all resolved. **Do not copy its `download_url`s**: they point at upstream's
   Firebase Storage bucket with embedded access tokens. Establish each `source` from the
   publisher's own release page instead, and do not invent URLs to fill gaps.
+  **Blocked on T-07** for the mirroring family: use v2.8.5's corrected `package_name` values
+  (`maps.jaoolonda.android`, `android.loandamaps.it`, …), not v2.1's, and settle whether the fork
+  distributes renamed or original builds before writing those entries.
 - [ ] **T-06** Android Auto visibility: **installer attribution, not APK patching.** The mechanism
   is fully recovered — spec in [docs/aa-visibility.md](docs/aa-visibility.md). Implement:
   a Shizuku session install (`pm install-create -i com.android.vending --originating-uri
@@ -66,10 +69,21 @@ Design and rationale: [docs/standalone.md](docs/standalone.md).
   `pm set-installer` repair path plus verification; an honest capability check; and a clear
   message when Shizuku is absent, since AA visibility then genuinely depends on the user enabling
   AA's *Unknown sources*.
-  **Do not** reimplement upstream's repackaging chain — it is dead code (no `apktool` on a stock
-  device; the bundled `apksigner.jar` has no `classes.dex`). No re-signing also means installed
-  apps keep their original publisher signature.
+  **Do not** reimplement upstream's *v2.1* repackaging chain — it is dead code (no `apktool` on a
+  stock device; the bundled `apksigner.jar` has no `classes.dex`). Shape the strategy ladder after
+  v2.8.5's `SmartInstaller`: Shizuku+Play attribution → Shizuku direct → plain `PackageInstaller`,
+  with an honest capability report
+  ([upstream-2.8.5-diff.md](docs/upstream-2.8.5-diff.md#install-is-now-a-strategy-ladder-v)).
   *Done when:* an app installed by this build is listed by Android Auto on the test device.
+- [ ] **T-07** Determine whether the mirroring family needs **package renaming** to be visible to
+  Android Auto. Upstream distributes CarStream as `maps.jaoolonda.android`, Screen2Auto as
+  `android.loandamaps.it`, and the AAMirror/AAStream/AAMirrorPlus family as `maps.*` — v2.1 shipped
+  pre-renamed APKs, v2.8.5 renames on-device (`PackageRenamer` + `ARSCPackageRenamer` over
+  `AndroidManifest.xml` and `resources.arsc`). The *reason* is unverified. This gates T-15: if the
+  fork downloads from the original publishers it gets the publishers' package names.
+  *Done when:* an unrenamed publisher build is installed with correct attribution and we know
+  whether Android Auto lists it. If renaming is required, in-process signing is the proven route —
+  `com.android.apksig.ApkSigner` or `net.fornwall.apksigner.ZipSigner`, no BouncyCastle.
 - [ ] **T-17** Self-update against this fork's own GitHub releases, using `utils/Version.java`.
   Replaces upstream's update check, which pointed at upstream's releases.
 
@@ -86,9 +100,13 @@ a matrix run is impossible against a quota-gated build, and that is now moot.
   `AndroidAutoCompatChecker` is a working model: per package it checks AA meta-data, Play Store
   stamps, **installer source**, and the unknown-source flag
   ([aa-visibility.md](docs/aa-visibility.md#diagnostics-worth-keeping)). Installer source is the
-  cheap high-signal check — `pm` reports it directly. Decide whether that suffices or whether the
-  Desktop Head Unit is needed for ground truth, and write down why. Until then report visibility
-  as `unknown` rather than implying success.
+  cheap high-signal check — `pm` reports it directly. Three ground-truth options now: `dumpsys`
+  against gearhead, the desktop Desktop Head Unit, or an **on-device head unit emulator** —
+  upstream v2.8.5 ships one (`androidauto/HeadUnitEmulator` + ~90 protobuf message types + a
+  `127.0.0.1` proxy), with `forceParkingBrake` / `forceUnrestricted` that would let a harness run
+  unattended without a vehicle
+  ([upstream-2.8.5-diff.md](docs/upstream-2.8.5-diff.md#the-other-headline-an-in-app-android-auto-head-unit)).
+  Decide and write down why. Until then report visibility as `unknown` rather than implying success.
 - [ ] **T-23** Screenshot pipeline honouring this device's constraints: no dimension ≥ 2000 px,
   file < 4 MB, auto-compress, per-run directory.
 - [ ] **T-24** Regression baselines: per-app expected outcomes, diffed each run.
@@ -155,6 +173,15 @@ Append dated entries as decisions are made — this is the fork's decision log.
 - **2026-08-20** — Build toolchain established from `../swype/cleverkeys` (`build-on-termux.sh`,
   env-var signing, CI shape) and `~/git/termux-tools/.claude/skills/android-termux-build.md`.
   Verified on-device: Gradle 8.13 + AGP 8.13.1 configure `:app` successfully.
+- **2026-08-20** — **Diffed upstream v2.8.5 against v2.1** ([docs/upstream-2.8.5-diff.md](docs/upstream-2.8.5-diff.md)).
+  93 → 241 classes. The `pm install-create -i com.android.vending` trick is **unchanged** — the
+  v2.1 spec still describes the current mechanism. What changed: signing now works in-process
+  (`com.android.apksig` / `net.fornwall ZipSigner`) while the dead `dalvikvm` jar is still shipped
+  byte-identical; package renaming moved on-device (`PackageRenamer`/`ARSCPackageRenamer`);
+  `SmartInstaller` formalized the strategy ladder; and upstream added a full **in-app Android Auto
+  head unit emulator** (~100 classes, AA protobuf + TLS), which is a candidate answer for T-22.
+  Also found a real bug our source drop inherited: the `<queries>` CarStream package was
+  `maps.jaoloonda.android` (typo) — corrected to `maps.jaoolonda.android`. Opened T-07.
 - **2026-08-20** — **The Android Auto mechanism is recovered** by decompiling the v2.1 release APK
   (`gh release download v2.1` → baksmali → filtered dex → jadx). It is **installer attribution**,
   not APK patching: a Shizuku `pm install-create -i com.android.vending` session. Upstream's

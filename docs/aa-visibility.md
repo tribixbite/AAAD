@@ -32,8 +32,15 @@ Android Auto surfaces a third-party app only when **both** hold:
 2. **Android Auto trusts the installation** — either AA's developer setting *Unknown sources* is
    enabled, or the package looks like it came from the Play Store.
 
-Point 2 is the whole trick. **AAAD does not patch or re-sign the app. It falsifies the install
-attribution.** Everything else in the codebase that looks like patching is dead (see below).
+Point 2 is the whole trick. **In v2.1, AAAD does not patch or re-sign the app on-device — it
+falsifies the install attribution.** Everything in the v2.1 codebase that looks like patching is
+dead (see below).
+
+> **Scope warning.** That statement is true of **v2.1 only**. Upstream's current **v2.8.5** does
+> rename packages and re-sign, in-process and working. The `pm install-create -i
+> com.android.vending` trick below is unchanged in 2.8.5 and remains the core mechanism, but
+> "no patching" is not a property of upstream in general. See
+> [upstream-2.8.5-diff.md](upstream-2.8.5-diff.md).
 
 ## What actually runs: installer attribution
 
@@ -114,9 +121,11 @@ signature, so Play Protect behaves normally and publisher updates still apply cl
 
 ## Consequences for this fork
 
-- **T-06 does not need APK patching.** No apktool, no manifest rewriting, no stamp injection.
-- **No on-device re-signing**, therefore **no BouncyCastle** — dropped from `app/build.gradle`.
-  Upstream carried `bcpkix`/`bcprov` 1.82 solely for the dead chain.
+- **T-06 does not need the v2.1 patching chain.** No apktool, no stamp injection.
+- **No BouncyCastle** — dropped from `app/build.gradle`; upstream carried `bcpkix`/`bcprov` 1.82
+  solely for the dead chain. If the fork ever does need to re-sign, v2.8.5 shows the working way:
+  in-process `com.android.apksig.ApkSigner` or `net.fornwall.apksigner.ZipSigner`, neither of which
+  needs BouncyCastle ([upstream-2.8.5-diff.md](upstream-2.8.5-diff.md)).
 - What T-06 *does* need: a Shizuku session install with `-i com.android.vending`, a
   `pm set-installer` repair path, an honest capability check, and a clear message when Shizuku is
   unavailable — because in that case AA visibility genuinely depends on the user enabling AA's
