@@ -112,6 +112,24 @@ Design and rationale: [docs/standalone.md](docs/standalone.md).
 - [ ] **T-17** Self-update against this fork's own GitHub releases, using `utils/Version.java`.
   Replaces upstream's update check, which pointed at upstream's releases.
 
+- [x] **T-30a** **Convert installed apps.** `data/InstalledAppScanner` finds installed apps
+  declaring `com.google.android.gms.car.application`, reads each one's installer via
+  `getInstallSourceInfo`, and marks the unattributed ones convertible.
+  `ShizukuInstaller.convertInstalled` re-stages the app's **own** APKs — base plus every split —
+  through an attributed session; same signature, so it is an update over the top and app data
+  survives. `ConvertActivity` confirms first and says so. Conversion has **no fallback** by design:
+  the system installer cannot set attribution, so it says that rather than failing vaguely.
+- [x] **T-31a** **Discover apps on GitHub**, modelled on Obtainium's GitHub source
+  (`~/git/obtainium/lib/app_sources/github.dart`): `/search/repositories`, star floor, archived
+  repos flagged rather than hidden — for AA apps the archived project is often the only working
+  build. `DiscoverActivity` also accepts a pasted repo URL, which is added directly instead of
+  burning one of GitHub's ~10 unauthenticated searches per minute. Added entries live in
+  `UserCatalogStore` and merge into the catalog.
+  A discovered entry has **no package name** — a repo does not advertise one — so `MainActivityNew`
+  learns it from the `PACKAGE_ADDED` broadcast after the first install, which is the only place
+  that fact exists. AA capability is confirmed afterwards by the scanner reading the real manifest,
+  never inferred from a repo description.
+
 ## Phase 3 — Android Auto app testing platform
 
 Design: [docs/testing-harness.md](docs/testing-harness.md). Phase 2 is a hard prerequisite —

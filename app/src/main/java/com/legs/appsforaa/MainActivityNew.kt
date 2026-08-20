@@ -13,6 +13,7 @@ import com.legs.appsforaa.data.AppListItem
 import com.legs.appsforaa.data.Catalog
 import com.legs.appsforaa.data.CatalogRepository
 import com.legs.appsforaa.data.InstallState
+import com.legs.appsforaa.data.UserCatalogStore
 import com.legs.appsforaa.databinding.ActivityMainNewBinding
 import com.legs.appsforaa.receivers.PackageInstallReceiver
 import com.legs.appsforaa.utils.InstallManager
@@ -29,9 +30,12 @@ import kotlinx.coroutines.launch
  * Loads the catalog, resolves each entry against installed packages, and re-resolves whenever
  * [PackageInstallReceiver] reports a package change so the list never goes stale behind the user.
  *
- * Downloading and installing are not implemented here yet — see TASKS.md T-06. Tapping a card's
- * action either launches an installed app or reports that installation is not wired up; it never
- * pretends to have done something.
+ * Tapping a card's action launches an installed app, or downloads and installs one that is not.
+ * The install goes through [InstallManager], which prefers the Play-attributed Shizuku path and
+ * says plainly when it had to fall back to one Android Auto will ignore.
+ *
+ * Two side doors: [ConvertActivity] fixes apps already installed without attribution, and
+ * [DiscoverActivity] adds new ones from GitHub.
  */
 class MainActivityNew : AppCompatActivity() {
 
@@ -43,6 +47,7 @@ class MainActivityNew : AppCompatActivity() {
     private lateinit var repository: CatalogRepository
     private lateinit var adapter: AppListAdapter
     private lateinit var installManager: InstallManager
+    private lateinit var userStore: UserCatalogStore
 
     /** The single in-flight install, if any. */
     private var installJob: Job? = null
@@ -50,7 +55,22 @@ class MainActivityNew : AppCompatActivity() {
     /** Set when the catalog has loaded, so package-change refreshes can skip the network. */
     private var loadedCatalog: Catalog? = null
 
-    private val packageChangeReceiver = PackageInstallReceiver { refreshInstalledState() }
+    private val packageChangeReceiver = PackageInstallReceiver { packageName ->
+        // A discovered entry has no package name until its first install reveals one. The
+        // broadcast is the only place that fact is available, so capture it here.
+        pendingPackageLearnId?.let { entryId ->
+            if (packageName != null) {
+                userStore.learnPackageName(entryId, packageName)
+                pendingPackageLearnId = null
+                loadCatalog(userInitiated = true)
+                return@PackageInstallReceiver
+            }
+        }
+        refreshInstalledState()
+    }
+
+    /** Entry id awaiting a package name from the next PACKAGE_ADDED broadcast. */
+    private var pendingPackageLearnId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,6 +84,7 @@ class MainActivityNew : AppCompatActivity() {
 
         repository = CatalogRepository(applicationContext)
         installManager = InstallManager(applicationContext)
+        userStore = UserCatalogStore(applicationContext)
         ShizukuInstaller.refreshInstalledState(packageManager)
 
         adapter = AppListAdapter(onAction = ::onAppAction)
@@ -74,6 +95,9 @@ class MainActivityNew : AppCompatActivity() {
         binding.errorRetry.setOnClickListener { loadCatalog(userInitiated = true) }
         binding.openConvert.setOnClickListener {
             startActivity(Intent(this, ConvertActivity::class.java))
+        }
+        binding.openDiscover.setOnClickListener {
+            startActivity(Intent(this, DiscoverActivity::class.java))
         }
 
         loadCatalog(userInitiated = false)
@@ -167,6 +191,9 @@ class MainActivityNew : AppCompatActivity() {
         // Shizuku can be started or stopped at any moment, so re-check per attempt. The
         // permission prompt itself is awaited inside InstallManager.
         ShizukuInstaller.refreshInstalledState(packageManager)
+
+        // Remember to capture the package name if this entry does not know its own yet.
+        pendingPackageLearnId = item.entry.id.takeIf { item.entry.packageName.isBlank() }
 
         installJob = lifecycleScope.launch {
             val outcome = installManager.install(item.entry) { progress ->

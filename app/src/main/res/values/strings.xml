@@ -340,6 +340,27 @@
     <string name="convert_needs_shizuku_title">Shizuku is required</string>
     <string name="convert_needs_shizuku_message">Converting an app needs Shizuku running, because only a privileged install can register an app with Android Auto. There is no fallback for this — the normal Android installer cannot set the required attribution.\n\nOpen Shizuku, start the service, and try again.</string>
 
+    <!-- Discovering apps on GitHub -->
+    <string name="discover_title">Find more apps</string>
+    <string name="discover_subtitle">Search GitHub for Android Auto apps, or paste a repository link</string>
+    <string name="discover_open">Find more apps</string>
+    <string name="discover_hint">Search, or paste a GitHub link</string>
+    <string name="discover_prompt">Search for an app, or paste a GitHub repository link to add it directly.</string>
+    <string name="discover_no_results">No repositories matched that search.</string>
+    <string name="discover_failed">Search failed</string>
+    <string name="discover_add">Add</string>
+    <string name="discover_already_added">Added</string>
+    <string name="discover_added">%1$s added to your app list</string>
+    <string name="discover_added_directly">Added from a link</string>
+    <string name="discover_no_description">No description</string>
+    <string name="discover_archived">[Archived] %1$s</string>
+    <string name="discover_stars">★ %1$d</string>
+    <plurals name="discover_results">
+        <item quantity="one">%d repository found</item>
+        <item quantity="other">%d repositories found</item>
+    </plurals>
+    <string name="discover_learned_package">%1$s installs as %2$s</string>
+
     <!-- Server-Side Download Authorization -->
     <string name="verifying_authorization">Verifying download authorization…</string>
     <string name="authorization_failed">Download authorization failed. Please try again.</string>

@@ -17,7 +17,10 @@ import java.util.concurrent.TimeUnit
  * any failure to fetch or parse it falls back to the bundled copy rather than failing the screen.
  * See `docs/standalone.md`.
  */
-class CatalogRepository(private val context: Context) {
+class CatalogRepository(
+    private val context: Context,
+    private val userStore: UserCatalogStore = UserCatalogStore(context),
+) {
 
     private companion object {
         const val TAG = "CatalogRepo"
@@ -39,7 +42,12 @@ class CatalogRepository(private val context: Context) {
      *   is a packaging bug rather than a runtime condition.
      */
     suspend fun loadCatalog(): Catalog = withContext(Dispatchers.IO) {
-        fetchRemoteCatalog() ?: loadBundledCatalog()
+        val base = fetchRemoteCatalog() ?: loadBundledCatalog()
+        val userApps = userStore.load()
+        if (userApps.isEmpty()) return@withContext base
+        // User entries win on id collision: someone who added a repo by hand meant it.
+        val merged = base.apps.filterNot { app -> userApps.any { it.id == app.id } } + userApps
+        base.copy(apps = merged)
     }
 
     private fun loadBundledCatalog(): Catalog {
@@ -77,9 +85,10 @@ class CatalogRepository(private val context: Context) {
     /**
      * Pairs each entry with its on-device state and resolves its description resource.
      *
-     * Available-version comparison is deliberately absent here: it needs a network round trip per
-     * entry and belongs with the download implementation (TASKS.md T-06). Until then an installed
-     * app reports [InstallState.Installed], never [InstallState.UpdateAvailable].
+     * Available-version comparison is deliberately absent here: it would need a network round trip
+     * per entry on every list refresh. Update detection belongs in a background worker
+     * (TASKS.md T-40), so an installed app reports [InstallState.Installed], never
+     * [InstallState.UpdateAvailable], for now.
      */
     fun resolveItems(catalog: Catalog): List<AppListItem> =
         catalog.apps.map { entry ->
@@ -91,6 +100,8 @@ class CatalogRepository(private val context: Context) {
         }
 
     private fun installStateOf(entry: AppEntry): InstallState {
+        // A user-added entry has no package name until its first install teaches us one.
+        if (entry.packageName.isBlank()) return InstallState.NotInstalled
         val installedVersion = installedVersionName(entry.packageName)
             ?: return InstallState.NotInstalled
         return InstallState.Installed(installedVersion)

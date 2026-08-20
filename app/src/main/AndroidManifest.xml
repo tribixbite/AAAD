@@ -115,6 +115,15 @@
             </intent-filter>
         </activity>
 
+        <!-- Find more apps on GitHub -->
+        <activity
+            android:name=".DiscoverActivity"
+            android:screenOrientation="portrait"
+            android:exported="false"
+            android:label="@string/discover_title"
+            android:parentActivityName=".MainActivityNew"
+            android:theme="@style/Theme.AA_Apps_Downloader" />
+
         <!-- Convert already-installed apps to Play Store attribution -->
         <activity
             android:name=".ConvertActivity"

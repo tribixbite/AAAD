@@ -70,7 +70,9 @@ data class AppEntry(
         fun fromJson(json: JSONObject): AppEntry? {
             val id = json.optString("id").ifBlank { return null }
             val name = json.optString("name").ifBlank { return null }
-            val packageName = json.optString("packageName").ifBlank { return null }
+            // Blank is legitimate for a user-added entry: a repo does not advertise its package
+            // name, so it stays empty until the first install teaches us one.
+            val packageName = json.optString("packageName")
             val source = AppSource.fromJson(json.optJSONObject("source")) ?: return null
             return AppEntry(
                 id = id,
