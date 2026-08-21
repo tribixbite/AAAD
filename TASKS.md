@@ -35,7 +35,12 @@ Detail: [docs/build-setup.md](docs/build-setup.md).
   `applicationIdSuffix '.dev'` so dev builds coexist with an official install.
 - [x] **T-16** GitHub Actions: `build-apk.yml` (debug APK, artifact, `dev-<sha>` prerelease,
   **zero secrets required**) and `release.yml` (tag-triggered signed release with
-  `apksigner verify`). Not yet exercised — needs a push, which needs permission.
+  `apksigner verify`).
+  **Exercised 2026-08-21.** First run failed at `dataBindingMergeDependencyArtifactsDebug` —
+  JitPack again (T-19); removing that dependency turned it green. Second run published
+  `dev-34f4ae7`, and the published APK was downloaded and checked: 11 MB,
+  `sksa.aa.customapps.dev`, versionCode 18, compileSdk/targetSdk 36, label "AAAD (dev)".
+  `release.yml` remains unexercised — it needs a `v*` tag and four signing secrets.
 
 ## Phase 2 — Standalone: no server, no gate
 
