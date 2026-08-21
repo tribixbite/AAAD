@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+      Debug-only automation hook. This manifest is merged into debug builds only, so the receiver
+      below cannot reach a release build even by accident — which matters, because it is exported
+      and it installs packages.
+
+      See DebugAutomationReceiver for usage; the test harness (docs/testing-harness.md) drives
+      installs through it rather than simulating taps.
+    -->
+    <application>
+        <receiver
+            android:name="com.legs.appsforaa.debug.DebugAutomationReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.legs.appsforaa.DEBUG_INSTALL" />
+                <action android:name="com.legs.appsforaa.DEBUG_CONVERT" />
+                <action android:name="com.legs.appsforaa.DEBUG_STATUS" />
+            </intent-filter>
+        </receiver>
+    </application>
+
+</manifest>
