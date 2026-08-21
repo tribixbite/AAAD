@@ -60,9 +60,20 @@ Design and rationale: [docs/standalone.md](docs/standalone.md).
 - [ ] **T-08** Onboarding (`OnboardingActivityNew` + the first-run routing seam already present in
   `LauncherActivity`): permissions, Play Protect warning, Shizuku setup. All strings already
   exist in `res/values/strings.xml`. Re-add the manifest entry with the implementation.
-- [ ] **T-09** `SupportActivity` and `AndroidAutoSetupActivity` — the AA developer-settings
-  walkthrough matters more than usual here, because without Shizuku it is the *only* route to
-  Android Auto visibility ([aa-visibility.md](docs/aa-visibility.md)). Strings already exist.
+- [~] **T-09** `AndroidAutoSetupActivity` **done**: the developer-settings walkthrough, with live
+  status for Shizuku and the installed Android Auto version. It leads with whether the user needs
+  the steps at all — if Shizuku is ready it says so rather than sending them through a fiddly
+  manual procedure for nothing — and its entry point on the catalog screen only appears when
+  Shizuku *cannot* provide attribution. Verified on the Saga: *"Shizuku is ready — you do not need
+  these steps. Android Auto 17.3.662874-release is installed"*.
+  Uses `utils/AndroidAutoLauncher`, which **resolves intents instead of naming activities**:
+  upstream's hardcoded `gearhead.vanmoof.VanmoofSettingsActivity` and
+  `setupwizard.DeveloperSettingsActivity` do **not** resolve on the test device (it has
+  `gearhead.vanagon.VnDrivingModeLauncherActivity` and `.frx.SetupActivity`), so a hardcoded class
+  is a silently dead button.
+  It does **not** copy upstream's approach of shell-editing gearhead's `shared_prefs` to flip
+  `unknown_sources_enabled` — that needs root and writes into Google's private app data.
+  *Remaining:* `SupportActivity` (help e-mail with diagnostics; strings already exist).
 - [ ] **T-15** Build the real catalog: `app/src/main/assets/catalog.json` per the schema in
   [standalone.md](docs/standalone.md#catalog-format). Upstream's own catalog (14 apps, with
   package names and categories) is recovered in

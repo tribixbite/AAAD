@@ -99,6 +99,9 @@ class MainActivityNew : AppCompatActivity() {
         binding.openDiscover.setOnClickListener {
             startActivity(Intent(this, DiscoverActivity::class.java))
         }
+        binding.openAaSetup.setOnClickListener {
+            startActivity(Intent(this, AndroidAutoSetupActivity::class.java))
+        }
 
         loadCatalog(userInitiated = false)
     }
@@ -118,6 +121,7 @@ class MainActivityNew : AppCompatActivity() {
         // Covers installs that completed while this activity was backgrounded, which the
         // broadcast receiver misses because it is only registered between onStart and onStop.
         if (loadedCatalog != null) refreshInstalledState()
+        refreshAaSetupVisibility()
     }
 
     private fun loadCatalog(userInitiated: Boolean) {
@@ -137,6 +141,18 @@ class MainActivityNew : AppCompatActivity() {
                 }
             binding.swipeRefresh.isRefreshing = false
         }
+    }
+
+    /**
+     * The Android Auto setup route is only offered when Shizuku cannot do the job.
+     *
+     * Surfacing it unconditionally would push users through a fiddly manual procedure they do not
+     * need — and, worse, imply the app cannot already register installs with Android Auto.
+     */
+    private fun refreshAaSetupVisibility() {
+        ShizukuInstaller.refreshInstalledState(packageManager)
+        val needed = ShizukuInstaller.availability() != ShizukuInstaller.Availability.Ready
+        binding.openAaSetup.visibility = if (needed) View.VISIBLE else View.GONE
     }
 
     /** Re-resolves install state without re-fetching the catalog. */

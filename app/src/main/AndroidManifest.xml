@@ -115,6 +115,15 @@
             </intent-filter>
         </activity>
 
+        <!-- Android Auto developer-settings walkthrough -->
+        <activity
+            android:name=".AndroidAutoSetupActivity"
+            android:screenOrientation="portrait"
+            android:exported="false"
+            android:label="@string/android_auto_setup_title"
+            android:parentActivityName=".MainActivityNew"
+            android:theme="@style/Theme.AA_Apps_Downloader" />
+
         <!-- Find more apps on GitHub -->
         <activity
             android:name=".DiscoverActivity"
@@ -133,8 +142,7 @@
             android:parentActivityName=".MainActivityNew"
             android:theme="@style/Theme.AA_Apps_Downloader" />
 
-        <!-- Onboarding (T-08), Support (T-09) and the Android Auto setup guide (T-09) are not
-             implemented yet. Their entries are omitted rather than declared against classes that
+        <!-- Onboarding (T-08) and Support (T-09) are not implemented yet. Their entries are omitted rather than declared against classes that
              do not exist: a declared-but-missing component is a crash waiting for whoever first
              routes to it. Re-add each alongside its implementation. -->
 

@@ -42,6 +42,60 @@ harness/
 Results as JSONL, one object per (device, app, step) — cheap to append, trivially diffable, and
 directly consumable by the dash ([docs/agent-dash.md](agent-dash.md)).
 
+## T-22 research: what upstream's head unit emulator actually buys
+
+Read out of upstream v2.8.5's `com.legs.appsforaa.androidauto.**` (see
+[upstream-2.8.5-diff.md](upstream-2.8.5-diff.md)). Three findings that change the plan:
+
+**1. There is a supported way to induce a projection session locally.** `AndroidAutoLauncher`
+starts Android Auto's wireless entry point with a host and port:
+
+```
+com.google.android.projection.gearhead/
+  com.google.android.apps.auto.wireless.setup.service.impl.WirelessStartupActivity
+    PARAM_HOST_ADDRESS = 127.0.0.1
+    PARAM_SERVICE_PORT = <local TCP port>
+```
+
+`AndroidAutoProxyService` then listens on `127.0.0.1` and speaks the AA protocol
+(`HeadUnitEmulator`, ~90 protobuf types, `ssl/SSLEngineBuilder`). **Verified on the test device:
+`WirelessStartupActivity` resolves.** So a phone can host its own head unit — no car, no DHU.
+
+**2. But the app list is video, not data.** Android Auto discovers projection apps *locally* via
+PackageManager and renders the launcher into the projected video stream. A head unit — real or
+emulated — receives H.264 frames, not an app list. Emulating the protocol therefore does **not**
+hand you an enumerable list; you would still be reading pixels.
+
+**3. What it does buy is a running gearhead.** The reason nothing is observable today is that AA
+runs no services and caches nothing while idle
+([aa-visibility.md](aa-visibility.md#observability-aas-app-list-needs-a-live-projection-session-v)).
+Inside a session that changes, and `dumpsys` against a live gearhead becomes worth trying.
+
+**So the cheap experiment is worth doing before the expensive one.** Ranked:
+
+| Approach | Cost | What it proves |
+| --- | --- | --- |
+| Induce a session, then `dumpsys` gearhead | low — if a minimal handshake is enough to keep AA connected | possibly the full list, as data |
+| Induce a session, screenshot the projected launcher, OCR | medium | the list, as pixels — brittle across AA redesigns |
+| Desktop Head Unit | medium, needs a desktop host | ground truth, not automatable from this box |
+| Full protocol emulator (upstream's ~100 classes) | high | a session, and nothing more than the two rows above |
+
+The last row is the point: **reimplementing the emulator is not itself the answer to T-22**, it is
+only a means of reaching rows 1–2. Do not start it before checking whether a minimal handshake
+gets AA far enough to populate `dumpsys`.
+
+Also worth knowing, from `AndroidAutoDeveloperModeManager`: upstream flips AA's *Unknown sources*
+by shell-editing `com.google.android.projection.gearhead_preferences.xml` (backup, `sed`, restore)
+under the key `unknown_sources_enabled`. That needs root and writes into Google's private data.
+The fork does not do this — [AndroidAutoSetupActivity](../app/src/main/java/com/legs/appsforaa/AndroidAutoSetupActivity.kt)
+walks the user through four taps instead. **Reading** that key on a rooted device is, however, a
+legitimate harness signal.
+
+**Do not hardcode Android Auto activity names.** Upstream's constants
+(`gearhead.vanmoof.VanmoofSettingsActivity`, `setupwizard.DeveloperSettingsActivity`) **do not
+resolve** on the test device, which uses `gearhead.vanagon.VnDrivingModeLauncherActivity` and
+`.frx.SetupActivity`. Resolve intents instead — a hardcoded class is a silently dead button.
+
 ## The hard part: proving Android Auto sees the app
 
 Install success is easy to assert (`pm list packages`). "Android Auto lists it" is the assertion

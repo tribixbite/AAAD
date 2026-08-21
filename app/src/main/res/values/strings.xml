@@ -340,6 +340,17 @@
     <string name="convert_needs_shizuku_title">Shizuku is required</string>
     <string name="convert_needs_shizuku_message">Converting an app needs Shizuku running, because only a privileged install can register an app with Android Auto. There is no fallback for this — the normal Android installer cannot set the required attribution.\n\nOpen Shizuku, start the service, and try again.</string>
 
+    <!-- Android Auto setup walkthrough -->
+    <string name="aa_setup_open">Android Auto setup</string>
+    <string name="aa_setup_why">Android Auto only lists an app when the install is attributed to the Play Store. Shizuku does that automatically. Without it, the only alternative is to enable \"Unknown sources\" in Android Auto\'s own developer settings.</string>
+    <string name="aa_setup_shizuku_ready">Shizuku is ready — you do not need these steps. Installs from this app are already registered with Android Auto.</string>
+    <string name="aa_setup_shizuku_permission">Shizuku is running but has not been allowed for this app yet. Granting it is easier than the steps below.</string>
+    <string name="aa_setup_shizuku_not_running">Shizuku is installed but not running. Starting it is easier than the steps below.</string>
+    <string name="aa_setup_shizuku_absent">Shizuku is not installed, so these steps are the only way to make sideloaded apps visible in Android Auto.</string>
+    <string name="aa_setup_aa_version">Android Auto %1$s is installed</string>
+    <string name="aa_setup_aa_missing">Android Auto is not installed on this device</string>
+    <string name="aa_setup_install_aa">Get Android Auto</string>
+
     <!-- Discovering apps on GitHub -->
     <string name="discover_title">Find more apps</string>
     <string name="discover_subtitle">Search GitHub for Android Auto apps, or paste a repository link</string>
