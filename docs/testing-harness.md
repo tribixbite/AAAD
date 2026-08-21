@@ -98,9 +98,47 @@ this device.** It has no `com.google.android.projection.gearhead_preferences.xml
 decline to start a wireless session at all, which is consistent with it tearing down immediately
 rather than erroring.
 
-So the next step for T-22 is **not** more code: complete Android Auto's first-run setup on the
-test device once, then re-run the probe above. Only if AA then connects does the question of how
-much protocol to implement arise.
+Repeated on the **paired** S25U (Android Auto 17.3, first-run setup complete, three gearhead
+processes resident) and it fails differently — and more usefully:
+
+```
+java.lang.SecurityException: Permission Denial: starting Intent { ...WirelessStartupActivity }
+  from null (pid=…, uid=2000) not exported from uid 10258
+```
+
+**`WirelessStartupActivity` is not exported.** Shell (uid 2000) cannot start it, and neither can
+Shizuku, which *is* uid 2000. Only root can — which is why the same command was accepted on the
+rooted Saga. Nor can a third-party app, so upstream's `AndroidAutoLauncher` cannot be doing this
+on an ordinary device either.
+
+That leaves the two test phones each holding exactly one half of the precondition:
+
+| | Android Auto set up | root |
+| --- | --- | --- |
+| Saga | ✗ (no prefs, no `databases/`) | ✓ |
+| S25U | ✓ paired | ✗ |
+
+### The route that needs neither: the head unit server
+
+Android Auto's developer settings include **"Start head unit server"**, which opens the Desktop
+Head Unit port — conventionally **5277** — and waits for a client. That is the supported entry
+point the DHU itself uses, it is reached by a *user-toggled setting* rather than a privileged
+intent, and it therefore needs **no root and no exported activity**.
+
+Checked on the paired S25U: nothing is listening on 5277 today, so the setting is off. Turning it
+on is a manual step ([AndroidAutoSetupActivity](../app/src/main/java/com/legs/appsforaa/AndroidAutoSetupActivity.kt)
+already walks a user into AA's developer settings), after which:
+
+```bash
+adb forward tcp:5277 tcp:5277     # then connect a client and see how far the handshake gets
+```
+
+**This is the T-22 route to pursue.** It removes the root requirement that blocked both devices,
+and it is the same socket a real head unit uses — so whatever protocol work turns out to be
+necessary is work against a documented target rather than a reverse-engineered one.
+
+*Unverified:* that this AA build opens 5277 specifically when that setting is enabled. Confirm by
+toggling it and re-checking `/proc/net/tcp` before building anything against it.
 
 **So the cheap experiment is worth doing before the expensive one.** Ranked:
 

@@ -177,6 +177,18 @@ a matrix run is impossible against a quota-gated build, and that is now moot.
   `127.0.0.1` proxy), with `forceParkingBrake` / `forceUnrestricted` that would let a harness run
   unattended without a vehicle
   ([upstream-2.8.5-diff.md](docs/upstream-2.8.5-diff.md#the-other-headline-an-in-app-android-auto-head-unit)).
+  **Route identified — the head unit server, not the emulator.** Two probes narrowed it:
+  `WirelessStartupActivity` is **not exported**, so shell (uid 2000) cannot start it and neither
+  can Shizuku, which is the same uid — only root can, which is why the rooted Saga accepted the
+  intent and the unrooted S25U refused it. The two phones hold one half each of the precondition:
+  the Saga has root but Android Auto was never set up (it tears the session down immediately);
+  the S25U is paired but unrooted.
+  Android Auto's **"Start head unit server"** developer setting sidesteps both — it opens the
+  Desktop Head Unit port (conventionally 5277) via a user-toggled setting, needing no root and no
+  exported activity, and it is the same socket a real head unit uses. Nothing listens on 5277 on
+  the S25U today, so the setting is off.
+  *Next:* enable it on the paired S25U, confirm 5277 opens, `adb forward tcp:5277 tcp:5277`, and
+  see how far a client gets. Only then does the question of how much protocol to implement arise.
   **Investigated and confirmed blocked**: on a rooted device, gearhead has no `databases/` at all
   and `shared_prefs/carservice.xml` is 424 bytes of unrelated tuning constants — no app list, no
   `unknown_sources` flag. AA caches nothing until it has projected, which rules out any idle-phone
