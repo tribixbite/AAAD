@@ -13,8 +13,8 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        // BottomDialogs (com.github.iGio90) is only published on JitPack.
-        maven { url = 'https://jitpack.io' }
+        // No JitPack: the only dependency that needed it was BottomDialogs, removed in T-19.
+        // Re-adding it means re-adding a build that can fail on someone else's CI capacity.
     }
 }
 

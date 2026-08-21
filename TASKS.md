@@ -208,7 +208,7 @@ Design: [docs/agent-dash.md](docs/agent-dash.md).
   worth pursuing — it is a cosmetic countdown and the fork has no gate.
 - [ ] **T-18** Prune the now-unreferenced PRO/payment strings across `res/values*`. Deliberately
   deferred: it churns 30 locale files for no functional gain.
-- [ ] **T-19** Vendor BottomDialogs and drop the JitPack dependency. It has now broken the build
+- [x] **T-19** Vendor BottomDialogs and drop the JitPack dependency. It has now broken the build
   twice:
   1. `master-SNAPSHOT` is an unpinnable moving snapshot — JitPack read timeout under load. Pinning
      to the commit coordinate `95b945247b` is worse: JitPack builds it on demand, >2 min and
@@ -224,8 +224,11 @@ Design: [docs/agent-dash.md](docs/agent-dash.md).
   `sheet_hide.xml`; styles `BottomDialogs`, `BottomDialogsAnimation`, `Button(.Base)`,
   `Button.Flat(.Base)`; colors `colorPrimary`, `colorPrimaryDark`, `flat_pressed`; the `btn_*`
   dimens. Then repoint `BottomDialog.java` / `UtilsLibrary.java` at `com.legs.appsforaa.R`.
-  Do this if T-04 keeps using BottomDialog; delete both files if it does not.
-  *Done when:* the build resolves no JitPack artifact and `settings.gradle` drops the repo.
+  **Resolved by deletion, not vendoring.** `utils/BottomDialog` and `utils/UtilsLibrary`
+  referenced only each other — nothing in the app used them — so both were deleted along with the
+  dependency and the JitPack repository. Upstream v2.8.5 dropped BottomDialogs too.
+  Trigger was a third failure: after the read timeout and the support-compat collision, it broke
+  **CI** outright (`Repository maven is disabled ... Could not GET ... jitpack`).
 
 ---
 

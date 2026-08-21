@@ -142,15 +142,6 @@ dependencies {
 
     // UI
     implementation 'com.github.bumptech.glide:glide:5.0.5'
-    // Used by utils/BottomDialog, which vendors the library's Java and needs only its
-    // resources. The AAR predates AndroidX and pulls com.android.support:support-compat:27.0.2,
-    // which collides with androidx.core (duplicate android.support.v4.* classes). The app is
-    // AndroidX-only and never touches the AAR's own classes, so the transitive is excluded
-    // rather than enabling the deprecated Jetifier. Vendoring the resources and dropping this
-    // dependency outright is TASKS.md T-19.
-    implementation('com.github.iGio90:BottomDialogs:master-SNAPSHOT') {
-        exclude group: 'com.android.support'
-    }
 
     // Silent install on Android 14+ without root
     def shizuku_version = "13.1.5"
@@ -158,6 +149,12 @@ dependencies {
     implementation "dev.rikka.shizuku:provider:$shizuku_version"
 
     // REMOVED for the standalone fork (see docs/standalone.md):
+    //   com.github.iGio90:BottomDialogs (JitPack)          — T-19. An unpinnable
+    //     master-SNAPSHOT that broke the build three times: a JitPack read timeout, a
+    //     pre-AndroidX support-compat collision, and finally a CI failure resolving it at all.
+    //     utils/BottomDialog and utils/UtilsLibrary referenced only each other — dead code
+    //     inherited from the source drop — so both were deleted with it. Upstream v2.8.5
+    //     dropped BottomDialogs too.
     //   org.bouncycastle bcpkix/bcprov 1.82                — on-device APK re-signing
     //     Upstream carried these only for ApkRepackager/ApkSigner/BundledApkSigner, a chain that
     //     cannot execute on a stock device: the bundled apksigner.jar has no classes.dex, so
