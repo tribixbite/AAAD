@@ -14,11 +14,14 @@ import { describeDevice, resolveSerial, type DeviceInfo } from "./adb.ts";
 import { install, installerOf, isPlayAttributed, status, APP_ID } from "./app.ts";
 import { allIds, packageNameFor } from "./catalog.ts";
 import { capture, launch } from "./capture.ts";
+import * as baseline from "./baseline.ts";
 
 interface Options {
   host?: string;
   apps?: string[];
   serial?: string;
+  /** Write this run's outcomes over the device's baseline. */
+  accept?: boolean;
 }
 
 function parseArgs(argv: string[]): { command: string; options: Options } {
@@ -31,6 +34,7 @@ function parseArgs(argv: string[]): { command: string; options: Options } {
     if (key === "--host") options.host = value;
     if (key === "--apps") options.apps = value.split(",").map((s) => s.trim()).filter(Boolean);
     if (key === "--serial") options.serial = value;
+    if (key === "--accept") options.accept = value !== "false";
   }
   return { command, options };
 }
@@ -158,7 +162,43 @@ async function cmdMatrix(options: Options): Promise<void> {
 
   await Bun.write(resultsPath, lines.join("\n") + "\n");
   console.log(`\n${lines.length} result(s) -> ${resultsPath}`);
-  console.log("androidAutoVisible is 'unknown' by design — see docs/aa-visibility.md (T-22).");
+
+  // Compare against what this device did last time. A run that only records results answers
+  // "what happened"; the baseline answers "what changed", which is the question between runs.
+  const entries: baseline.BaselineEntry[] = lines
+    .map((line) => JSON.parse(line))
+    .map((record) => ({
+      appId: record.appId,
+      outcome: record.outcome,
+      playAttributed: record.playAttributed,
+    }));
+  const previous = await baseline.load(device.model);
+  const changes = baseline.diff(previous, entries);
+
+  if (!previous) {
+    console.log(`\nNo baseline for ${device.model} yet — re-run with --accept true to record one.`);
+  } else if (changes.length === 0) {
+    console.log(`\nNo change against the ${device.model} baseline.`);
+  } else {
+    console.log(`\n${changes.length} change(s) against the ${device.model} baseline:`);
+    for (const change of changes) console.log(`  ${baseline.describe(change)}`);
+  }
+
+  if (options.accept) {
+    const written = await baseline.save({
+      device: device.serial,
+      model: device.model,
+      sdk: device.sdk,
+      updated: startedAt,
+      entries,
+    });
+    console.log(`Baseline updated -> ${written}`);
+  }
+
+  console.log("\nandroidAutoVisible is 'unknown' by design — see docs/aa-visibility.md (T-22).");
+
+  // A regression is the reason this exists; make it visible to a shell, not just to a reader.
+  if (changes.some((change) => change.kind === "broken")) process.exitCode = 1;
 }
 
 const { command, options } = parseArgs(Bun.argv.slice(2));

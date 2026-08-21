@@ -8,7 +8,8 @@
     "devices": "bun run src/cli.ts devices",
     "status": "bun run src/cli.ts status",
     "matrix": "bun run src/cli.ts matrix",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
   },
   "devDependencies": {
     "@types/bun": "latest",

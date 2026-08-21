@@ -71,6 +71,37 @@ runs no services and caches nothing while idle
 ([aa-visibility.md](aa-visibility.md#observability-aas-app-list-needs-a-live-projection-session-v)).
 Inside a session that changes, and `dumpsys` against a live gearhead becomes worth trying.
 
+### The cheap experiment, attempted [V]
+
+Run on the Saga: a `toybox nc -l -p <port>` listener on `127.0.0.1`, then
+
+```
+su -c "am start -n com.google.android.projection.gearhead/\
+com.google.android.apps.auto.wireless.setup.service.impl.WirelessStartupActivity \
+  --es PARAM_HOST_ADDRESS 127.0.0.1 --ei PARAM_SERVICE_PORT <port>"
+```
+
+Result: **the intent is accepted, but Android Auto never dials out.** Zero bytes reached the
+listener, focus never moved to AA, and its own logs show the setup service starting and
+immediately tearing down:
+
+```
+CAR.SERVICE.USBMON.LITE: Stopped USB monitor
+CAR.SETUP.SERVICE.LITE:  quit handler thread
+```
+
+Note `am start` without `su` is rejected outright — the activity is not exported.
+
+**The missing precondition is that Android Auto has never completed its own first-run setup on
+this device.** It has no `com.google.android.projection.gearhead_preferences.xml` and no
+`databases/` at all. A freshly-installed AA that has never been paired with a car appears to
+decline to start a wireless session at all, which is consistent with it tearing down immediately
+rather than erroring.
+
+So the next step for T-22 is **not** more code: complete Android Auto's first-run setup on the
+test device once, then re-run the probe above. Only if AA then connects does the question of how
+much protocol to implement arise.
+
 **So the cheap experiment is worth doing before the expensive one.** Ranked:
 
 | Approach | Cost | What it proves |

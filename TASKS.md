@@ -191,9 +191,19 @@ a matrix run is impossible against a quota-gated build, and that is now moot.
   rather than failing a run whose real assertions do not need pixels.
   Launches `LauncherActivity`, not `MainActivityNew`: `am start` rejects the latter, and routing
   through the real entry point is what a user does anyway.
-- [ ] **T-24** Regression baselines: per-app expected outcomes, diffed each run.
-- [ ] **T-25** Instrumented/unit tests for what is worth pinning: `Version` comparator, catalog
-  parsing, install-state detection.
+- [x] **T-24** Regression baselines: `harness/src/baseline.ts`, one per **device model** (serials
+  rotate, models do not), holding only what should stay stable — outcome and Play attribution, not
+  timings or paths. `matrix` diffs every run against it, `--accept true` records one, and a
+  `broken` change sets a non-zero exit so a shell notices and not just a reader.
+  `broken` is kept deliberately narrow — *was* Play-attributed, now is not — so the regression this
+  project exists to catch does not get lost among version bumps.
+  Verified on the Saga: first run recorded `baselines/Saga.json`, second reported "No change".
+- [~] **T-25** Tests. `harness/src/baseline.test.ts` covers the comparator (8 tests, `bun test`) —
+  it decides whether a run is called a regression, so a false green hides the exact breakage the
+  harness exists to catch and a false red trains people to ignore it. It is pure logic, so there
+  was no excuse. Cases include the two that matter most: an outcome change that *keeps* attribution
+  must not read as broken, and a repeated failure must not masquerade as new breakage.
+  *Remaining:* app-side tests for the `Version` comparator and catalog parsing.
 
 ## Phase 4 — Agent dash
 

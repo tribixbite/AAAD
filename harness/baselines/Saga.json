@@ -1,0 +1,13 @@
+{
+  "device": "192.168.1.243:5555",
+  "model": "Saga",
+  "sdk": 33,
+  "updated": "2026-08-21T17-40-23-718Z",
+  "entries": [
+    {
+      "appId": "n2c",
+      "outcome": "attributed",
+      "playAttributed": true
+    }
+  ]
+}
