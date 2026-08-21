@@ -30,6 +30,12 @@
         <item name="colorSurfaceInverse">@color/md_theme_light_inverseSurface</item>
         <item name="colorOnSurfaceInverse">@color/md_theme_light_inverseOnSurface</item>
         <item name="colorPrimaryInverse">@color/md_theme_light_inversePrimary</item>
+        <!-- Edge-to-edge: activities call WindowCompat.setDecorFitsSystemWindows(false)
+             and pad for insets themselves, so the bars must not paint their own
+             background. Without this the status bar renders in colorPrimary and sits as
+             a bright band above a dark screen. -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
     </style>
 
     <!-- Dynamic Color Theme for Android 12+ -->
@@ -72,6 +78,7 @@
         <item name="colorPrimary">#FFFFFF</item>
         <item name="colorPrimaryDark">#FFFFFF</item>
         <item name="android:windowLightStatusBar">true</item>
+
         <item name="titleTextColor">#000000</item>
         <item name="actionBarTheme">@style/MyActionBarTheme</item>
     </style>

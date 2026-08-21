@@ -2,6 +2,7 @@ package com.legs.appsforaa
 
 import android.os.Bundle
 import android.view.View
+import android.view.KeyEvent
 import android.view.inputmethod.EditorInfo
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -69,13 +70,26 @@ class DiscoverActivity : AppCompatActivity() {
         binding.repoList.layoutManager = LinearLayoutManager(this)
         binding.repoList.adapter = adapter
 
-        binding.queryInput.setOnEditorActionListener { _, actionId, _ ->
-            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+        // Do not key off IME_ACTION_SEARCH alone. Keyboards disagree about what they send for a
+        // single-line field — Gboard here delivers a plain ENTER rather than the declared action,
+        // which silently did nothing. Accept any commit-ish action, plus a real ENTER key.
+        binding.queryInput.setOnEditorActionListener { _, actionId, event ->
+            val committed = actionId == EditorInfo.IME_ACTION_SEARCH ||
+                actionId == EditorInfo.IME_ACTION_DONE ||
+                actionId == EditorInfo.IME_ACTION_GO ||
+                actionId == EditorInfo.IME_ACTION_UNSPECIFIED ||
+                (event?.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN)
+            if (committed) {
                 runSearch(binding.queryInput.text?.toString().orEmpty())
-                true
-            } else {
-                false
+                hideKeyboard()
             }
+            committed
+        }
+
+        // The keyboard is not the only way in: an explicit button never depends on IME behaviour.
+        binding.searchButton.setOnClickListener {
+            runSearch(binding.queryInput.text?.toString().orEmpty())
+            hideKeyboard()
         }
     }
 
@@ -149,6 +163,11 @@ class DiscoverActivity : AppCompatActivity() {
 
     private fun idFor(repo: RepoResult): String =
         "gh:" + repo.fullName.lowercase()
+
+    private fun hideKeyboard() {
+        val imm = getSystemService(android.view.inputmethod.InputMethodManager::class.java)
+        imm?.hideSoftInputFromWindow(binding.queryInput.windowToken, 0)
+    }
 
     private fun showLoading(loading: Boolean) {
         binding.loading.visibility = if (loading) View.VISIBLE else View.GONE

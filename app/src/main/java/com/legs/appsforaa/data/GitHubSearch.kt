@@ -78,7 +78,11 @@ class GitHubSearch(
                     add(
                         RepoResult(
                             fullName = fullName,
-                            description = item.optString("description").ifBlank { "" },
+                            // isNull() first: org.json's optString returns the literal string
+                            // "null" for a JSON null, and GitHub sends null for repos with no
+                            // description — which rendered as a card reading "null".
+                            description = if (item.isNull("description")) ""
+                            else item.optString("description"),
                             stars = stars,
                             archived = item.optBoolean("archived"),
                             htmlUrl = item.optString("html_url"),

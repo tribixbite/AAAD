@@ -348,6 +348,7 @@
     <string name="discover_prompt">Search for an app, or paste a GitHub repository link to add it directly.</string>
     <string name="discover_no_results">No repositories matched that search.</string>
     <string name="discover_failed">Search failed</string>
+    <string name="discover_search">Search</string>
     <string name="discover_add">Add</string>
     <string name="discover_already_added">Added</string>
     <string name="discover_added">%1$s added to your app list</string>
