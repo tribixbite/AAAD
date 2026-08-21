@@ -13,10 +13,12 @@ import { mkdir } from "node:fs/promises";
 import { describeDevice, resolveSerial, type DeviceInfo } from "./adb.ts";
 import { install, installerOf, isPlayAttributed, status, APP_ID } from "./app.ts";
 import { allIds, packageNameFor } from "./catalog.ts";
+import { capture, launch } from "./capture.ts";
 
 interface Options {
   host?: string;
   apps?: string[];
+  serial?: string;
 }
 
 function parseArgs(argv: string[]): { command: string; options: Options } {
@@ -28,15 +30,23 @@ function parseArgs(argv: string[]): { command: string; options: Options } {
     if (!value) continue;
     if (key === "--host") options.host = value;
     if (key === "--apps") options.apps = value.split(",").map((s) => s.trim()).filter(Boolean);
+    if (key === "--serial") options.serial = value;
   }
   return { command, options };
 }
 
 async function requireDevice(options: Options): Promise<DeviceInfo> {
-  const serial = await resolveSerial(options.host);
+  let serial: string | null;
+  try {
+    serial = await resolveSerial(options.host, options.serial);
+  } catch (error) {
+    console.error((error as Error).message);
+    process.exit(1);
+  }
   if (!serial) {
     console.error(
-      "No device. Connect one, or pass --host <ip> to rescan a rotated wireless-debugging port.",
+      "No device. Connect one, pass --serial <serial>, or --host <ip> to rescan a rotated " +
+        "wireless-debugging port.",
     );
     process.exit(1);
   }
@@ -111,6 +121,20 @@ async function cmdMatrix(options: Options): Promise<void> {
     const packageName = await packageNameFor(appId);
     const installer = packageName ? await installerOf(device.serial, packageName) : null;
 
+    // Visual evidence of what the run actually produced. Captured after the install so the
+    // catalog card shows its resulting state, and recorded as null when the screen was off or
+    // locked rather than failing a run whose real assertions do not need pixels.
+    // LauncherActivity, not MainActivityNew: it is the real MAIN/LAUNCHER entry point and the
+    // one `am start` will accept, and routing through it is what a user actually does.
+    const foreground = await launch(
+      device.serial,
+      `${APP_ID}/com.legs.appsforaa.LauncherActivity`,
+      APP_ID,
+    );
+    const shot = foreground
+      ? await capture(device.serial, `${runDir}/screenshots`, appId)
+      : null;
+
     const record = {
       startedAt,
       device: device.serial,
@@ -123,9 +147,13 @@ async function cmdMatrix(options: Options): Promise<void> {
       installer,
       playAttributed: isPlayAttributed(installer),
       androidAutoVisible: "unknown",
+      screenshot: shot ? `screenshots/${appId}.png` : null,
     };
     lines.push(JSON.stringify(record));
-    console.log(`${outcome.kind}${installer ? ` (installer=${installer})` : ""}`);
+    console.log(
+      `${outcome.kind}${installer ? ` (installer=${installer})` : ""}` +
+        `${shot ? ` [${shot.width}x${shot.height}]` : foreground ? " [no screenshot]" : " [app never focused]"}`,
+    );
   }
 
   await Bun.write(resultsPath, lines.join("\n") + "\n");

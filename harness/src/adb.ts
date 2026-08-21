@@ -65,11 +65,28 @@ export async function onlineSerials(): Promise<string[]> {
  * Finds a usable serial, rescanning `host` for a rotated wireless-debugging port if none is
  * online. Returns null when nothing answers.
  *
+ * **Throws when several devices are online and none was named.** Picking the first would be a
+ * coin flip about which phone gets software installed on it — and it silently did exactly that
+ * once, running against the wrong handset because a second one rejoined the network mid-session.
+ *
  * @param host dotted IP to rescan. Skipped entirely when omitted, since a port scan is slow.
+ * @param wanted exact serial to use, bypassing both the ambiguity check and the rescan.
  */
-export async function resolveSerial(host?: string): Promise<string | null> {
+export async function resolveSerial(host?: string, wanted?: string): Promise<string | null> {
   const online = await onlineSerials();
-  if (online.length > 0) return online[0];
+  if (wanted) {
+    if (online.includes(wanted)) return wanted;
+    // Named but absent: try connecting to it directly before giving up.
+    await adb(["connect", wanted], 10_000);
+    return (await onlineSerials()).includes(wanted) ? wanted : null;
+  }
+  if (online.length > 1) {
+    throw new Error(
+      `${online.length} devices are connected (${online.join(", ")}). ` +
+        `Pass --serial <serial> — refusing to guess which phone to install onto.`,
+    );
+  }
+  if (online.length === 1) return online[0];
   if (!host) return null;
 
   // Stale offline entries for this host shadow a good connection; drop them first.

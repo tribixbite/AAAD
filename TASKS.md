@@ -154,7 +154,9 @@ Design and rationale: [docs/standalone.md](docs/standalone.md).
 Design: [docs/testing-harness.md](docs/testing-harness.md). Phase 2 is a hard prerequisite —
 a matrix run is impossible against a quota-gated build, and that is now moot.
 
-- [x] **T-20** `harness/` (TypeScript, bun): `adb.ts` (device resolution + rotated-port rescan),
+- [x] **T-20** `harness/` (TypeScript, bun): `adb.ts` (device resolution + rotated-port rescan;
+  **refuses to guess** when several devices are online — it silently ran against the wrong phone
+  once when a second handset rejoined the network, so `--serial` is required in that case),
   `app.ts` (drives the debug automation hook, parses `RESULT=` verdicts), `catalog.ts`,
   `cli.ts` (`devices` | `status` | `matrix`). Results as JSONL, one object per (device, app).
   Verified against the Saga.
@@ -180,8 +182,15 @@ a matrix run is impossible against a quota-gated build, and that is now moot.
   `unknown_sources` flag. AA caches nothing until it has projected, which rules out any idle-phone
   probe. Real options remain a car, the desktop DHU, or an emulated head unit (upstream 2.8.5
   ships one). The harness reports `androidAutoVisible: "unknown"` rather than guessing.
-- [ ] **T-23** Screenshot pipeline honouring this device's constraints: no dimension ≥ 2000 px,
-  file < 4 MB, auto-compress, per-run directory.
+- [x] **T-23** Screenshot pipeline: `harness/src/capture.ts` downscales to a 1400 px long edge
+  before anything lands on disk (a native 1080x2400 capture already exceeds the 2000 px read
+  limit), writes to `runs/<ts>/screenshots/`, and records the path in each JSONL row.
+  Two refusals, both from things that actually happened: it verifies the app **took focus** before
+  capturing — the first run screenshotted the launcher, which is misleading evidence rather than
+  missing evidence — and it treats a 0-byte capture (screen off or locked) as "no screenshot"
+  rather than failing a run whose real assertions do not need pixels.
+  Launches `LauncherActivity`, not `MainActivityNew`: `am start` rejects the latter, and routing
+  through the real entry point is what a user does anyway.
 - [ ] **T-24** Regression baselines: per-app expected outcomes, diffed each run.
 - [ ] **T-25** Instrumented/unit tests for what is worth pinning: `Version` comparator, catalog
   parsing, install-state detection.
