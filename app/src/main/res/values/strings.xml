@@ -340,6 +340,15 @@
     <string name="convert_needs_shizuku_title">Shizuku is required</string>
     <string name="convert_needs_shizuku_message">Converting an app needs Shizuku running, because only a privileged install can register an app with Android Auto. There is no fallback for this — the normal Android installer cannot set the required attribution.\n\nOpen Shizuku, start the service, and try again.</string>
 
+    <!-- Diagnostics -->
+    <string name="diagnostics_title">Diagnostics</string>
+    <string name="diagnostics_subtitle">The state that decides whether Android Auto lists an app</string>
+    <string name="diagnostics_open">Diagnostics</string>
+    <string name="diagnostics_copy">Copy</string>
+    <string name="diagnostics_share">Share</string>
+    <string name="diagnostics_copied">Diagnostics copied</string>
+    <string name="diagnostics_no_target">No app available to share to</string>
+
     <!-- Android Auto setup walkthrough -->
     <string name="aa_setup_open">Android Auto setup</string>
     <string name="aa_setup_why">Android Auto only lists an app when the install is attributed to the Play Store. Shizuku does that automatically. Without it, the only alternative is to enable \"Unknown sources\" in Android Auto\'s own developer settings.</string>

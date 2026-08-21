@@ -115,6 +115,15 @@
             </intent-filter>
         </activity>
 
+        <!-- Diagnostics -->
+        <activity
+            android:name=".SupportActivity"
+            android:screenOrientation="portrait"
+            android:exported="false"
+            android:label="@string/diagnostics_title"
+            android:parentActivityName=".MainActivityNew"
+            android:theme="@style/Theme.AA_Apps_Downloader" />
+
         <!-- Android Auto developer-settings walkthrough -->
         <activity
             android:name=".AndroidAutoSetupActivity"
@@ -142,7 +151,7 @@
             android:parentActivityName=".MainActivityNew"
             android:theme="@style/Theme.AA_Apps_Downloader" />
 
-        <!-- Onboarding (T-08) and Support (T-09) are not implemented yet. Their entries are omitted rather than declared against classes that
+        <!-- Onboarding (T-08) is not implemented yet. Their entries are omitted rather than declared against classes that
              do not exist: a declared-but-missing component is a crash waiting for whoever first
              routes to it. Re-add each alongside its implementation. -->
 

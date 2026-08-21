@@ -102,6 +102,9 @@ class MainActivityNew : AppCompatActivity() {
         binding.openAaSetup.setOnClickListener {
             startActivity(Intent(this, AndroidAutoSetupActivity::class.java))
         }
+        binding.openDiagnostics.setOnClickListener {
+            startActivity(Intent(this, SupportActivity::class.java))
+        }
 
         loadCatalog(userInitiated = false)
     }

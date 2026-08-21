@@ -60,7 +60,7 @@ Design and rationale: [docs/standalone.md](docs/standalone.md).
 - [ ] **T-08** Onboarding (`OnboardingActivityNew` + the first-run routing seam already present in
   `LauncherActivity`): permissions, Play Protect warning, Shizuku setup. All strings already
   exist in `res/values/strings.xml`. Re-add the manifest entry with the implementation.
-- [~] **T-09** `AndroidAutoSetupActivity` **done**: the developer-settings walkthrough, with live
+- [x] **T-09** `AndroidAutoSetupActivity` **done**: the developer-settings walkthrough, with live
   status for Shizuku and the installed Android Auto version. It leads with whether the user needs
   the steps at all — if Shizuku is ready it says so rather than sending them through a fiddly
   manual procedure for nothing — and its entry point on the catalog screen only appears when
@@ -73,7 +73,12 @@ Design and rationale: [docs/standalone.md](docs/standalone.md).
   is a silently dead button.
   It does **not** copy upstream's approach of shell-editing gearhead's `shared_prefs` to flip
   `unknown_sources_enabled` — that needs root and writes into Google's private app data.
-  *Remaining:* `SupportActivity` (help e-mail with diagnostics; strings already exist).
+  `SupportActivity` **done**, but as a **diagnostics** screen rather than upstream's "email
+  help.aaad@gmail.com": there is no support team behind a personal build, and sending upstream
+  reports about a modified app would waste their time. `utils/Diagnostics` collects device, app,
+  Shizuku, Android Auto, catalog and per-app installer attribution as plain text, with copy and
+  share. Every field earned its place by having been the answer to a real question during
+  development. Verified on the Saga.
 - [ ] **T-15** Build the real catalog: `app/src/main/assets/catalog.json` per the schema in
   [standalone.md](docs/standalone.md#catalog-format). Upstream's own catalog (14 apps, with
   package names and categories) is recovered in

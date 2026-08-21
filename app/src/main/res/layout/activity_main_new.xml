@@ -74,16 +74,33 @@
 
             </LinearLayout>
 
-            <!-- Shown only when Shizuku cannot provide Play attribution, because that is the
-                 only situation in which the manual Android Auto route is worth the user's time. -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/open_aa_setup"
-                style="@style/Widget.Material3.Button.TonalButton"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="@string/aa_setup_open"
-                android:visibility="gone" />
+                android:orientation="horizontal">
+
+                <!-- Shown only when Shizuku cannot provide Play attribution, because that is the
+                     only situation in which the manual Android Auto route is worth the time. -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/open_aa_setup"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="6dp"
+                    android:text="@string/aa_setup_open"
+                    android:visibility="gone" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/open_diagnostics"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="@string/diagnostics_open" />
+
+            </LinearLayout>
 
         </LinearLayout>
 
