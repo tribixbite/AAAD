@@ -1,0 +1,17 @@
+{
+  "name": "aaad-harness",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Drives AAAD across devices over adb: install, verify attribution, record results.",
+  "scripts": {
+    "devices": "bun run src/cli.ts devices",
+    "status": "bun run src/cli.ts status",
+    "matrix": "bun run src/cli.ts matrix",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.6.0"
+  }
+}

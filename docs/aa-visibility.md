@@ -270,6 +270,11 @@ adb shell "dumpsys activity service com.google.android.projection.gearhead"
 adb shell "settings get global car_developer_settings_enabled"   # null
 ```
 
+Confirmed a second way on a **rooted** device, where the on-disk state is readable:
+`/data/data/com.google.android.projection.gearhead/` has no `databases/` at all, and
+`shared_prefs/carservice.xml` is 424 bytes of unrelated tuning constants — no app list, no
+`unknown_sources` flag. AA caches nothing about installable apps until it has actually projected.
+
 Gearhead runs no services until a head unit connects, so **there is no way to read AA's app list
 on an idle phone.** The question "does Android Auto list this app" is only answerable inside a
 projection session — a real car, the desktop Desktop Head Unit, or an emulated head unit.

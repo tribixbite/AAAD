@@ -133,13 +133,17 @@ Design and rationale: [docs/standalone.md](docs/standalone.md).
 Design: [docs/testing-harness.md](docs/testing-harness.md). Phase 2 is a hard prerequisite —
 a matrix run is impossible against a quota-gated build, and that is now moot.
 
-- [ ] **T-20** `harness/` skeleton (TypeScript, bun): device discovery, adb wrapper with the
-  rotating-port rediscovery this box needs, structured run logging to JSONL.
-  **The harness needs no Shizuku** — adb runs as the same shell UID, and the Play-attributed
-  session install is verified working over plain adb
-  ([aa-visibility.md](docs/aa-visibility.md#without-shizuku--adb-is-an-exact-substitute-v)).
-- [ ] **T-21** Catalog-driven install matrix: for each catalog app × each connected device,
-  install → launch → screenshot → record result.
+- [x] **T-20** `harness/` (TypeScript, bun): `adb.ts` (device resolution + rotated-port rescan),
+  `app.ts` (drives the debug automation hook, parses `RESULT=` verdicts), `catalog.ts`,
+  `cli.ts` (`devices` | `status` | `matrix`). Results as JSONL, one object per (device, app).
+  Verified against the Saga.
+- [x] **T-21** Catalog-driven install matrix: `bun run src/cli.ts matrix [--apps id,id]` installs
+  each entry and records the outcome. It cross-checks two independent sources — the app's own
+  reported outcome and `pm list packages -i` — because they can disagree, and the disagreement is
+  the interesting part. Refuses to run when Shizuku is not `Ready`, since every install would
+  silently fall back to an unattributed one and the matrix would measure nothing.
+  Verified: `n2c … attributed (installer=com.android.vending)`, `playAttributed: true`.
+  *Still to add:* launch + screenshot per app (T-23 covers the capture rules).
 - [ ] **T-22** Android Auto visibility probe — the assertion that actually matters. Upstream's
   `AndroidAutoCompatChecker` is a working model: per package it checks AA meta-data, Play Store
   stamps, **installer source**, and the unknown-source flag
@@ -150,7 +154,11 @@ a matrix run is impossible against a quota-gated build, and that is now moot.
   `127.0.0.1` proxy), with `forceParkingBrake` / `forceUnrestricted` that would let a harness run
   unattended without a vehicle
   ([upstream-2.8.5-diff.md](docs/upstream-2.8.5-diff.md#the-other-headline-an-in-app-android-auto-head-unit)).
-  Decide and write down why. Until then report visibility as `unknown` rather than implying success.
+  **Investigated and confirmed blocked**: on a rooted device, gearhead has no `databases/` at all
+  and `shared_prefs/carservice.xml` is 424 bytes of unrelated tuning constants — no app list, no
+  `unknown_sources` flag. AA caches nothing until it has projected, which rules out any idle-phone
+  probe. Real options remain a car, the desktop DHU, or an emulated head unit (upstream 2.8.5
+  ships one). The harness reports `androidAutoVisible: "unknown"` rather than guessing.
 - [ ] **T-23** Screenshot pipeline honouring this device's constraints: no dimension ≥ 2000 px,
   file < 4 MB, auto-compress, per-run directory.
 - [ ] **T-24** Regression baselines: per-app expected outcomes, diffed each run.
