@@ -73,7 +73,7 @@ Design and rationale: [docs/standalone.md](docs/standalone.md).
   For the mirroring family: T-07 established that renaming adds no AA capability, so catalogue
   them from **publisher** sources under their real package names and mark AA visibility unverified.
   Do not copy upstream's renamed builds — they are signed with the public AOSP test key.
-- [~] **T-06** Android Auto visibility: **installer attribution, not APK patching.**
+- [x] **T-06** Android Auto visibility: **installer attribution, not APK patching.**
   **Implemented**: `data/ReleaseResolver` (GitHub releases → concrete APK), `utils/ApkDownloader`
   (cancellable, progress), `utils/ShizukuInstaller` (`pm install-create -r -i com.android.vending
   --originating-uri … --install-reason 0` + `--bypass-low-target-sdk-block` on SDK ≥ 34, APK
@@ -84,12 +84,10 @@ Design and rationale: [docs/standalone.md](docs/standalone.md).
   declared at session creation or not at all.
   **Verified on device:** resolve → download end to end (correct asset, version, byte count); the
   fallback path; and correct availability reporting.
-  **Blocked on device config for sign-off:** Shizuku's server will not stay alive on the SM_S938U1
-  — Samsung's `FreecessHandler` freezes `moe.shizuku.privileged.api` and `start.sh` leaves no
-  process (it survived exactly once across many attempts). Start Shizuku from its own UI with
-  battery optimisation disabled, then re-run `scratchpad/t06test.sh`.
-  *Done when:* an app installed by this build reports `installer=com.android.vending`, and — once
-  T-22 exists — is listed by Android Auto.
+  **Verified end to end on the Saga (2026-08-21):** resolve → download (4469526 bytes, progress
+  to 1.0) → Shizuku attributed session → `RESULT=ATTRIBUTED version=1.0.3` and
+  `installer=com.android.vending`. The remaining half of the original acceptance — that Android
+  Auto then *lists* it — still needs T-22's observation channel.
 - [~] **T-07** Determine whether the mirroring family needs **package renaming** to be visible to
   Android Auto. **Half answered** — see
   [aa-visibility.md](docs/aa-visibility.md#package-renaming-what-it-actually-does-t-07-partial-v).
@@ -231,6 +229,18 @@ Append dated entries as decisions are made — this is the fork's decision log.
   artifact of running from a writable path (ART's `Writable dex file … is not allowed` W^X check),
   not proof about the jar. Re-tested against a read-only copy: `ClassNotFoundException:
   com.android.apksigner.ApkSignerTool` — no dex in the jar. Conclusion unchanged, evidence fixed.
+- **2026-08-21** — **T-06 and conversion closed on hardware.** With Shizuku authorized on the Saga,
+  both flows verified from inside the app via the debug hook:
+  *Install* — `Downloaded … (4469526 bytes)` → `Shizuku availability: Ready` →
+  `Installed … via session 1364344564` → `RESULT=ATTRIBUTED version=1.0.3` →
+  `installer=com.android.vending`.
+  *Convert* — `installer=null` → `CONVERT state=CONVERTIBLE apks=1` →
+  `Converted … to Play attribution` → `RESULT=CONVERTED` → `installer=com.android.vending`, and the
+  scanner then reports `ALREADY_ATTRIBUTED`, `convertible=0`. The state machine closes both ways.
+  Note Shizuku's authorization is **not** the Android permission: `pm grant` of
+  `moe.shizuku.manager.permission.API_V23` reports `granted=true` and changes nothing, and editing
+  `flags` in `/data/user_de/0/com.android.shell/shizuku.json` as root has no effect either. It has
+  to be granted through Shizuku itself.
 - **2026-08-21** — **Verified on the Saga test device** (ingot, Android 13 / SDK 33, rooted).
   The attributed session install works on **Android 13** exactly as on 16 —
   `pm install-create -r -i com.android.vending …` → `installer=com.android.vending`, so the
