@@ -125,12 +125,14 @@ class DebugAutomationReceiver : BroadcastReceiver() {
 
     private suspend fun status(context: Context) {
         ShizukuInstaller.refreshInstalledState(context.packageManager)
-        val ready = ShizukuInstaller.ensureReady()
+        // Deliberately does NOT call ensureReady(): that prompts, and a prompt needs a screen.
+        // A status query has to be answerable on a locked device.
+        val availability = ShizukuInstaller.availability()
         val catalog = runCatching { CatalogRepository(context).loadCatalog() }.getOrNull()
         val installed = InstalledAppScanner(context).scan()
         Logger.i(
             TAG,
-            "RESULT=STATUS shizukuReady=$ready availability=${ShizukuInstaller.availability()} " +
+            "RESULT=STATUS availability=$availability " +
                 "catalogApps=${catalog?.apps?.size ?: -1} aaCapableInstalled=${installed.size} " +
                 "convertible=${installed.count { it.state == com.legs.appsforaa.data.ConversionState.CONVERTIBLE }}"
         )

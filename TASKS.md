@@ -231,6 +231,20 @@ Append dated entries as decisions are made — this is the fork's decision log.
   artifact of running from a writable path (ART's `Writable dex file … is not allowed` W^X check),
   not proof about the jar. Re-tested against a read-only copy: `ClassNotFoundException:
   com.android.apksigner.ApkSignerTool` — no dex in the jar. Conclusion unchanged, evidence fixed.
+- **2026-08-21** — **Verified on the Saga test device** (ingot, Android 13 / SDK 33, rooted).
+  The attributed session install works on **Android 13** exactly as on 16 —
+  `pm install-create -r -i com.android.vending …` → `installer=com.android.vending`, so the
+  mechanism spans both. `InstalledAppScanner` found **9** AA-capable apps and classified every one
+  correctly; installing Nav2Contacts plainly (`installer=null`) flipped it to `CONVERTIBLE`, and
+  installing it through an attributed session flipped it back to `ALREADY_ATTRIBUTED`.
+  Added a **debug-only adb automation hook** (`src/debug`, `DebugAutomationReceiver`) so all of
+  this runs headlessly — the harness needs it anyway (T-20/T-21) and it does not depend on an
+  unlocked screen or stable tap coordinates.
+  Still unverified: conversion and attributed install **from inside the app**, because Shizuku's
+  authorization is server-side and needs one tap on its dialog, and the device is locked. Editing
+  `flags` to `FLAG_ALLOWED` (2) in `/data/user_de/0/com.android.shell/shizuku.json` as root did
+  **not** take effect even after restarting the server — Shizuku evidently does not treat that
+  file as the sole source of truth. Backup left at `shizuku.json.aaad-backup`.
 - **2026-08-20** — **Mechanism validated on real hardware** (SM_S938U1, Android 16 / SDK 36).
   Three results: (1) **adb is an exact substitute for Shizuku** — a Play-attributed session install
   over plain adb yields `installer=com.android.vending`, `packageSource=1`, so the harness never
