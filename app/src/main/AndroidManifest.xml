@@ -237,6 +237,13 @@
             android:name="androidx.car.app.minCarApiLevel"
             android:value="1" />
 
+        <!-- Android Auto reads this to decide what kind of car app this is. The official Car App
+             Library docs do not list it as required, but every working templated app in the
+             catalog ships one, so AAAD does too. -->
+        <meta-data
+            android:name="com.google.android.gms.car.application"
+            android:resource="@xml/automotive_app_desc" />
+
     </application>
 
 

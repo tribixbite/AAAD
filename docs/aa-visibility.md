@@ -278,15 +278,31 @@ at, conventionally `res/xml/automotive_app_desc.xml`:
 
 Evidence, read straight out of the shipped APKs of three catalog apps (`aapt2 dump xmltree`):
 
-| app | `<uses>` declared | behaviour in the car |
-| --- | --- | --- |
-| CarStream | `service`, **`projection`**, `notification`, `media` | opens full screen |
-| Fermata | `media`, `service`, **`projection`** | opens full screen |
-| AABrowser 2.2 | `media` **only** | listed, then "can't use while driving" |
+Every app in the bundled catalog, audited with `aapt2 dump xmltree` against its current release:
 
-`projection` is what authorises a full-screen Activity on the car display. Without it Android Auto
-treats the app as a media source; its Activity is not a permitted projection surface, so the
-distraction guard blocks it.
+| app | `<uses>` declared | car surface |
+| --- | --- | --- |
+| CarStream | `service`, **`projection`**, `notification`, `media` | full screen |
+| Fermata | `media`, `service`, **`projection`** | full screen |
+| Performance Monitor | `notification`, **`projection`**, `service` | full screen |
+| AA Torque | **`projection`**, `service` | full screen |
+| Widgets For Android Auto | `notification`, **`projection`**, `service` | full screen |
+| Nav2Contacts | **`template`** | templated (Car App Library) |
+| **AABrowser 2.2** | **`media` only** | **none — listed, then "can't use while driving"** |
+
+There are two routes to a usable car surface and an app needs one of them:
+
+- **`projection`** — a full-screen Activity on the head unit, via the unofficial custom-apps SDK.
+- **`template`** — a templated Car App Library app. Distraction-optimised by construction, which
+  is exactly why it is allowed to run while driving.
+
+An app declaring neither is a media source. Android Auto lists it and then refuses to open its UI.
+
+AABrowser is the only catalog app in that state, and it has **always** been: releases 2.2, 2.0 and
+1.6 all declare `media` only, and 1.3 and earlier ship no descriptor at all. There is no version to
+pin back to. It also carries `androidx.car.app.category.NAVIGATION` and `CAR_LAUNCHER` on a plain
+Activity while shipping **no** `CarAppService`, so it is neither a templated app nor a projected
+one — it reads as an unfinished port.
 
 Two corollaries matter for this fork:
 
@@ -296,9 +312,8 @@ Two corollaries matter for this fork:
   corrected descriptor, or rewriting the APK and re-signing it (T-45).
 - **`distractionOptimized` is not the missing piece.** AABrowser already sets
   `distractionOptimized=true` on both its application and its `MainActivity`, and is still blocked.
-  It also carries `androidx.car.app.category.NAVIGATION` and `CAR_LAUNCHER` on a plain Activity
-  while shipping **no** `CarAppService` at all, so it is neither a proper templated app nor a
-  proper projected one.
+  That attribute marks an Activity as safe to show *once the app is allowed a surface at all*; it
+  does not grant the surface.
 
 `data/AutomotiveDescriptor` reads this for any installed package (and for a downloaded APK before
 it is committed), so the condition is reported rather than discovered in traffic. Diagnostics marks

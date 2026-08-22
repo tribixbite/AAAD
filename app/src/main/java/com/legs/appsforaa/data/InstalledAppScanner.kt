@@ -57,7 +57,7 @@ data class InstalledApp(
      * change that — it is a statement the app makes in its own manifest.
      */
     val blockedWhileDriving: Boolean
-        get() = carCapabilities?.let { !it.projects && !it.isEmpty } == true
+        get() = carCapabilities?.let { !it.hasCarUi && !it.isEmpty } == true
 }
 
 /**

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  What AAAD tells Android Auto it can do.
+
+  "template" is not a guess: Nav2Contacts in the bundled catalog is a working templated Car App
+  Library app and its descriptor declares exactly this and nothing else. The alternative,
+  "projection", would be a lie - it belongs to the unofficial full-screen SDK this app cannot
+  build against, and claiming it without implementing it is how AABrowser ends up listed and
+  unopenable. See docs/aa-visibility.md.
+-->
+<automotiveApp>
+    <uses name="template" />
+</automotiveApp>

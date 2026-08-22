@@ -22,12 +22,13 @@ import org.xmlpull.v1.XmlPullParser
  * | --- | --- | --- |
  * | CarStream | `service`, `projection`, `notification`, `media` | opens full screen |
  * | Fermata | `media`, `service`, `projection` | opens full screen |
+ * | Nav2Contacts | `template` | runs as a templated app |
  * | AABrowser | `media` only | "can't use while driving" |
  *
- * `projection` is the declaration that authorises a full-screen Activity on the car display.
- * Without it Android Auto treats the app as media-only and blocks its Activity while driving —
- * and **no installer, permission or setting on the phone can grant it**, because it is a statement
- * the app makes about itself. Fixing it means changing that app's APK.
+ * Either `projection` (full-screen, unofficial SDK) or `template` (Car App Library) gives an app a
+ * usable car surface. An app declaring neither is a media source: Android Auto lists it and then
+ * refuses to open its UI while driving — and **no installer, permission or setting on the phone
+ * can change that**, because it is a statement the app makes about itself in its own APK.
  */
 object AutomotiveDescriptor {
 
@@ -36,6 +37,13 @@ object AutomotiveDescriptor {
 
     /** The `<uses name="…"/>` values Android Auto understands, as seen in real APKs. */
     const val USES_PROJECTION = "projection"
+
+    /**
+     * A templated Car App Library app. Not blocked while driving — templates are
+     * distraction-optimised by construction — but it draws template UI, not its own screen.
+     * Nav2Contacts in the bundled catalog declares exactly this and nothing else.
+     */
+    const val USES_TEMPLATE = "template"
     const val USES_MEDIA = "media"
 
     /**
@@ -47,8 +55,17 @@ object AutomotiveDescriptor {
      */
     data class Capabilities(val uses: Set<String>) {
 
-        /** Declares a full-screen car Activity. This is the one that decides "while driving". */
+        /** Declares a full-screen car Activity, the unofficial projected-app route. */
         val projects: Boolean get() = USES_PROJECTION in uses
+
+        /** Declares a templated Car App Library app, the official route. */
+        val templated: Boolean get() = USES_TEMPLATE in uses
+
+        /**
+         * Has some usable car surface. Either route is fine; only an app with neither — a
+         * media-only declaration — is listed and then refuses to open.
+         */
+        val hasCarUi: Boolean get() = projects || templated
 
         /**
          * Declares Android Auto support but only as a media source. Such an app appears in the

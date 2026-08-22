@@ -379,11 +379,18 @@ Design: [docs/agent-dash.md](docs/agent-dash.md).
   installed packages and for a downloaded APK before it is committed.
 
   This exists because attribution and usability are **independent** and were being conflated.
-  Read out of the shipped APKs: CarStream and Fermata declare `projection` and open full screen;
-  AABrowser 2.2 declares `media` only and is listed but blocked while driving. `projection` is
-  what authorises a full-screen car Activity, and **nothing on the phone can grant it** — it is a
-  statement the app makes about itself. AABrowser already sets `distractionOptimized=true`, so
-  that was never the missing piece. Full evidence in
+  Auditing all seven catalog apps found two routes to a car surface, not one: `projection`
+  (full screen, unofficial SDK — CarStream, Fermata, Performance Monitor, AA Torque, Widgets) and
+  `template` (Car App Library — Nav2Contacts). **AABrowser declares `media` only** and is the sole
+  catalog app with no surface at all. **Nothing on the phone can grant either** — they are
+  statements the app makes about itself. AABrowser already sets `distractionOptimized=true`, which
+  marks an Activity safe once a surface exists rather than granting one.
+
+  The audit also caught a bug in this very code before it shipped: the first cut tested
+  `!projects`, which wrongly flagged templated Nav2Contacts as blocked. It now tests `hasCarUi`.
+
+  No AABrowser release has ever declared a surface — 2.2, 2.0 and 1.6 are `media` only and 1.3 and
+  earlier have no descriptor — so there is no version to pin back to. Full evidence in
   [docs/aa-visibility.md](docs/aa-visibility.md#being-listed-is-not-the-same-as-being-usable-while-driving-v).
 
   Surfaced in diagnostics (marker `D`, plus each app's `uses=` set) and on the convert row.
