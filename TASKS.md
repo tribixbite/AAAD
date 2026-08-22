@@ -350,8 +350,28 @@ Design: [docs/agent-dash.md](docs/agent-dash.md).
   *Not exercised on device:* the `NeedsShizuku` branch itself, which would mean stopping Shizuku on
   the test phone and leaving it stopped. It is covered by `app.test.ts` at the parser level and by
   the compiler's exhaustiveness check at the call sites.
-- [ ] **T-42** Local catalog override (a file on the device) so unlisted APKs can be tested
-  without editing the bundled catalog.
+- [x] **T-42** Local catalog override (a file on the device) so unlisted APKs can be tested
+  without editing the bundled catalog. `CatalogRepository` reads
+  `/sdcard/Android/data/<applicationId>/files/catalog.json`, which outranks both the bundled and
+  the remote catalog — precedence weakest-first is bundled < remote < device override, each layer
+  something a person chose more deliberately than the last.
+
+  That directory is the point: `adb push` writes it with **no** storage permission, no
+  `MANAGE_EXTERNAL_STORAGE` and no root. The one wrinkle is that adb cannot *create* a package's
+  directory under `Android/data` (`secure_mkdirs failed: Operation not permitted`), so the app has
+  to have run once — it creates the directory itself when it first loads a catalog. Documented in
+  `docs/testing-harness.md`.
+
+  It replaces rather than merges, because a run that asks for three apps should get three. A
+  malformed override is logged and ignored rather than fatal — the fix is to push a corrected
+  file, and an app that will not start is a poor way to report a typo. The catalog screen says
+  "Using a catalog pushed to this device" so an unexpected list explains itself.
+
+  *Verified on device:* pushing a two-app override took `catalogApps` from 7 to 2 and showed the
+  banner; a deliberately malformed file logged
+  `Override ... is unparseable or targets an unsupported schema; ignoring it` and fell back to 7;
+  deleting the file restored the shipped catalog. Adding `Origin.DEVICE_OVERRIDE` also made the
+  compiler flag the non-exhaustive `when` in `MainActivityNew`, which is the enum earning its keep.
 - [ ] **T-43** Structured logging to a file the harness can `adb pull`.
 - [x] **T-40** Update checker — the thing upstream's README has promised for years.
   `data/UpdateChecker` resolves the latest published version of each **installed** catalog app and

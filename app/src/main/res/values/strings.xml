@@ -309,6 +309,7 @@
     <!-- Standalone fork: catalog provenance and unimplemented actions -->
     <string name="catalog_origin_bundled">Using the built-in app list</string>
     <string name="catalog_origin_remote">App list updated %1$s</string>
+    <string name="catalog_origin_override">Using a catalog pushed to this device</string>
     <string name="install_already_running">Another install is already running</string>
     <string name="progress_resolving">Finding the latest %1$s…</string>
     <string name="progress_downloading_percent">Downloading %1$s… %2$d%%</string>

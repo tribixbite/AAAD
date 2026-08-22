@@ -260,6 +260,30 @@ Install path matters: the Shizuku silent path (T-41) is what makes step 3 unatte
 installer path needs UI automation to tap through, and Play Protect can inject an extra dialog —
 that is a per-device, per-Android-version variable the harness should record rather than hide.
 
+## Testing an app that is not in the catalog (T-42)
+
+Push a catalog to the app's own external files directory and it replaces the shipped one:
+
+```bash
+adb -s "$D" push my-catalog.json \
+    /sdcard/Android/data/sksa.aa.customapps.dev/files/catalog.json
+```
+
+Same schema as `app/src/main/assets/catalog.json`. Three things worth knowing:
+
+- **It replaces, it does not merge.** A run that asks for three specific apps should get exactly
+  those three, not those three plus the seven that ship in the build.
+- **The directory has to exist first.** `adb push` fails with
+  `secure_mkdirs failed: Operation not permitted` if the app has never run on the device — adb
+  cannot create a package's directory under `Android/data`, but the app creates it the first time
+  it loads a catalog. Launch the app once, then push. That path is used precisely because `adb`
+  can write it with no storage permission, no `MANAGE_EXTERNAL_STORAGE` and no root.
+- **A malformed override is ignored, not fatal.** It is logged at warn level and the build falls
+  back to the bundled catalog; an app that refuses to start is a poor way to report a typo.
+
+The catalog screen says *"Using a catalog pushed to this device"* whenever an override is in play,
+so an unexpected app list is self-explaining. Delete the file to go back to the shipped catalog.
+
 ## Interaction with the standalone build
 
 A matrix run is only possible because the fork is standalone: upstream's one-install-per-30.44-days

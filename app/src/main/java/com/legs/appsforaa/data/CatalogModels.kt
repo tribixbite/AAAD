@@ -93,7 +93,16 @@ data class Catalog(
     val apps: List<AppEntry>,
     val origin: Origin,
 ) {
-    enum class Origin { BUNDLED, REMOTE }
+    enum class Origin {
+        BUNDLED,
+        REMOTE,
+
+        /**
+         * A file pushed to the app's external files directory. Outranks the others because a
+         * person put it there on purpose — see `docs/testing-harness.md`.
+         */
+        DEVICE_OVERRIDE,
+    }
 
     companion object {
         const val SUPPORTED_SCHEMA_VERSION = 1

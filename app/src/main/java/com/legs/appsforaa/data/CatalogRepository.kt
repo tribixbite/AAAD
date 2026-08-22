@@ -8,6 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import java.io.File
 import java.util.concurrent.TimeUnit
 
 /**
@@ -17,6 +18,9 @@ import java.util.concurrent.TimeUnit
  * calls — the bundled `assets/catalog.json` is the catalog. A configured URL is an override, and
  * any failure to fetch or parse it falls back to the bundled copy rather than failing the screen.
  * See `docs/standalone.md`.
+ *
+ * A file pushed to the app's external files directory outranks both, so a test run can supply its
+ * own catalog without a rebuild (T-42).
  */
 class CatalogRepository(
     private val context: Context,
@@ -27,6 +31,16 @@ class CatalogRepository(
         const val TAG = "CatalogRepo"
         const val BUNDLED_ASSET = "catalog.json"
         const val NETWORK_TIMEOUT_SECONDS = 15L
+
+        /**
+         * Override file in the app's own external files directory:
+         * `/sdcard/Android/data/<applicationId>/files/catalog.json`.
+         *
+         * That directory is chosen because `adb push` can write it with no permission at all —
+         * no storage permission, no `MANAGE_EXTERNAL_STORAGE`, no root — which is the whole point
+         * of an override meant to be dropped in from a test harness.
+         */
+        const val OVERRIDE_FILE = "catalog.json"
     }
 
     private val httpClient: OkHttpClient by lazy {
@@ -43,12 +57,43 @@ class CatalogRepository(
      *   is a packaging bug rather than a runtime condition.
      */
     suspend fun loadCatalog(): Catalog = withContext(Dispatchers.IO) {
-        val base = fetchRemoteCatalog() ?: loadBundledCatalog()
+        // Precedence, weakest first: bundled < remote < device override. Each layer is something
+        // a person chose more deliberately than the one before it.
+        val base = loadOverrideCatalog() ?: fetchRemoteCatalog() ?: loadBundledCatalog()
         val userApps = userStore.load()
         if (userApps.isEmpty()) return@withContext base
         // User entries win on id collision: someone who added a repo by hand meant it.
         val merged = base.apps.filterNot { app -> userApps.any { it.id == app.id } } + userApps
         base.copy(apps = merged)
+    }
+
+    /**
+     * A catalog pushed to the device, or null when there is none.
+     *
+     * This exists so an unlisted APK can be tested without editing the bundled catalog and
+     * rebuilding — see `docs/testing-harness.md`. It replaces the catalog rather than merging into
+     * it: a test run that wants three specific apps should get exactly those three, not those
+     * three plus seven it did not ask for.
+     *
+     * A malformed override is logged and ignored rather than fatal, because the fix is to push a
+     * corrected file, and an app that will not start is a poor way to report a typo.
+     */
+    private fun loadOverrideCatalog(): Catalog? {
+        val file = File(context.getExternalFilesDir(null), OVERRIDE_FILE)
+        if (!file.isFile) return null
+
+        return runCatching {
+            Catalog.parse(file.readText(), Catalog.Origin.DEVICE_OVERRIDE).also {
+                if (it == null) {
+                    Logger.w(TAG, "Override ${file.path} is unparseable or targets an unsupported " +
+                        "schema; ignoring it")
+                } else {
+                    Logger.i(TAG, "Using device override ${file.path} (${it.apps.size} apps)")
+                }
+            }
+        }.onFailure {
+            Logger.w(TAG, "Could not read override ${file.path}", it)
+        }.getOrNull()
     }
 
     private fun loadBundledCatalog(): Catalog {

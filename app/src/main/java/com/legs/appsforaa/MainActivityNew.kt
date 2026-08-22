@@ -200,6 +200,9 @@ class MainActivityNew : AppCompatActivity() {
             text = when (catalog.origin) {
                 Catalog.Origin.BUNDLED -> getString(R.string.catalog_origin_bundled)
                 Catalog.Origin.REMOTE -> getString(R.string.catalog_origin_remote, catalog.updated)
+                // Worth saying plainly: someone looking at an unexpected app list should be able
+                // to see that a pushed file, not the shipped catalog, is what they are reading.
+                Catalog.Origin.DEVICE_OVERRIDE -> getString(R.string.catalog_origin_override)
             }
             visibility = View.VISIBLE
         }
