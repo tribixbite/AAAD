@@ -1,17 +1,29 @@
 {
   "schemaVersion": 1,
-  "updated": "2026-08-20",
+  "updated": "2026-08-22",
   "_comment": [
     "Bundled app catalog. Schema: docs/standalone.md#catalog-format.",
-    "Every entry here resolves to the publisher's OWN GitHub releases — verified to have APK",
-    "assets on 2026-08-20. Nothing points at upstream AAAD's Firebase bucket.",
+    "Every entry resolves to the publisher's OWN GitHub releases, verified to have APK assets.",
+    "Nothing points at upstream AAAD's Firebase bucket.",
     "",
-    "The mirroring family (Screen2Auto, AAMirror, AAStream, AA Mirror Plus) and CarStream are",
-    "deliberately absent: upstream distributes those as pre-renamed builds from its own storage,",
-    "and whether the rename is required for Android Auto visibility is unresolved (TASKS.md T-07).",
-    "Do not add them with invented URLs."
+    "The rest of the mirroring family (Screen2Auto, AAMirror, AAStream, AA Mirror Plus) is still",
+    "absent: none of them publishes an APK release. slashmax/AAMirror is source-only, Screen2Auto",
+    "ships from inceptive.ru, and upstream AAAD hosts pre-renamed builds signed with the public",
+    "AOSP test key. See TASKS.md T-15. Do not add them with invented URLs."
   ],
   "apps": [
+    {
+      "id": "carstream",
+      "name": "CarStream",
+      "packageName": "com.google.android.kk",
+      "category": "multimedia",
+      "descriptionRes": "carstream_description",
+      "source": {
+        "type": "github-release",
+        "repo": "thekirankumar/carstream-android-auto",
+        "assetPattern": "\\.apk$"
+      }
+    },
     {
       "id": "fermata",
       "name": "Fermata Auto",

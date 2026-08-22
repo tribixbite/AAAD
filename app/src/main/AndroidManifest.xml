@@ -68,6 +68,9 @@
              real package name, per upstream v2.8.5 and its catalog. See
              docs/upstream-2.8.5-diff.md. -->
         <package android:name="maps.jaoolonda.android" />
+        <!-- CarStream as its own publisher ships it (thekirankumar/carstream-android-auto).
+             The id is disguised as a Google package; verified by reading the released APK. -->
+        <package android:name="com.google.android.kk" />
 
         <!-- Multimedia apps -->
         <package android:name="me.aap.fermata.auto.dear.google.why" />
