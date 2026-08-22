@@ -27,6 +27,8 @@ local.properties.bak
 # --- Harness / dash (Phases 3-4) ---
 node_modules/
 harness/runs/
+# Release lookups cached to stay under GitHub's unauthenticated rate limit.
+harness/cache/
 dist/
 .env
 .env.*

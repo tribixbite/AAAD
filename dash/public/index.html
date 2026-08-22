@@ -55,6 +55,12 @@
   img.shot { width: 100%; max-width: 240px; border-radius: 10px; border: 1px solid var(--line);
              display: block; margin-top: 10px; }
   .empty { color: var(--muted); font-style: italic; }
+  /* A button in a heading, styled down to look like part of it rather than a call to action —
+     the catalog view is already live on load; this only forces a fresh release lookup. */
+  h2 button { font: inherit; text-transform: none; letter-spacing: 0; color: var(--accent);
+              background: none; border: 1px solid var(--line); border-radius: 999px;
+              padding: 1px 10px; cursor: pointer; }
+  h2 button[disabled] { opacity: .5; cursor: default; }
   a { color: var(--accent); }
 </style>
 </head>
@@ -64,6 +70,9 @@
 
   <h2>Devices</h2>
   <div id="devices"><p class="empty">loading…</p></div>
+
+  <h2>Catalog <button id="refresh-catalog" title="Re-check published versions">refresh</button></h2>
+  <div id="catalog"><p class="empty">loading…</p></div>
 
   <h2>Baselines</h2>
   <div id="baselines"><p class="empty">loading…</p></div>
@@ -94,6 +103,60 @@ function renderDevices(devices) {
       </div>
       <span class="pill">Android ${esc(device.androidRelease)} · SDK ${esc(device.sdk)}</span>
     </div>`).join("");
+}
+
+/**
+ * Catalog state per device. The interesting column is `installer`: an app can be installed and
+ * up to date and still be invisible to Android Auto because the install was never attributed.
+ */
+function renderCatalog(view) {
+  const fetched = view.latest?.fetchedAt
+    ? `published versions as of ${new Date(view.latest.fetchedAt).toLocaleString()}`
+    : "no release data yet";
+
+  if (!view.devices?.length) {
+    $("catalog").innerHTML = `<p class="empty">No device connected. ${esc(fetched)}.</p>`;
+    return;
+  }
+
+  $("catalog").innerHTML = view.devices.map((device) => {
+    if (device.error) {
+      return `<div class="card"><strong>${esc(device.model)}</strong>
+        <div class="mono bad">could not read: ${esc(device.error)}</div></div>`;
+    }
+    const installed = device.entries.filter((entry) => entry.installedVersion).length;
+    const unattributed = device.entries.filter(
+      (entry) => entry.installedVersion && !entry.playAttributed).length;
+    return `
+    <div class="card">
+      <div class="row">
+        <strong class="grow">${esc(device.model)}</strong>
+        <span class="pill">${installed}/${device.entries.length} installed</span>
+        ${unattributed
+          ? `<span class="pill bad">${unattributed} unattributed</span>`
+          : '<span class="pill ok">all attributed</span>'}
+      </div>
+      <div class="mono">${esc(device.serial)} · ${esc(fetched)}</div>
+      <div class="scroll-x"><table>
+        <tr><th>app</th><th>installed</th><th>published</th><th>installer</th></tr>
+        ${device.entries.map((entry) => {
+          const version = entry.installedVersion
+            ? `<td>${esc(entry.installedVersion)}</td>`
+            : '<td class="empty">not installed</td>';
+          // Only three states are claimed: newer available, current, or unknown. `updateAvailable`
+          // is null when the two versions cannot be ordered, and that is shown as a dash.
+          const published = entry.latestVersion
+            ? `<td class="${entry.updateAvailable === true ? "warn" : ""}">${esc(entry.latestVersion)}${
+                entry.updateAvailable === true ? " ↑" : ""}</td>`
+            : '<td class="empty">—</td>';
+          const installer = !entry.installedVersion
+            ? '<td class="empty">—</td>'
+            : `<td class="${entry.playAttributed ? "ok" : "bad"}">${esc(entry.installer ?? "none")}</td>`;
+          return `<tr><td>${esc(entry.name)}</td>${version}${published}${installer}</tr>`;
+        }).join("")}
+      </table></div>
+    </div>`;
+  }).join("");
 }
 
 function renderBaselines(baselines) {
@@ -151,16 +214,32 @@ function renderRuns(runs) {
   }).join("");
 }
 
-async function refresh() {
-  const [devices, runs, baselines] = await Promise.all([
+async function refresh(refreshReleases = false) {
+  const [devices, runs, baselines, catalog] = await Promise.all([
     getJSON("/api/devices").catch(() => []),
     getJSON("/api/runs").catch(() => []),
     getJSON("/api/baselines").catch(() => []),
+    getJSON(refreshReleases ? "/api/catalog?refresh=1" : "/api/catalog").catch(() => ({ devices: [] })),
   ]);
   renderDevices(devices);
+  renderCatalog(catalog);
   renderRuns(runs);
   renderBaselines(baselines);
 }
+
+$("refresh-catalog").addEventListener("click", async (event) => {
+  // Disabled while in flight: this is the one control that spends the GitHub rate limit, and
+  // repeat-clicking it while waiting is the fastest way to run out.
+  const button = event.currentTarget;
+  button.disabled = true;
+  button.textContent = "checking…";
+  try {
+    await refresh(true);
+  } finally {
+    button.disabled = false;
+    button.textContent = "refresh";
+  }
+});
 
 refresh();
 // Devices come and go (this phone's adb port rotates); runs only change when one is started.

@@ -19,11 +19,29 @@ it shows comes from `harness/runs/*/results.jsonl` and live adb queries.
 | Devices | Serial, model, Android version, AA version, Shizuku state, connection health | live adb via `harness/src/devices.ts` |
 | Matrix | catalog app × device grid, colour-coded: installed / stale / broken / unknown | latest run + baselines |
 | Run | One harness run: per-step timeline, logcat excerpt, screenshot gallery | `runs/<ts>/results.jsonl` |
-| Catalog | Upstream catalog vs. installed state per device; version deltas; dead links | `catalog.ts` + device snapshot |
+| Catalog | Catalog vs. installed state per device, version deltas, installer attribution — **built** (T-33) | `harness/src/inventory.ts` + `releases.ts` |
 | Tasks | [TASKS.md](../TASKS.md) rendered with phase/status rollup | parse `TASKS.md` |
 
 The matrix is the point. Everything else supports it: one screen that answers "which AA apps
 currently work, on which device, on which Android version".
+
+### Catalog view notes
+
+It is the only **live** panel — run history is archival, this reads the phones now. Three details
+are deliberate:
+
+- **One `adb shell` call per device, not one per package.** Seven packages meant seven round trips
+  over wifi, which is visible lag on a page that refreshes every 15 s.
+- **Published versions are cached for an hour** (`harness/cache/`, gitignored). GitHub allows 60
+  unauthenticated requests per hour per IP and the catalog has seven entries, so an uncached panel
+  would exhaust the limit in eight refreshes and then report failures that have nothing to do with
+  the devices. The `refresh` button forces a lookup; page loads never do. If every entry fails at
+  once — the network is down, not seven publishers deleting releases — the previous snapshot is
+  kept rather than overwritten with nulls.
+- **`updateAvailable` is a tri-state.** `null` means the two versions cannot be ordered, and the
+  cell renders without a badge. CarStream publishes `untagged-<hash>`, which is not orderable
+  against `2.0.0` by any honest rule; claiming "up to date" there would be a guess. This mirrors
+  the app's `VersionCompare`, and `harness/src/version.test.ts` holds both to the same examples.
 
 ## Stack
 

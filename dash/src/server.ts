@@ -2,9 +2,12 @@
  * Local dashboard over the harness.
  *
  * Deliberately a thin reader, not a second brain: it renders what
- * `harness/runs/*` and `harness/baselines/*` already contain, plus a live adb device list. The
- * harness owns running things; if the dash ever needs to compute a verdict, that logic belongs
- * in the harness where it is testable.
+ * `harness/runs/*` and `harness/baselines/*` already contain, plus live state read through the
+ * harness's own modules. The harness owns running things and every non-trivial computation; if
+ * the dash ever needs to compute a verdict, that logic belongs in the harness where it is
+ * testable. `/api/catalog` is live rather than archival — it queries the attached devices and
+ * (cached) GitHub — which is the point: run history says what happened, the catalog view says
+ * what is on the phone now.
  *
  * Binds to localhost only — it is a personal tool on a personal device, with no auth and no
  * business being reachable from the network.
@@ -16,6 +19,9 @@ import { readdir, readFile, stat } from "node:fs/promises";
 import { dirname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describeDevice, onlineSerials } from "../../harness/src/adb.ts";
+import { deviceInventory } from "../../harness/src/inventory.ts";
+import { latestReleases } from "../../harness/src/releases.ts";
+import { isNewer } from "../../harness/src/version.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PUBLIC_DIR = join(HERE, "..", "public");
@@ -93,6 +99,44 @@ async function listDevices() {
   );
 }
 
+/**
+ * Catalog state across every attached device, plus the latest published version of each entry.
+ *
+ * `?refresh=1` forces a release lookup; a plain load uses the cache, so opening the page does not
+ * spend the hourly GitHub rate limit. A device that cannot be read is reported with its error
+ * rather than dropped, since "the phone went away" is the thing worth seeing.
+ */
+async function catalogView(url: URL) {
+  const [latest, serials] = await Promise.all([
+    latestReleases(url.searchParams.get("refresh") === "1"),
+    onlineSerials().catch(() => [] as string[]),
+  ]);
+
+  const published = new Map(latest.releases.map((release) => [release.id, release.latestVersion]));
+
+  const devices = await Promise.all(
+    serials.map(async (serial) => {
+      const [info, inventory] = await Promise.all([
+        describeDevice(serial).catch(() => null),
+        deviceInventory(serial).catch((error: Error) => ({ serial, entries: [], error: error.message })),
+      ]);
+      const entries = inventory.entries.map((entry) => {
+        const latestVersion = published.get(entry.id) ?? null;
+        return {
+          ...entry,
+          latestVersion,
+          // null means "cannot be compared" and is rendered as such. Collapsing it to false would
+          // quietly claim an app is current when nothing was actually established.
+          updateAvailable: isNewer(entry.installedVersion, latestVersion),
+        };
+      });
+      return { ...inventory, entries, model: info?.model ?? "unknown", sdk: info?.sdk ?? 0 };
+    }),
+  );
+
+  return { latest, devices };
+}
+
 function json(body: unknown): Response {
   return new Response(JSON.stringify(body), {
     headers: { "content-type": "application/json; charset=utf-8" },
@@ -123,6 +167,7 @@ const server = Bun.serve({
     if (url.pathname === "/api/devices") return json(await listDevices());
     if (url.pathname === "/api/runs") return json(await listRuns());
     if (url.pathname === "/api/baselines") return json(await listBaselines());
+    if (url.pathname === "/api/catalog") return json(await catalogView(url));
 
     const shot = /^\/screenshots\/([^/]+)\/([^/]+)$/.exec(url.pathname);
     if (shot) return serveScreenshot(decodeURIComponent(shot[1]!), decodeURIComponent(shot[2]!));

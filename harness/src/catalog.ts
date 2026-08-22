@@ -15,11 +15,19 @@ import { fileURLToPath } from "node:url";
 const HERE = dirname(fileURLToPath(import.meta.url));
 const CATALOG_PATH = join(HERE, "..", "..", "app", "src", "main", "assets", "catalog.json");
 
+export interface CatalogSource {
+  type: string;
+  repo?: string;
+  assetPattern?: string;
+  url?: string;
+}
+
 export interface CatalogEntry {
   id: string;
   name: string;
   /** Empty for user-added entries, whose package is only known after a first install. */
   packageName: string;
+  source: CatalogSource;
 }
 
 export async function loadCatalog(): Promise<CatalogEntry[]> {
@@ -29,6 +37,7 @@ export async function loadCatalog(): Promise<CatalogEntry[]> {
     id: app.id,
     name: app.name,
     packageName: app.packageName ?? "",
+    source: app.source ?? { type: "unknown" },
   }));
 }
 

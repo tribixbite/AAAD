@@ -3,8 +3,9 @@ package com.legs.appsforaa.utils
 /**
  * Compares app version strings, safely.
  *
- * The existing [Version] class throws on anything that is not strictly `1.2.3`, and real release
- * names are not: this catalog alone contains `v1.0.3`, `beta1.1`, `0.88B` and
+ * Upstream's `utils/Version` class (deleted in this fork, see TASKS.md T-17) threw on anything
+ * that was not strictly `1.2.3`, and real release names are not: this catalog alone contains
+ * `v1.0.3`, `beta1.1`, `0.88B` and
  * `untagged-7666cf8b031e67be69d2`. A comparator that throws — or worse, guesses — would show
  * phantom "update available" badges, which is exactly the kind of wrong that erodes trust in the
  * whole list.

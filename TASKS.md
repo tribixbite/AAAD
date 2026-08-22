@@ -303,7 +303,27 @@ Design: [docs/agent-dash.md](docs/agent-dash.md).
 - [ ] **T-32** Task queue view backed by this file.
   Deliberately not done yet: `TASKS.md` is read far more often in an editor than it would be in a
   browser, so this is the lowest-value dash panel until something else needs the page.
-- [ ] **T-33** Catalog inspector: catalog vs. installed state per device, update deltas.
+- [x] **T-33** Catalog inspector: catalog vs. installed state per device, update deltas.
+  `harness/src/inventory.ts` reads each device in **one** `adb shell` call rather than one per
+  package (seven round trips over wifi is visible lag on a page that refreshes every 15 s), and
+  `harness/src/releases.ts` resolves published versions with a one-hour disk cache — GitHub allows
+  60 unauthenticated requests per hour and the catalog has seven entries, so an uncached panel
+  would exhaust the limit in eight refreshes and then report failures unrelated to the devices.
+  The `refresh` button forces a lookup; page loads never do.
+
+  `updateAvailable` is deliberately tri-state. `null` means the versions cannot be ordered and the
+  cell shows no badge — CarStream publishes `untagged-<hash>`, which cannot be honestly compared
+  to `2.0.0`. This required mirroring the app's `VersionCompare` as `harness/src/version.ts`;
+  `version.test.ts` holds both to the same examples so the dash and the app can never disagree
+  about whether an app needs updating.
+
+  *Verified live against the Saga:* 3/7 installed, 1 unattributed; Widgets 0.2.2 → 0.2.3 badged
+  with its installer shown as `none` in red (the fixture left installed for exactly this);
+  Nav2Contacts 1.0.3 = 1.0.3, attributed; CarStream installed and attributed but with **no** update
+  badge because its published tag is an untagged hash. Layout re-checked at a true 412 px viewport
+  through CDP (`Emulation.setDeviceMetricsOverride`, since `--window-size` only crops the
+  screenshot): `scrollWidth === innerWidth`, no sideways body scroll — the table overflows only
+  inside its own `.scroll-x` box, as intended.
 - [ ] **T-34** Decide integration depth with `../operad` and record it in `docs/agent-dash.md`.
 
 ## Phase 5 — App changes worth making
