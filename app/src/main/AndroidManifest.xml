@@ -83,6 +83,10 @@
 
         <!-- Utility apps -->
         <package android:name="com.github.martoreto.aaremote" />
+        <!-- The publisher (ns130291/widgets-for-auto) ships de.nsvb.android.auto.widget;
+             upstream AAAD's catalog says de.nsvb.android.auto.w4a. Read from the released APK.
+             Both are listed so an upstream-installed copy is still detected. -->
+        <package android:name="de.nsvb.android.auto.widget" />
         <package android:name="de.nsvb.android.auto.w4a" />
         <package android:name="nl.frankkie.nav2contacts" />
         <package android:name="com.mqbcoding.stats" />

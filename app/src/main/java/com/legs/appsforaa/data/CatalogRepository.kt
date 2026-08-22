@@ -3,6 +3,7 @@ package com.legs.appsforaa.data
 import android.content.Context
 import com.legs.appsforaa.BuildConfig
 import com.legs.appsforaa.utils.Logger
+import com.legs.appsforaa.utils.VersionCompare
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -85,26 +86,38 @@ class CatalogRepository(
     /**
      * Pairs each entry with its on-device state and resolves its description resource.
      *
-     * Available-version comparison is deliberately absent here: it would need a network round trip
-     * per entry on every list refresh. Update detection belongs in a background worker
-     * (TASKS.md T-40), so an installed app reports [InstallState.Installed], never
-     * [InstallState.UpdateAvailable], for now.
+     * [latestVersions] maps entry id to the newest published version, as gathered by
+     * [UpdateChecker] on an explicit refresh. It is empty on a normal load, which is the point:
+     * resolving releases costs a network request per app, so the list renders from local state
+     * and only learns about updates when the user asks.
      */
-    fun resolveItems(catalog: Catalog): List<AppListItem> =
+    fun resolveItems(
+        catalog: Catalog,
+        latestVersions: Map<String, String> = emptyMap(),
+    ): List<AppListItem> =
         catalog.apps.map { entry ->
             AppListItem(
                 entry = entry,
-                state = installStateOf(entry),
+                state = installStateOf(entry, latestVersions[entry.id]),
                 descriptionResId = descriptionResIdOf(entry),
             )
         }
 
-    private fun installStateOf(entry: AppEntry): InstallState {
+    private fun installStateOf(entry: AppEntry, latestVersion: String?): InstallState {
         // A user-added entry has no package name until its first install teaches us one.
         if (entry.packageName.isBlank()) return InstallState.NotInstalled
         val installedVersion = installedVersionName(entry.packageName)
             ?: return InstallState.NotInstalled
-        return InstallState.Installed(installedVersion)
+
+        // Only claim an update when the comparison is confident. VersionCompare returns null for
+        // versions it cannot order — "beta1.1", an untagged commit hash — and a phantom update
+        // badge is worse than none, because it teaches people to ignore the badge.
+        val newer = VersionCompare.isNewer(installedVersion, latestVersion)
+        return if (newer == true && latestVersion != null) {
+            InstallState.UpdateAvailable(installedVersion, latestVersion)
+        } else {
+            InstallState.Installed(installedVersion)
+        }
     }
 
     /** Null when the package is absent. Requires the `<queries>` entry or QUERY_ALL_PACKAGES. */

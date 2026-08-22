@@ -13,6 +13,7 @@ import com.legs.appsforaa.data.AppListItem
 import com.legs.appsforaa.data.Catalog
 import com.legs.appsforaa.data.CatalogRepository
 import com.legs.appsforaa.data.InstallState
+import com.legs.appsforaa.data.UpdateChecker
 import com.legs.appsforaa.data.UserCatalogStore
 import com.legs.appsforaa.databinding.ActivityMainNewBinding
 import com.legs.appsforaa.receivers.PackageInstallReceiver
@@ -48,6 +49,10 @@ class MainActivityNew : AppCompatActivity() {
     private lateinit var adapter: AppListAdapter
     private lateinit var installManager: InstallManager
     private lateinit var userStore: UserCatalogStore
+    private val updateChecker = UpdateChecker()
+
+    /** Latest published versions, from the last user-initiated refresh. */
+    private var latestVersions: Map<String, String> = emptyMap()
 
     /** The single in-flight install, if any. */
     private var installJob: Job? = null
@@ -133,10 +138,14 @@ class MainActivityNew : AppCompatActivity() {
             runCatching { repository.loadCatalog() }
                 .onSuccess { catalog ->
                     loadedCatalog = catalog
-                    adapter.submitList(repository.resolveItems(catalog))
+                    adapter.submitList(repository.resolveItems(catalog, latestVersions))
                     showCatalogOrigin(catalog)
                     showState(loading = false)
                     Logger.i(TAG, "Catalog loaded: ${catalog.apps.size} apps from ${catalog.origin}")
+                    // Only on an explicit refresh: checking for updates costs one request per
+                    // installed app, and doing that on every draw would make a standalone app
+                    // chatty for no benefit.
+                    if (userInitiated) checkForUpdates(catalog)
                 }
                 .onFailure { error ->
                     Logger.e(TAG, "Catalog load failed", error)
@@ -161,7 +170,29 @@ class MainActivityNew : AppCompatActivity() {
     /** Re-resolves install state without re-fetching the catalog. */
     private fun refreshInstalledState() {
         val catalog = loadedCatalog ?: return
-        adapter.submitList(repository.resolveItems(catalog))
+        adapter.submitList(repository.resolveItems(catalog, latestVersions))
+    }
+
+    /**
+     * Looks up the latest published version of each **installed** app and re-renders.
+     *
+     * Failures are silent by design: a publisher who moved a release should not put an error on
+     * the catalog screen, and the list stays as it was.
+     */
+    private fun checkForUpdates(catalog: Catalog) {
+        // Resolve once and filter, rather than re-resolving the whole catalog per entry.
+        val installedIds = repository.resolveItems(catalog)
+            .filter { it.state !is InstallState.NotInstalled }
+            .map { it.entry.id }
+            .toSet()
+        val installed = catalog.apps.filter { it.id in installedIds && it.packageName.isNotBlank() }
+        if (installed.isEmpty()) return
+
+        lifecycleScope.launch {
+            latestVersions = runCatching { updateChecker.latestVersions(installed) }
+                .getOrDefault(emptyMap())
+            refreshInstalledState()
+        }
     }
 
     private fun showCatalogOrigin(catalog: Catalog) {

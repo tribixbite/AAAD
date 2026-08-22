@@ -75,7 +75,7 @@
     {
       "id": "aawidgets",
       "name": "Widgets For Android Auto",
-      "packageName": "de.nsvb.android.auto.w4a",
+      "packageName": "de.nsvb.android.auto.widget",
       "category": "other",
       "descriptionRes": "aawidgets_description",
       "source": {

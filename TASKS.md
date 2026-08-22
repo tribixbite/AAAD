@@ -233,12 +233,14 @@ a matrix run is impossible against a quota-gated build, and that is now moot.
   `broken` is kept deliberately narrow — *was* Play-attributed, now is not — so the regression this
   project exists to catch does not get lost among version bumps.
   Verified on the Saga: first run recorded `baselines/Saga.json`, second reported "No change".
-- [~] **T-25** Tests. `harness/src/baseline.test.ts` covers the comparator (8 tests, `bun test`) —
+- [x] **T-25** Tests. `harness/src/baseline.test.ts` covers the comparator (8 tests, `bun test`) —
   it decides whether a run is called a regression, so a false green hides the exact breakage the
   harness exists to catch and a false red trains people to ignore it. It is pure logic, so there
   was no excuse. Cases include the two that matter most: an outcome change that *keeps* attribution
   must not read as broken, and a repeated failure must not masquerade as new breakage.
-  *Remaining:* app-side tests for the `Version` comparator and catalog parsing.
+  App side: `VersionCompareTest` (7 tests, `./gradlew :app:testDebugUnitTest`) using the real
+  version strings this catalog's publishers actually emit, not invented ones — including the two
+  that must return null rather than a guess.
 
 ## Phase 4 — Agent dash
 
@@ -266,8 +268,20 @@ Design: [docs/agent-dash.md](docs/agent-dash.md).
 - [ ] **T-42** Local catalog override (a file on the device) so unlisted APKs can be tested
   without editing the bundled catalog.
 - [ ] **T-43** Structured logging to a file the harness can `adb pull`.
-- [ ] **T-40** Update checker for installed AA apps — README calls it out as never-implemented;
-  `Version.java` plus the catalog makes it straightforward.
+- [x] **T-40** Update checker — the thing upstream's README has promised for years.
+  `data/UpdateChecker` resolves the latest published version of each **installed** catalog app and
+  `CatalogRepository` turns that into `InstallState.UpdateAvailable`, which the adapter already
+  knew how to render but nothing had ever produced.
+  Two deliberate limits: only installed apps are checked (resolving one the user does not have
+  tells them nothing and still spends GitHub rate limit), and only on an explicit pull-to-refresh
+  (a screen that fires a request per app on every draw is how a standalone app quietly becomes a
+  chatty one).
+  `utils/VersionCompare` **returns null rather than guessing** when either side cannot be ordered —
+  this catalog alone contains `v1.0.3`, `beta1.1`, `0.88B` and `untagged-7666cf8b031e67be69d2`.
+  A phantom update badge is worse than none, because it teaches people to ignore the badge.
+  Verified live: installed Widgets 0.2.2 against published 0.2.3 → **"Update to 0.2.3" + UPDATE**;
+  Nav2Contacts 1.0.3 against 1.0.3 → **"Installed: 1.0.3"**; CarStream's untagged release → no
+  badge. `UpdateChecker: Resolved 3/3 latest versions` — only the installed three.
 
 ## Low priority
 
