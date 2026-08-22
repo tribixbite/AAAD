@@ -152,6 +152,12 @@ dependencies {
     implementation "dev.rikka.shizuku:api:$shizuku_version"
     implementation "dev.rikka.shizuku:provider:$shizuku_version"
 
+    // Android Auto, via the *official* templated SDK. The unofficial projected SDK that
+    // CarStream and Fermata use (com.google.android.gms.car, CATEGORY_PROJECTION) is not
+    // published to any Maven repository, so it is not an option here. See TASKS.md T-44.
+    implementation 'androidx.car.app:app:1.7.0'
+    implementation 'androidx.car.app:app-projected:1.7.0'
+
     // REMOVED for the standalone fork (see docs/standalone.md):
     //   com.github.iGio90:BottomDialogs (JitPack)          — T-19. An unpinnable
     //     master-SNAPSHOT that broke the build three times: a JitPack read timeout, a

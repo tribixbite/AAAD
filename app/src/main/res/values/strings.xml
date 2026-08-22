@@ -331,6 +331,14 @@
     <string name="convert_installer_none">an unknown source</string>
     <string name="convert_state_ok">%1$s · already visible in Android Auto</string>
     <string name="convert_state_needed">Installed by %1$s · Android Auto will not list it</string>
+    <string name="convert_no_projection">This app declares media support only, so Android Auto will list it but refuse to open it while driving. Only its developer can change that — converting it will not help.</string>
+
+    <!-- Android Auto car screen (templated Car App Library surface) -->
+    <string name="car_title">Android Auto apps</string>
+    <string name="car_no_apps">No third-party Android Auto apps installed</string>
+    <string name="car_ok">Registered with Android Auto · %1$s</string>
+    <string name="car_not_registered">Not registered — reinstall it from AAAD on your phone</string>
+    <string name="car_no_projection">Listed, but this app cannot open while driving</string>
     <string name="action_convert">Convert</string>
     <string name="convert_already_running">A conversion is already running</string>
     <string name="convert_confirm_title">Convert %1$s?</string>

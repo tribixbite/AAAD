@@ -28,7 +28,7 @@ object Diagnostics {
         }
         val androidAuto = AndroidAutoLauncher.info(context)
         val catalog = runCatching { CatalogRepository(context).loadCatalog() }.getOrNull()
-        val installed = runCatching { InstalledAppScanner(context).scan() }.getOrDefault(emptyList())
+        val installed = runCatching { InstalledAppScanner(context).scan(includeSystemApps = true) }.getOrDefault(emptyList())
 
         buildString {
             appendLine("AAAD diagnostics")
@@ -64,14 +64,22 @@ object Diagnostics {
                 appendLine("  none")
             } else {
                 for (app in installed) {
-                    val marker = if (app.state == ConversionState.CONVERTIBLE) "!" else " "
+                    val marker = when {
+                        app.state == ConversionState.CONVERTIBLE -> "!"
+                        app.blockedWhileDriving -> "D"
+                        else -> " "
+                    }
+                    val uses = app.carCapabilities?.uses?.sorted()?.joinToString(",") ?: "unreadable"
                     appendLine(
                         "  $marker ${app.packageName} ${app.versionName} " +
-                            "installer=${app.installerPackage ?: "none"}"
+                            "installer=${app.installerPackage ?: "none"} uses=$uses"
                     )
                 }
                 appendLine()
                 appendLine("  ! = Android Auto will not list this app; it can be converted.")
+                appendLine("  D = declares no 'projection', so Android Auto lists it but blocks it")
+                appendLine("      while driving. That is the app's own manifest — installing it")
+                appendLine("      differently cannot change it.")
             }
         }
     }

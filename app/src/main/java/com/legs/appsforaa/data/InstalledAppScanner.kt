@@ -39,8 +39,25 @@ data class InstalledApp(
     val installerPackage: String?,
     val apkPaths: List<String>,
     val state: ConversionState,
+    /**
+     * Preinstalled or a system-image update. Google's own Android Auto apps — Maps, Messages,
+     * Dialer, the Play Store — are all system apps, and every one of them is already attributed.
+     */
+    val isSystemApp: Boolean = false,
+    /**
+     * What the app told Android Auto it can do, or null when it declares nothing readable.
+     * Independent of [state]: see [AutomotiveDescriptor].
+     */
+    val carCapabilities: AutomotiveDescriptor.Capabilities? = null,
 ) {
     val isSplit: Boolean get() = apkPaths.size > 1
+
+    /**
+     * Android Auto will list it but refuse to open it while driving. Nothing on this phone can
+     * change that — it is a statement the app makes in its own manifest.
+     */
+    val blockedWhileDriving: Boolean
+        get() = carCapabilities?.let { !it.projects && !it.isEmpty } == true
 }
 
 /**
@@ -66,7 +83,14 @@ class InstalledAppScanner(private val context: Context) {
      * Requires `QUERY_ALL_PACKAGES`, which the manifest declares — without it this returns only
      * the handful of packages listed in `<queries>`.
      */
-    suspend fun scan(): List<InstalledApp> = withContext(Dispatchers.IO) {
+    /**
+     * @param includeSystemApps whether to report preinstalled apps. False for the convert screen:
+     *   on a stock phone ten of the eleven Android-Auto-capable apps installed are Google's own,
+     *   all already attributed, and listing them buries the one app the user can actually act on
+     *   under nine greyed-out rows that make the screen look broken. True for diagnostics, where
+     *   the complete picture is the point.
+     */
+    suspend fun scan(includeSystemApps: Boolean = false): List<InstalledApp> = withContext(Dispatchers.IO) {
         val packageManager = context.packageManager
         val flags = PackageManager.GET_META_DATA
         val installed = runCatching {
@@ -80,14 +104,22 @@ class InstalledAppScanner(private val context: Context) {
         installed.asSequence()
             .filter { it.packageName != ourPackage }
             .filter { declaresAndroidAuto(it) }
+            .filter { includeSystemApps || !isSystemApp(it) }
             .mapNotNull { info -> toInstalledApp(packageManager, info) }
-            .sortedBy { it.label.lowercase() }
+            // Convertible first: the actionable rows belong at the top, not interleaved
+            // alphabetically with rows that have nothing to do.
+            .sortedWith(compareBy({ it.state != ConversionState.CONVERTIBLE }, { it.label.lowercase() }))
             .toList()
-            .also { Logger.i(TAG, "Found ${it.size} Android Auto capable apps installed") }
+            .also { Logger.i(TAG, "Found ${it.size} Android Auto capable apps installed " +
+                "(includeSystemApps=$includeSystemApps)") }
     }
 
     private fun declaresAndroidAuto(info: ApplicationInfo): Boolean =
         info.metaData?.containsKey(AA_METADATA_KEY) == true
+
+    /** Covers both a preinstalled app and one that has since been updated over its system copy. */
+    private fun isSystemApp(info: ApplicationInfo): Boolean =
+        (info.flags and (ApplicationInfo.FLAG_SYSTEM or ApplicationInfo.FLAG_UPDATED_SYSTEM_APP)) != 0
 
     private fun toInstalledApp(
         packageManager: PackageManager,
@@ -119,6 +151,8 @@ class InstalledAppScanner(private val context: Context) {
             apkPaths = apkPaths,
             state = if (installer == PLAY_STORE_PACKAGE) ConversionState.ALREADY_ATTRIBUTED
             else ConversionState.CONVERTIBLE,
+            isSystemApp = isSystemApp(info),
+            carCapabilities = AutomotiveDescriptor.forInstalled(packageManager, info.packageName),
         )
     }
 

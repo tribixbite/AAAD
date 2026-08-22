@@ -122,7 +122,8 @@ class DebugAutomationReceiver : BroadcastReceiver() {
             Logger.e(TAG, "RESULT=ERROR missing --es package")
             return
         }
-        val app = InstalledAppScanner(context).scan().firstOrNull { it.packageName == packageName }
+        val app = InstalledAppScanner(context).scan(includeSystemApps = true)
+            .firstOrNull { it.packageName == packageName }
         if (app == null) {
             Logger.e(TAG, "RESULT=ERROR $packageName is not installed or declares no AA metadata")
             return
@@ -167,7 +168,7 @@ class DebugAutomationReceiver : BroadcastReceiver() {
         // A status query has to be answerable on a locked device.
         val availability = ShizukuInstaller.availability()
         val catalog = runCatching { CatalogRepository(context).loadCatalog() }.getOrNull()
-        val installed = InstalledAppScanner(context).scan()
+        val installed = InstalledAppScanner(context).scan(includeSystemApps = true)
         Logger.i(
             TAG,
             "RESULT=STATUS availability=$availability " +

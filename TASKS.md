@@ -373,6 +373,52 @@ Design: [docs/agent-dash.md](docs/agent-dash.md).
   deleting the file restored the shipped catalog. Adding `Origin.DEVICE_OVERRIDE` also made the
   compiler flag the non-exhaustive `when` in `MainActivityNew`, which is the enum earning its keep.
 - [ ] **T-43** Structured logging to a file the harness can `adb pull`.
+
+- [x] **T-46** **Detect the "can't use while driving" condition.** `data/AutomotiveDescriptor`
+  reads an app's `com.google.android.gms.car.application` XML and reports its `<uses>` set, for
+  installed packages and for a downloaded APK before it is committed.
+
+  This exists because attribution and usability are **independent** and were being conflated.
+  Read out of the shipped APKs: CarStream and Fermata declare `projection` and open full screen;
+  AABrowser 2.2 declares `media` only and is listed but blocked while driving. `projection` is
+  what authorises a full-screen car Activity, and **nothing on the phone can grant it** — it is a
+  statement the app makes about itself. AABrowser already sets `distractionOptimized=true`, so
+  that was never the missing piece. Full evidence in
+  [docs/aa-visibility.md](docs/aa-visibility.md#being-listed-is-not-the-same-as-being-usable-while-driving-v).
+
+  Surfaced in diagnostics (marker `D`, plus each app's `uses=` set) and on the convert row.
+  *Not device-verified* — no phone was reachable; the finding is from `aapt2 dump xmltree` on the
+  publishers' own APKs, which is stronger evidence than a single device anyway.
+
+- [x] **T-47** **Make the convert screen usable.** It was showing every Android-Auto-capable app
+  including Google's own, so on a stock phone ten of eleven rows were preinstalled apps that are
+  already attributed and can never need conversion — nine greyed rows burying the one actionable
+  one, which reads as broken. `InstalledAppScanner.scan(includeSystemApps = false)` now excludes
+  system apps for the convert screen and sorts convertible first; diagnostics and the debug
+  receiver pass `true`, because there the complete picture is the point and a convert-by-name
+  request should never answer "not found" for an app that exists.
+
+- [ ] **T-44** **AAAD's own Android Auto surface — written, entirely unverified in a car.**
+  `car/AaadCarAppService` + `CarStatusScreen` show which installed AA apps registered, read-only:
+  installing an APK while driving is not a feature. Built on the official templated Car App
+  Library because the projected SDK those catalog apps use is not on Maven.
+
+  Three things need a head unit (or the desktop head unit emulator) to settle:
+  1. Whether Android Auto surfaces a **sideloaded** templated app at all, and whether AAAD being
+     Play-attributed to itself is enough.
+  2. The category. AA accepts NAVIGATION, POI, IOT, WEATHER, MEDIA, MESSAGING, CALLING — an app
+     manager is none of them, and `IOT` is a guess at the least-wrong one.
+  3. Whether a `com.google.android.gms.car.application` meta-data is needed too. The official docs
+     say no for templated apps; AABrowser ships one anyway. No `<uses>` value was invented for
+     AAAD rather than guess one — see the note in `AndroidManifest.xml`.
+
+- [ ] **T-45** **Decision: should AAAD rewrite a publisher's APK to add `<uses name="projection"/>`?**
+  It is the only way to fix an app like AABrowser from this side. Upstream v2.8.5 already does
+  on-device manifest and `resources.arsc` rewriting with in-process signing
+  ([docs/upstream-2.8.5-diff.md](docs/upstream-2.8.5-diff.md)), so the machinery is proven.
+  The cost is real: the APK must be re-signed with a local key, so its signature no longer matches
+  the publisher's and their own updates can never install over it again. That is a change of
+  ownership over someone else's app, not a tweak — **needs an explicit call before any work.**
 - [x] **T-40** Update checker — the thing upstream's README has promised for years.
   `data/UpdateChecker` resolves the latest published version of each **installed** catalog app and
   `CatalogRepository` turns that into `InstallState.UpdateAvailable`, which the adapter already

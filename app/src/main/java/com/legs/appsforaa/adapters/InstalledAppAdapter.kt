@@ -55,11 +55,19 @@ class InstalledAppAdapter(
             )
 
             val installer = app.installerPackage ?: context.getString(R.string.convert_installer_none)
-            binding.appDetail.text = when (app.state) {
+            val state = when (app.state) {
                 ConversionState.ALREADY_ATTRIBUTED ->
                     context.getString(R.string.convert_state_ok, app.versionName)
                 ConversionState.CONVERTIBLE ->
                     context.getString(R.string.convert_state_needed, installer)
+            }
+            // Said on the row itself, because otherwise a converted app that still will not open
+            // in the car looks like the conversion failed. It did not — the app declares no
+            // projection support, and no install can add it. See AutomotiveDescriptor.
+            binding.appDetail.text = if (app.blockedWhileDriving) {
+                state + "\n" + context.getString(R.string.convert_no_projection)
+            } else {
+                state
             }
 
             val convertible = app.state == ConversionState.CONVERTIBLE
