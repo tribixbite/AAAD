@@ -17,6 +17,7 @@
                 <action android:name="com.legs.appsforaa.DEBUG_INSTALL" />
                 <action android:name="com.legs.appsforaa.DEBUG_CONVERT" />
                 <action android:name="com.legs.appsforaa.DEBUG_STATUS" />
+                <action android:name="com.legs.appsforaa.DEBUG_UPDATE_CHECK" />
             </intent-filter>
         </receiver>
     </application>

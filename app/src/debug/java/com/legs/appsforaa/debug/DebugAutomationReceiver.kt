@@ -3,8 +3,10 @@ package com.legs.appsforaa.debug
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import com.legs.appsforaa.BuildConfig
 import com.legs.appsforaa.data.CatalogRepository
 import com.legs.appsforaa.data.InstalledAppScanner
+import com.legs.appsforaa.data.SelfUpdateChecker
 import com.legs.appsforaa.utils.InstallManager
 import com.legs.appsforaa.utils.Logger
 import com.legs.appsforaa.utils.ShizukuInstaller
@@ -35,7 +37,14 @@ import kotlinx.coroutines.withTimeoutOrNull
  *     -a com.legs.appsforaa.DEBUG_INSTALL --es id n2c
  * adb shell am broadcast -p sksa.aa.customapps.dev \
  *     -a com.legs.appsforaa.DEBUG_CONVERT --es package nl.frankkie.nav2contacts
+ * adb shell am broadcast -p sksa.aa.customapps.dev \
+ *     -a com.legs.appsforaa.DEBUG_UPDATE_CHECK --es repo owner/name --es version 0.1
  * ```
+ *
+ * `DEBUG_UPDATE_CHECK` takes optional `repo` and `version` overrides. Without them it checks
+ * exactly what the UI checks. With them, every branch of the check is reachable without
+ * rebuilding — which matters because the interesting branch (an update *is* available) cannot
+ * otherwise be reached until this fork publishes a release newer than the running build.
  *
  * Results go to logcat under `AAAD/DebugAutomation`; follow with
  * `adb logcat -s AAAD/DebugAutomation:V`.
@@ -47,6 +56,7 @@ class DebugAutomationReceiver : BroadcastReceiver() {
         const val ACTION_INSTALL = "com.legs.appsforaa.DEBUG_INSTALL"
         const val ACTION_CONVERT = "com.legs.appsforaa.DEBUG_CONVERT"
         const val ACTION_STATUS = "com.legs.appsforaa.DEBUG_STATUS"
+        const val ACTION_UPDATE_CHECK = "com.legs.appsforaa.DEBUG_UPDATE_CHECK"
 
         /** Generous: a cold download of a large APK over a slow link still has to finish. */
         const val TIMEOUT_MILLIS = 5 * 60 * 1000L
@@ -64,6 +74,7 @@ class DebugAutomationReceiver : BroadcastReceiver() {
                         ACTION_INSTALL -> install(appContext, intent.getStringExtra("id"))
                         ACTION_CONVERT -> convert(appContext, intent.getStringExtra("package"))
                         ACTION_STATUS -> status(appContext)
+                        ACTION_UPDATE_CHECK -> updateCheck(intent)
                         else -> Logger.w(TAG, "Unknown action: ${intent.action}")
                     }
                 } ?: Logger.e(TAG, "RESULT=TIMEOUT")
@@ -120,6 +131,28 @@ class DebugAutomationReceiver : BroadcastReceiver() {
         when (val result = ShizukuInstaller.convertInstalled(packageName, app.apkPaths)) {
             is ShizukuInstaller.Result.Success -> Logger.i(TAG, "RESULT=CONVERTED $packageName")
             is ShizukuInstaller.Result.Failure -> Logger.e(TAG, "RESULT=FAILED ${result.message}")
+        }
+    }
+
+    /**
+     * Overrides are applied only when the extra is actually present, so `--es repo ''` is a
+     * distinct instruction ("no update source") rather than "use the default".
+     */
+    private suspend fun updateCheck(intent: Intent) {
+        val checker = SelfUpdateChecker(
+            currentVersion = intent.getStringExtra("version") ?: BuildConfig.VERSION_NAME,
+            repo = intent.getStringExtra("repo") ?: BuildConfig.UPDATE_REPO,
+        )
+        when (val result = checker.check()) {
+            is SelfUpdateChecker.Result.Disabled -> Logger.i(TAG, "RESULT=UPDATE_DISABLED")
+            is SelfUpdateChecker.Result.NoRelease -> Logger.i(TAG, "RESULT=UPDATE_NONE")
+            is SelfUpdateChecker.Result.UpToDate ->
+                Logger.i(TAG, "RESULT=UPDATE_CURRENT version=${result.version}")
+            is SelfUpdateChecker.Result.Available ->
+                Logger.i(TAG, "RESULT=UPDATE_AVAILABLE version=${result.version} " +
+                    "alongside=${result.sidesteps}")
+            is SelfUpdateChecker.Result.Failed ->
+                Logger.e(TAG, "RESULT=UPDATE_FAILED ${result.message}")
         }
     }
 

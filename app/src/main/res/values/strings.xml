@@ -355,6 +355,22 @@
     <string name="diagnostics_copied">Diagnostics copied</string>
     <string name="diagnostics_no_target">No app available to share to</string>
 
+    <!-- Self-update. Checked only when the user taps, never on a timer. -->
+    <string name="update_title">App updates</string>
+    <string name="update_current">This build: %1$s</string>
+    <string name="update_check">Check for updates</string>
+    <string name="update_checking">Checking…</string>
+    <string name="update_disabled">This build has no update source configured.</string>
+    <string name="update_none">No release has been published yet. Development builds are not offered here.</string>
+    <string name="update_up_to_date">Up to date.</string>
+    <string name="update_available">Version %1$s is available.</string>
+    <string name="update_available_alongside">Version %1$s is available. It installs alongside this build instead of replacing it, because this is a development build with a different package name.</string>
+    <string name="update_install">Download and install</string>
+    <string name="update_downloading">Downloading… %1$d%%</string>
+    <string name="update_installing">Installing…</string>
+    <string name="update_installed">Installed %1$s.</string>
+    <string name="update_handed_off">Confirm the install to finish updating.</string>
+
     <!-- Android Auto setup walkthrough -->
     <string name="aa_setup_open">Android Auto setup</string>
     <string name="aa_setup_why">Android Auto only lists an app when the install is attributed to the Play Store. Shizuku does that automatically. Without it, the only alternative is to enable \"Unknown sources\" in Android Auto\'s own developer settings.</string>

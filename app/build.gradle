@@ -75,6 +75,10 @@ android {
         // then uses the catalog bundled in assets and never contacts a server for metadata.
         // Set CATALOG_URL in local.properties or the environment to point at a remote catalog.
         buildConfigField "String", "CATALOG_URL", "\"${cfg('CATALOG_URL', '')}\""
+
+        // The GitHub repo this build checks for its own updates. Empty disables the check
+        // entirely, which is the right setting for a build that is not distributed.
+        buildConfigField "String", "UPDATE_REPO", "\"${cfg('UPDATE_REPO', 'tribixbite/AAAD')}\""
     }
 
     // Signing is env-var driven (same contract as ../swype/cleverkeys and the

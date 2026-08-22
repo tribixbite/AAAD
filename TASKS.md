@@ -152,8 +152,40 @@ Design and rationale: [docs/standalone.md](docs/standalone.md).
   *Done when:* an unrenamed publisher build is installed with correct attribution and we know
   whether Android Auto lists it. If renaming is required, in-process signing is the proven route —
   `com.android.apksig.ApkSigner` or `net.fornwall.apksigner.ZipSigner`, no BouncyCastle.
-- [ ] **T-17** Self-update against this fork's own GitHub releases, using `utils/Version.java`.
-  Replaces upstream's update check, which pointed at upstream's releases.
+- [x] **T-17** Self-update against this fork's own GitHub releases. Replaces upstream's update
+  check, which pointed at *upstream's* releases — wrong for a fork, since it offers the user a
+  different app. `data/SelfUpdateChecker` targets `BuildConfig.UPDATE_REPO`
+  (default `tribixbite/AAAD`, blank disables the check entirely).
+
+  Not built on `utils/Version.java` as originally planned: that comparator *throws* on any version
+  it cannot parse as pure digits-and-dots, which is most real-world tags. `utils/VersionCompare`
+  already returns null for versions it cannot confidently order, and an update prompt the user
+  cannot verify is worse than no prompt, so unknown is treated as up to date. `Version.java` had no
+  remaining references and is deleted.
+
+  Two deliberate limits. **Stable releases only:** CI publishes a `dev-<sha>` prerelease on every
+  push and offering those would fire several times a day; GitHub's `releases/latest` already
+  excludes prereleases. **Only when asked:** no timer, no worker — an app that phones home on a
+  schedule is what this fork removed.
+
+  It reuses `InstallManager` via a synthetic `AppEntry` rather than growing a second
+  download-and-install path, and it reports `alongside=true` when the published build carries a
+  different applicationId than the running one, because a `.dev` build cannot be replaced by a
+  release build — it installs beside it, and two AAAD icons is a bad way to learn that.
+
+  Lives on the diagnostics screen, not the catalog: updating AAAD and updating the apps AAAD
+  installs are different actions, and one screen offering both is how people update the wrong one.
+
+  `ReleaseResolver` gained `NoReleaseException` so "nothing published yet" stops being reported as
+  a failure. GitHub answers 404 for both "no non-prerelease release" and "no such repo", so a 404
+  now costs one extra request to tell those apart — the difference between "not published yet" and
+  "you typed the name wrong".
+
+  *Verified on device* through `DEBUG_UPDATE_CHECK`: default → `UPDATE_NONE` (this fork has no
+  tagged release yet); `--es version 0.1 --es repo AndreyPavlenko/Fermata` → `UPDATE_AVAILABLE
+  version=2.0.2 alongside=true`; `--es version 99.0` → `UPDATE_CURRENT`; a nonexistent repo →
+  `UPDATE_FAILED Repository ... not found`. The blank-repo branch is unreachable over adb (the
+  device shell drops a whitespace-only argument) and is covered by `SelfUpdateCheckerTest`.
 
 - [x] **T-30a** **Convert installed apps.** `data/InstalledAppScanner` finds installed apps
   declaring `com.google.android.gms.car.application`, reads each one's installer via

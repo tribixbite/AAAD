@@ -39,6 +39,7 @@ adb -s $D shell am broadcast -f 0x00000020 -p sksa.aa.customapps.dev \
     -a com.legs.appsforaa.DEBUG_STATUS
 ... -a com.legs.appsforaa.DEBUG_INSTALL --es id n2c
 ... -a com.legs.appsforaa.DEBUG_CONVERT --es package nl.frankkie.nav2contacts
+... -a com.legs.appsforaa.DEBUG_UPDATE_CHECK --es repo owner/name --es version 0.1
 
 adb -s $D logcat -d -s AAAD/DebugAutomation:V | grep RESULT=
 ```
@@ -46,6 +47,12 @@ adb -s $D logcat -d -s AAAD/DebugAutomation:V | grep RESULT=
 **`-f 0x00000020` is mandatory.** It is `FLAG_INCLUDE_STOPPED_PACKAGES`; after `am force-stop` the
 app receives no manifest broadcasts without it, and `am` still prints `result=0`, so the failure is
 completely silent.
+
+`DEBUG_UPDATE_CHECK`'s `repo`/`version` extras exist so every branch of the self-update check is
+reachable without rebuilding: pass a version below a real repo's latest to force the
+update-available path. One branch is NOT reachable this way — a blank `repo` (the "no update
+source" case), because `adb shell` re-splits the command and drops a whitespace-only argument.
+That branch is pinned by `SelfUpdateCheckerTest` instead.
 
 Simulated taps are a last resort: they need an unlocked screen, a known scroll offset and stable
 coordinates. If you must, get bounds from `uiautomator dump` rather than guessing pixels — and note
