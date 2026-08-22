@@ -137,8 +137,52 @@ adb forward tcp:5277 tcp:5277     # then connect a client and see how far the ha
 and it is the same socket a real head unit uses — so whatever protocol work turns out to be
 necessary is work against a documented target rather than a reverse-engineered one.
 
-*Unverified:* that this AA build opens 5277 specifically when that setting is enabled. Confirm by
-toggling it and re-checking `/proc/net/tcp` before building anything against it.
+### Confirmed on hardware [V]
+
+Enabling it on the paired S25U (AA 17.3) and watching `/proc/net/tcp`:
+
+- **Port 5277 opens.** The assumed port was right, now observed rather than assumed.
+- The component behind it is `.companion.DeveloperHeadUnitNetworkService`.
+- Enabling it starts a **`com.google.android.projection.gearhead:projection`** process and binds
+  `GearheadCarStartupService` — state that does not exist on an idle phone.
+- **No root needed.** It is a menu item, reached as AA's own string says: *"Developer mode
+  enabled. Access it using the overflow menu on the top right."* Strings #843–#848 are one
+  contiguous overflow-menu block — `Start head unit server`, `Stop head unit server`,
+  `Developer settings`, `Help and feedback`, `Quit developer mode` — so it sits *beside*
+  "Developer settings", not inside it. That is the single most confusing part of this and it cost
+  a round trip.
+
+Connecting to it from Termux on the same device (`127.0.0.1:5277`):
+
+```
+RESULT=CONNECTED to 127.0.0.1:5277
+BYTES=0
+NOTE=server accepted the connection but sent nothing; it expects the client to speak first
+```
+
+A naive version-request frame (`00 03 00 06 | 00 01 00 01 00 01` — channel 0, first+last flags,
+then message id 1 with major/minor) drew **no reply**, so the framing has to match the real
+protocol exactly; guessing at it is not going to work.
+
+### The verdict for T-22
+
+**With the head unit server running and a client connected, `dumpsys` still does not expose the
+app list.** The full services dump is 183 lines of gearhead's own services and nothing else — no
+third-party packages. That closes the cheap probe: the prediction in the table above held, and the
+app list really is only ever rendered into the video stream.
+
+So T-22 now has a known route and a known cost, rather than an unknown:
+
+- **Route:** the head unit server on 5277, no root, one menu tap. Confirmed reachable.
+- **Cost:** implementing enough of the AA protocol to complete the handshake and decode video —
+  which is what upstream's ~100 classes are. There is no shortcut through `dumpsys`.
+- **Therefore:** the harness continues to report `androidAutoVisible: "unknown"`, and installer
+  attribution stays the assertion it actually makes. Attempt the protocol only if visibility
+  itself becomes the thing under test, and start from AASDK/openauto's framing rather than
+  guesswork.
+
+**Turn the server off when finished** (same overflow menu, "Stop head unit server"). It is an
+open listening port on the phone.
 
 **So the cheap experiment is worth doing before the expensive one.** Ranked:
 

@@ -167,7 +167,7 @@ a matrix run is impossible against a quota-gated build, and that is now moot.
   silently fall back to an unattributed one and the matrix would measure nothing.
   Verified: `n2c … attributed (installer=com.android.vending)`, `playAttributed: true`.
   *Still to add:* launch + screenshot per app (T-23 covers the capture rules).
-- [ ] **T-22** Android Auto visibility probe — the assertion that actually matters. Upstream's
+- [~] **T-22** Android Auto visibility probe — the assertion that actually matters. Upstream's
   `AndroidAutoCompatChecker` is a working model: per package it checks AA meta-data, Play Store
   stamps, **installer source**, and the unknown-source flag
   ([aa-visibility.md](docs/aa-visibility.md#diagnostics-worth-keeping)). Installer source is the
@@ -187,8 +187,19 @@ a matrix run is impossible against a quota-gated build, and that is now moot.
   Desktop Head Unit port (conventionally 5277) via a user-toggled setting, needing no root and no
   exported activity, and it is the same socket a real head unit uses. Nothing listens on 5277 on
   the S25U today, so the setting is off.
-  *Next:* enable it on the paired S25U, confirm 5277 opens, `adb forward tcp:5277 tcp:5277`, and
-  see how far a client gets. Only then does the question of how much protocol to implement arise.
+  **Confirmed on hardware (2026-08-22).** Enabling it on the paired S25U opens **port 5277**
+  (observed in `/proc/net/tcp`, not assumed), starts a `gearhead:projection` process, and binds
+  `GearheadCarStartupService`; the component is `.companion.DeveloperHeadUnitNetworkService`. It
+  needs **no root** — it is an overflow-menu item, sitting *beside* "Developer settings" rather
+  than inside it, which is what made it hard to find.
+  **But `dumpsys` still does not expose the app list** even with the server up and a client
+  connected: 183 lines of gearhead's own services and no third-party packages. The cheap probe is
+  therefore closed — the app list really is only rendered into the video stream.
+  T-22 now has a known route and a known cost instead of an unknown: reaching a session is one
+  menu tap, and getting the list from it means implementing the protocol (upstream's ~100 classes)
+  and decoding video. The server ignores a guessed version frame, so any attempt must start from
+  AASDK/openauto framing. **Do it only if visibility itself becomes the thing under test**; until
+  then the harness reports `androidAutoVisible: "unknown"` and asserts installer attribution.
   **Investigated and confirmed blocked**: on a rooted device, gearhead has no `databases/` at all
   and `shared_prefs/carservice.xml` is 424 bytes of unrelated tuning constants — no app list, no
   `unknown_sources` flag. AA caches nothing until it has projected, which rules out any idle-phone
