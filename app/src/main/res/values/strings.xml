@@ -315,6 +315,7 @@
     <string name="install_done_attributed">%1$s installed and registered for Android Auto</string>
     <string name="install_handed_to_system">Confirm the install when Android asks. Without Shizuku the app is not registered for Android Auto — enable \"Unknown sources\" in Android Auto\'s developer settings.</string>
     <string name="install_failed_reason">Install failed: %1$s</string>
+    <string name="install_needs_shizuku">Shizuku is not running, and this install cannot ask you to confirm. Start Shizuku and try again.</string>
 
     <!-- Converting already-installed apps to Play Store attribution -->
     <string name="convert_title">Convert installed apps</string>

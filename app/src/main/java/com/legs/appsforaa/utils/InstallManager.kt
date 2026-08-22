@@ -41,6 +41,14 @@ class InstallManager(
          */
         data object HandedToSystemInstaller : Outcome
 
+        /**
+         * Shizuku was not available and the caller does not allow the system-installer fallback.
+         *
+         * Distinct from [Failed] because nothing went wrong: the install simply cannot proceed
+         * without a person present to confirm it, which is a precondition rather than a fault.
+         */
+        data object NeedsShizuku : Outcome
+
         data class Failed(val message: String) : Outcome
     }
 
@@ -49,8 +57,17 @@ class InstallManager(
      *
      * Never throws for expected conditions — a moved release, a dead network, or a refused
      * install all come back as [Outcome.Failed] with a message worth showing the user.
+     *
+     * @param allowSystemFallback whether to hand off to the system installer when Shizuku is not
+     *   available. True for anything a person is watching. **False for automation**: the system
+     *   installer needs a tap that will never come, and handing off would leave a dialog sitting
+     *   on the device and report a "success" for an install that never happened.
      */
-    suspend fun install(entry: AppEntry, onProgress: (Progress) -> Unit): Outcome {
+    suspend fun install(
+        entry: AppEntry,
+        allowSystemFallback: Boolean = true,
+        onProgress: (Progress) -> Unit,
+    ): Outcome {
         val release = runCatching {
             onProgress(Progress.Resolving)
             resolver.resolve(entry.source)
@@ -76,11 +93,19 @@ class InstallManager(
                 when (val result = ShizukuInstaller.install(apk)) {
                     is ShizukuInstaller.Result.Success ->
                         Outcome.InstalledAttributed(release.versionName)
-                    is ShizukuInstaller.Result.Failure -> {
+                    is ShizukuInstaller.Result.Failure -> if (allowSystemFallback) {
                         Logger.w(TAG, "Shizuku install failed, falling back: ${result.message}")
                         systemInstall(apk)
+                    } else {
+                        Logger.w(TAG, "Shizuku install failed and no fallback is permitted: " +
+                            result.message)
+                        Outcome.Failed(result.message)
                     }
                 }
+            } else if (!allowSystemFallback) {
+                Logger.i(TAG, "Shizuku is not ready and the system installer needs a person to " +
+                    "confirm, so ${entry.name} is not installed")
+                Outcome.NeedsShizuku
             } else {
                 Logger.i(TAG, "Falling back to the system installer — the result will NOT be " +
                     "attributed to the Play Store, so Android Auto will not list ${entry.name} " +

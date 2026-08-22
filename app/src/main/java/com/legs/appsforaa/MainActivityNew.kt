@@ -273,6 +273,8 @@ class MainActivityNew : AppCompatActivity() {
                 getString(R.string.install_done_attributed, item.entry.name)
             is InstallManager.Outcome.HandedToSystemInstaller ->
                 getString(R.string.install_handed_to_system)
+            is InstallManager.Outcome.NeedsShizuku ->
+                getString(R.string.install_needs_shizuku)
             is InstallManager.Outcome.Failed ->
                 getString(R.string.install_failed_reason, outcome.message)
         }

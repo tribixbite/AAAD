@@ -25,6 +25,13 @@ export type ActionResult =
   | { kind: "attributed"; version: string }
   | { kind: "converted"; packageName: string }
   | { kind: "system-installer" }
+  /**
+   * Shizuku was not ready, and an unattended install refuses to fall back to a dialog nobody is
+   * there to tap. Separate from `failed` because nothing is broken — the run just cannot proceed
+   * until Shizuku is started, and a run that reports this needs a different response from one
+   * that reports a download error.
+   */
+  | { kind: "needs-shizuku" }
   | { kind: "failed"; message: string }
   | { kind: "timeout" };
 
@@ -41,26 +48,45 @@ async function broadcast(serial: string, action: string, extras = ""): Promise<A
   );
 }
 
+/**
+ * Maps one `RESULT=` logcat line to a verdict, or null when the line carries none.
+ *
+ * Pure and exported so every result the receiver can emit is checkable without a device. A
+ * `RESULT=` the receiver logs but this does not recognise matches nothing, and the caller then
+ * polls until its timeout — a five-minute stall that looks like a hung install rather than an
+ * unhandled case. That is worth a test, not vigilance.
+ */
+export function parseResultLine(line: string): ActionResult | null {
+  if (!line.includes("RESULT=")) return null;
+
+  if (line.includes("RESULT=ATTRIBUTED")) {
+    return { kind: "attributed", version: /version=(\S+)/.exec(line)?.[1] ?? "" };
+  }
+  if (line.includes("RESULT=CONVERTED")) {
+    return { kind: "converted", packageName: line.trim().split(/\s+/).pop() ?? "" };
+  }
+  if (line.includes("RESULT=SYSTEM_INSTALLER")) return { kind: "system-installer" };
+  if (line.includes("RESULT=NEEDS_SHIZUKU")) return { kind: "needs-shizuku" };
+  if (line.includes("RESULT=FAILED") || line.includes("RESULT=ERROR")) {
+    return { kind: "failed", message: line.split("RESULT=")[1]?.trim() ?? "unknown" };
+  }
+  if (line.includes("RESULT=TIMEOUT")) return { kind: "timeout" };
+  return null;
+}
+
 /** Polls logcat until the receiver reports a verdict, or gives up. */
 async function awaitResult(serial: string, timeoutMs: number): Promise<ActionResult> {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     await Bun.sleep(2_000);
     const { stdout } = await shell(serial, `logcat -d -s ${LOG_TAG}:V`, 30_000);
-    const line = stdout.split("\n").reverse().find((l) => l.includes("RESULT="));
-    if (!line) continue;
-
-    if (line.includes("RESULT=ATTRIBUTED")) {
-      return { kind: "attributed", version: /version=(\S+)/.exec(line)?.[1] ?? "" };
-    }
-    if (line.includes("RESULT=CONVERTED")) {
-      return { kind: "converted", packageName: line.trim().split(/\s+/).pop() ?? "" };
-    }
-    if (line.includes("RESULT=SYSTEM_INSTALLER")) return { kind: "system-installer" };
-    if (line.includes("RESULT=FAILED") || line.includes("RESULT=ERROR")) {
-      return { kind: "failed", message: line.split("RESULT=")[1]?.trim() ?? "unknown" };
-    }
-    if (line.includes("RESULT=TIMEOUT")) return { kind: "timeout" };
+    // Newest first: a retried action leaves the earlier verdict in the buffer.
+    const verdict = stdout
+      .split("\n")
+      .reverse()
+      .map(parseResultLine)
+      .find((result) => result !== null);
+    if (verdict) return verdict;
   }
   return { kind: "timeout" };
 }

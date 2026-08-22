@@ -328,7 +328,28 @@ Design: [docs/agent-dash.md](docs/agent-dash.md).
 
 ## Phase 5 — App changes worth making
 
-- [ ] **T-41** Shizuku-first install path with a clean fallback, so harness runs are unattended.
+- [x] **T-41** Shizuku-first install path with a clean fallback, so harness runs are unattended.
+  `InstallManager` already preferred Shizuku and fell back; what was missing was the *unattended*
+  half. The fallback opens the system installer, which needs a person to tap Confirm — during a
+  harness run nobody does, so the run left a dialog sitting on the device and reported
+  `SYSTEM_INSTALLER` for an install that never happened.
+
+  `install(entry, allowSystemFallback)` now defaults to true for anything a person is watching and
+  is **false** from `DebugAutomationReceiver`, which yields the new `Outcome.NeedsShizuku`.
+  It is a distinct outcome rather than a `Failed`, because nothing is broken: the run cannot
+  proceed until Shizuku is started, and that needs a different response from a download error.
+
+  Also extracted `parseResultLine` in `harness/src/app.ts` and covered it with `app.test.ts`. That
+  was not incidental — a `RESULT=` the receiver logs but the harness does not recognise matches no
+  branch, so the poll spins to its five-minute timeout and looks like a hung install rather than
+  an unhandled case. Adding `NEEDS_SHIZUKU` would have introduced exactly that bug.
+
+  *Verified on device:* an unattended `DEBUG_INSTALL` with Shizuku ready still reports
+  `RESULT=ATTRIBUTED`, and a full `cli.ts matrix --apps carstream` run through the refactored poll
+  reports `attributed (installer=com.android.vending)`.
+  *Not exercised on device:* the `NeedsShizuku` branch itself, which would mean stopping Shizuku on
+  the test phone and leaving it stopped. It is covered by `app.test.ts` at the parser level and by
+  the compiler's exhaustiveness check at the call sites.
 - [ ] **T-42** Local catalog override (a file on the device) so unlisted APKs can be tested
   without editing the bundled catalog.
 - [ ] **T-43** Structured logging to a file the harness can `adb pull`.

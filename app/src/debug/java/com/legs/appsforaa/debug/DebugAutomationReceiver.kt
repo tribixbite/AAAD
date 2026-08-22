@@ -99,7 +99,9 @@ class DebugAutomationReceiver : BroadcastReceiver() {
         }
 
         Logger.i(TAG, "INSTALL id=$id name=${entry.name}")
-        val outcome = InstallManager(context).install(entry) { progress ->
+        // No fallback: nobody is watching a harness run, so a system-installer dialog would sit
+        // on the device forever and be reported as though something had happened.
+        val outcome = InstallManager(context).install(entry, allowSystemFallback = false) { progress ->
             Logger.d(TAG, "progress: $progress")
         }
         when (outcome) {
@@ -107,6 +109,9 @@ class DebugAutomationReceiver : BroadcastReceiver() {
                 Logger.i(TAG, "RESULT=ATTRIBUTED version=${outcome.versionName}")
             is InstallManager.Outcome.HandedToSystemInstaller ->
                 Logger.i(TAG, "RESULT=SYSTEM_INSTALLER (not Play-attributed)")
+            is InstallManager.Outcome.NeedsShizuku ->
+                Logger.e(TAG, "RESULT=NEEDS_SHIZUKU Shizuku is not ready; unattended install " +
+                    "cannot fall back to the system installer")
             is InstallManager.Outcome.Failed ->
                 Logger.e(TAG, "RESULT=FAILED ${outcome.message}")
         }

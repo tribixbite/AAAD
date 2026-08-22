@@ -133,6 +133,7 @@ class SupportActivity : AppCompatActivity() {
                     getString(R.string.update_installed, update.version)
                 is InstallManager.Outcome.HandedToSystemInstaller ->
                     getString(R.string.update_handed_off)
+                is InstallManager.Outcome.NeedsShizuku -> getString(R.string.install_needs_shizuku)
                 is InstallManager.Outcome.Failed -> outcome.message
             }
             // On success this process is about to be replaced; on failure the user may want to
