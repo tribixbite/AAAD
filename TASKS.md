@@ -62,9 +62,21 @@ Design and rationale: [docs/standalone.md](docs/standalone.md).
   flipped from `Not Installed / INSTALL` to `Installed: 1.0.3 / OPEN` with no manual refresh.
   The unimplemented activities were **omitted from the manifest rather than stubbed**: a declared
   component with no class is a crash waiting for whoever first routes to it.
-- [ ] **T-08** Onboarding (`OnboardingActivityNew` + the first-run routing seam already present in
-  `LauncherActivity`): permissions, Play Protect warning, Shizuku setup. All strings already
-  exist in `res/values/strings.xml`. Re-add the manifest entry with the implementation.
+- [x] **T-08** First-run setup. `OnboardingActivity` is **one scrolling screen of live status**,
+  not upstream's multi-page pager: a pager makes the user read advice that may not apply to their
+  device, whereas this shows each item's real state and only asks for what is missing.
+  It closes a genuine gap — nothing in the app had ever asked for permission to install packages,
+  so a user without Shizuku hit the system installer and got a refusal with no explanation.
+  `canRequestPackageInstalls` is a Settings toggle rather than a runtime permission, so the screen
+  links to it instead of pretending a dialog exists, with a fallback for OEM builds that lack the
+  per-app screen. `LauncherActivity` routes first run here via `data/OnboardingStore`.
+  Verified live: first run → onboarding (install permission showing GRANT, Shizuku showing
+  "Ready to use" with no button), Continue → catalog, relaunch → straight to catalog.
+  Also replaced upstream's welcome copy, which said "Swipe through…" and described a pager that
+  no longer exists.
+  *Not wired:* re-entry after dismissal. Everything on the screen is also in Diagnostics, and the
+  two actionable items surface where they actually block something. Use `onboarding_welcome_summary`
+  and add a button if that changes.
 - [x] **T-09** `AndroidAutoSetupActivity` **done**: the developer-settings walkthrough, with live
   status for Shizuku and the installed Android Auto version. It leads with whether the user needs
   the steps at all — if Shizuku is ready it says so rather than sending them through a fiddly

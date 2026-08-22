@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="?android:attr/colorBackground">
+
+    <ScrollView
+        android:id="@+id/scroll"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="20dp"
+            android:paddingTop="24dp"
+            android:paddingBottom="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/onboarding_welcome_title"
+                android:textAppearance="?attr/textAppearanceHeadlineSmall"
+                android:textColor="?attr/colorOnBackground" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/onboarding_welcome_summary"
+                android:textAppearance="?attr/textAppearanceBodyMedium"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+
+            <!-- Install permission: needed by the fallback installer. Without it a non-Shizuku
+                 install fails at the system dialog with nothing explaining why. -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/OnboardingCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp">
+                <LinearLayout style="@style/OnboardingCardBody">
+                    <TextView
+                        android:id="@+id/install_title"
+                        style="@style/OnboardingCardTitle"
+                        android:text="@string/onboarding_unknown_sources_title" />
+                    <TextView
+                        android:id="@+id/install_status"
+                        style="@style/OnboardingCardBodyText"
+                        android:text="@string/onboarding_unknown_sources_description" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/install_action"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="@string/onboarding_grant_permissions" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Shizuku: optional, but it is the difference between an install Android Auto
+                 lists and one it ignores, so it is stated in those terms. -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/OnboardingCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp">
+                <LinearLayout style="@style/OnboardingCardBody">
+                    <TextView
+                        style="@style/OnboardingCardTitle"
+                        android:text="@string/onboarding_shizuku_enhanced_mode" />
+                    <TextView
+                        android:id="@+id/shizuku_status"
+                        style="@style/OnboardingCardBodyText" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/shizuku_action"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="@string/onboarding_shizuku_install" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Play Protect: informational. It genuinely does flag these apps. -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/OnboardingCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp">
+                <LinearLayout style="@style/OnboardingCardBody">
+                    <TextView
+                        style="@style/OnboardingCardTitle"
+                        android:text="@string/onboarding_play_protect_title" />
+                    <TextView
+                        style="@style/OnboardingCardBodyText"
+                        android:text="@string/onboarding_play_protect_warning" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <LinearLayout
+        android:id="@+id/footer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="20dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="16dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/finish"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/onboarding_continue" />
+
+    </LinearLayout>
+
+</LinearLayout>

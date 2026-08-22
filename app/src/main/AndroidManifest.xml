@@ -122,6 +122,13 @@
             </intent-filter>
         </activity>
 
+        <!-- First-run setup -->
+        <activity
+            android:name=".OnboardingActivity"
+            android:screenOrientation="portrait"
+            android:exported="false"
+            android:theme="@style/Theme.AA_Apps_Downloader" />
+
         <!-- Diagnostics -->
         <activity
             android:name=".SupportActivity"
@@ -157,10 +164,6 @@
             android:label="@string/convert_title"
             android:parentActivityName=".MainActivityNew"
             android:theme="@style/Theme.AA_Apps_Downloader" />
-
-        <!-- Onboarding (T-08) is not implemented yet. Their entries are omitted rather than declared against classes that
-             do not exist: a declared-but-missing component is a crash waiting for whoever first
-             routes to it. Re-add each alongside its implementation. -->
 
         <!-- New Material You Main Activity -->
         <activity

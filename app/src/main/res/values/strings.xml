@@ -340,6 +340,12 @@
     <string name="convert_needs_shizuku_title">Shizuku is required</string>
     <string name="convert_needs_shizuku_message">Converting an app needs Shizuku running, because only a privileged install can register an app with Android Auto. There is no fallback for this — the normal Android installer cannot set the required attribution.\n\nOpen Shizuku, start the service, and try again.</string>
 
+    <string name="onboarding_install_granted">Granted — this app can install the apps you choose.</string>
+    <!-- Replaces onboarding_welcome_description, whose "Swipe through to learn how to use the
+         app" was written for upstream's multi-page pager. This screen is a single status list,
+         so that wording described a UI that no longer exists. -->
+    <string name="onboarding_welcome_summary">This app installs Android Auto apps and registers them so Android Auto will actually list them. Below is what it needs on this device — anything already set up is marked as such.</string>
+
     <!-- Diagnostics -->
     <string name="diagnostics_title">Diagnostics</string>
     <string name="diagnostics_subtitle">The state that decides whether Android Auto lists an app</string>
