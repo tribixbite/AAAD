@@ -232,9 +232,19 @@ a matrix run is impossible against a quota-gated build, and that is now moot.
 
 Design: [docs/agent-dash.md](docs/agent-dash.md).
 
-- [ ] **T-30** Dash skeleton served from Termux: device inventory + live adb status.
-- [ ] **T-31** Harness run history: matrix view, per-app timeline, screenshot gallery.
+- [x] **T-30** `dash/` — a bun HTTP server on `127.0.0.1:18980` (loopback only; no auth, no
+  business being reachable from the network) with a dark, mobile-first single page, everything
+  inlined so it works with no network at all. Live device inventory via the harness's own `adb.ts`
+  rather than a second implementation.
+- [x] **T-31** Run history: every `harness/runs/*/results.jsonl` rendered newest-first with its
+  screenshots inline, plus recorded baselines. The headline figure per run is **Play-attributed
+  count**, because that is the assertion the harness can actually make — AA visibility is shown as
+  `unknown` rather than implied. A truncated final JSONL line (interrupted run) is skipped instead
+  of failing the page.
+  *Still to add:* per-app timeline across runs (T-33's catalog view would pair with it).
 - [ ] **T-32** Task queue view backed by this file.
+  Deliberately not done yet: `TASKS.md` is read far more often in an editor than it would be in a
+  browser, so this is the lowest-value dash panel until something else needs the page.
 - [ ] **T-33** Catalog inspector: catalog vs. installed state per device, update deltas.
 - [ ] **T-34** Decide integration depth with `../operad` and record it in `docs/agent-dash.md`.
 

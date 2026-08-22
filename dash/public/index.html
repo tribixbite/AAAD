@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AAAD dash</title>
+<style>
+  /* Dark-first: this is read on a phone, usually at night, next to the device under test.
+     Everything is inline — the dash must work with no network at all. */
+  :root {
+    color-scheme: dark;
+    --bg: #0e1211;
+    --surface: #161c1a;
+    --line: #26302d;
+    --text: #e6ece9;
+    --muted: #93a29d;
+    --ok: #7fd1a8;
+    --bad: #ef8f7e;
+    --warn: #e8c37a;
+    --accent: #9ecfbb;
+  }
+  * { box-sizing: border-box; }
+  html, body { max-width: 100%; }
+  body {
+    margin: 0; padding: max(16px, env(safe-area-inset-top)) 16px 32px;
+    background: var(--bg); color: var(--text);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  h1 { font-size: 1.4rem; margin: 0 0 4px; }
+  h2 { font-size: 1rem; margin: 28px 0 10px; color: var(--muted); font-weight: 600;
+       text-transform: uppercase; letter-spacing: .06em; }
+  .sub { color: var(--muted); margin: 0 0 8px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 14px; padding: 14px; margin-bottom: 10px;
+    /* min-width:0 lets the nowrap tables inside shrink instead of forcing the card — and the
+       page — wider than the viewport. Without it the whole body scrolls sideways. */
+    min-width: 0; overflow: hidden;
+  }
+  .row { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+  .grow { flex: 1 1 auto; min-width: 0; }
+  .mono { font-family: ui-monospace, monospace; font-size: .85em; color: var(--muted);
+          overflow-wrap: anywhere; }
+  .pill { font-size: .75rem; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--line);
+          white-space: nowrap; }
+  .ok { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 40%, transparent); }
+  .bad { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 40%, transparent); }
+  .warn { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 40%, transparent); }
+  /* Wide content scrolls inside its own box; the page itself never scrolls sideways. */
+  .scroll-x { overflow-x: auto; max-width: 100%; -webkit-overflow-scrolling: touch; }
+  table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line);
+           white-space: nowrap; }
+  th { color: var(--muted); font-weight: 600; }
+  img.shot { width: 100%; max-width: 240px; border-radius: 10px; border: 1px solid var(--line);
+             display: block; margin-top: 10px; }
+  .empty { color: var(--muted); font-style: italic; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+  <h1>AAAD dash</h1>
+  <p class="sub" id="tagline">Devices, runs, and what Android Auto will actually list.</p>
+
+  <h2>Devices</h2>
+  <div id="devices"><p class="empty">loading…</p></div>
+
+  <h2>Baselines</h2>
+  <div id="baselines"><p class="empty">loading…</p></div>
+
+  <h2>Runs</h2>
+  <div id="runs"><p class="empty">loading…</p></div>
+
+<script type="module">
+const $ = (id) => document.getElementById(id);
+const esc = (value) => String(value ?? "").replace(/[<>&]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c]));
+
+async function getJSON(path) {
+  const response = await fetch(path);
+  if (!response.ok) throw new Error(`${path} -> ${response.status}`);
+  return response.json();
+}
+
+function renderDevices(devices) {
+  if (!devices.length) {
+    $("devices").innerHTML = '<p class="empty">No device connected.</p>';
+    return;
+  }
+  $("devices").innerHTML = devices.map((device) => `
+    <div class="card row">
+      <div class="grow">
+        <strong>${esc(device.model)}</strong>
+        <div class="mono">${esc(device.serial)}</div>
+      </div>
+      <span class="pill">Android ${esc(device.androidRelease)} · SDK ${esc(device.sdk)}</span>
+    </div>`).join("");
+}
+
+function renderBaselines(baselines) {
+  if (!baselines.length) {
+    $("baselines").innerHTML = '<p class="empty">None recorded yet — run the harness with --accept true.</p>';
+    return;
+  }
+  $("baselines").innerHTML = baselines.map((baseline) => `
+    <div class="card">
+      <div class="row">
+        <strong class="grow">${esc(baseline.model)}</strong>
+        <span class="pill">SDK ${esc(baseline.sdk)}</span>
+      </div>
+      <div class="mono">updated ${esc(baseline.updated)}</div>
+      <div class="scroll-x"><table>
+        <tr><th>app</th><th>outcome</th><th>attributed</th></tr>
+        ${baseline.entries.map((entry) => `
+          <tr><td>${esc(entry.appId)}</td><td>${esc(entry.outcome)}</td>
+          <td class="${entry.playAttributed ? "ok" : "bad"}">${entry.playAttributed}</td></tr>`).join("")}
+      </table></div>
+    </div>`).join("");
+}
+
+function renderRuns(runs) {
+  if (!runs.length) {
+    $("runs").innerHTML = '<p class="empty">No runs yet. <span class="mono">cd harness &amp;&amp; bun run src/cli.ts matrix --apps &lt;id&gt;</span></p>';
+    return;
+  }
+  $("runs").innerHTML = runs.map((run) => {
+    const attributed = run.records.filter((record) => record.playAttributed).length;
+    // The headline number is attribution, because that is the assertion the harness can actually
+    // make — Android Auto visibility itself is not observable without a projection session.
+    const state = attributed === run.records.length ? "ok" : attributed === 0 ? "bad" : "warn";
+    return `
+    <div class="card">
+      <div class="row">
+        <strong class="grow">${esc(run.records[0]?.model ?? "run")}</strong>
+        <span class="pill ${state}">${attributed}/${run.records.length} Play-attributed</span>
+      </div>
+      <div class="mono">${esc(run.id)}</div>
+      <div class="scroll-x"><table>
+        <tr><th>app</th><th>outcome</th><th>installer</th><th>AA visible</th></tr>
+        ${run.records.map((record) => `
+          <tr>
+            <td>${esc(record.appId)}</td>
+            <td>${esc(record.outcome)}</td>
+            <td class="${record.playAttributed ? "ok" : "bad"}">${esc(record.installer ?? "—")}</td>
+            <td class="warn">${esc(record.androidAutoVisible)}</td>
+          </tr>`).join("")}
+      </table></div>
+      ${run.records.filter((record) => record.screenshot).map((record) => `
+        <img class="shot" loading="lazy" alt="${esc(record.appId)} after install"
+             src="/screenshots/${encodeURIComponent(run.id)}/${encodeURIComponent(record.screenshot.split("/").pop())}">`).join("")}
+    </div>`;
+  }).join("");
+}
+
+async function refresh() {
+  const [devices, runs, baselines] = await Promise.all([
+    getJSON("/api/devices").catch(() => []),
+    getJSON("/api/runs").catch(() => []),
+    getJSON("/api/baselines").catch(() => []),
+  ]);
+  renderDevices(devices);
+  renderRuns(runs);
+  renderBaselines(baselines);
+}
+
+refresh();
+// Devices come and go (this phone's adb port rotates); runs only change when one is started.
+setInterval(refresh, 15000);
+</script>
+</body>
+</html>
