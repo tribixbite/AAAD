@@ -84,7 +84,7 @@ Design and rationale: [docs/standalone.md](docs/standalone.md).
   Shizuku, Android Auto, catalog and per-app installer attribution as plain text, with copy and
   share. Every field earned its place by having been the answer to a real question during
   development. Verified on the Saga.
-- [ ] **T-15** Build the real catalog: `app/src/main/assets/catalog.json` per the schema in
+- [~] **T-15** Build the real catalog: `app/src/main/assets/catalog.json` per the schema in
   [standalone.md](docs/standalone.md#catalog-format). Upstream's own catalog (14 apps, with
   package names and categories) is recovered in
   [aa-visibility.md](docs/aa-visibility.md#also-recovered) — use it for structure and package
@@ -94,6 +94,18 @@ Design and rationale: [docs/standalone.md](docs/standalone.md).
   For the mirroring family: T-07 established that renaming adds no AA capability, so catalogue
   them from **publisher** sources under their real package names and mark AA visibility unverified.
   Do not copy upstream's renamed builds — they are signed with the public AOSP test key.
+  **Progress 2026-08-22:** CarStream added from its actual publisher,
+  `thekirankumar/carstream-android-auto`, package **`com.google.android.kk`** (read from the
+  released APK, not guessed — the publisher already disguises it as a Google package, and upstream
+  renames it again to `maps.jaoolonda.android`). Verified end to end through the harness:
+  `NEW carstream — -> attributed/true`, `installer=com.android.vending`, and the scanner
+  independently confirmed its Android Auto metadata (AA-capable count 9 -> 10). Catalog is now 7.
+  **The remaining four have no publisher release to point at:** `slashmax/AAMirror` (542 stars) is
+  source-only with no releases, `aahacks/Screen2Auto` has none, Screen2Auto proper ships from
+  inceptive.ru, and AAStream / AA Mirror Plus are not on GitHub at all. They stay out of the
+  catalog rather than being given an invented or upstream-bucket URL. Options if they are wanted:
+  build from source, add a `manual` source type entry pointing at the publisher's page, or accept
+  upstream's AOSP-test-key builds knowingly.
 - [x] **T-06** Android Auto visibility: **installer attribution, not APK patching.**
   **Implemented**: `data/ReleaseResolver` (GitHub releases → concrete APK), `utils/ApkDownloader`
   (cancellable, progress), `utils/ShizukuInstaller` (`pm install-create -r -i com.android.vending

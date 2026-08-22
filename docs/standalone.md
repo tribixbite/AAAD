@@ -113,6 +113,12 @@ state for exactly this set:
 | `maps.mobilejiohub.android` | AA Mirror Plus |
 | `android.loandamaps.it` | legacy — not in the 2.1 catalog; retained for installed-state detection |
 
+**CarStream's publisher uses a third id again.** `thekirankumar/carstream-android-auto` ships as
+**`com.google.android.kk`** — verified by reading the released APK — masquerading as a Google
+package. Upstream AAAD then renames *that* to `maps.jaoolonda.android`, and its v2.1 catalog called
+it `com.carstream`. Three names for one app, which is why `packageName` is only ever filled in from
+an artifact that was actually inspected.
+
 Resolved from upstream's own `assets/app_catalog.json` ([aa-visibility.md](aa-visibility.md#also-recovered)),
 which also names `com.carstream` (CarStream 2.0.x), `ru.inceptive.screentwoauto` (Screen2Auto),
 `com.aapassenger`, and `com.aawidgets`. `maps.jaoloonda.android` in `<queries>` is likewise a
