@@ -76,6 +76,8 @@
         <package android:name="me.aap.fermata.auto.dear.google.why" />
 
         <!-- Mirroring apps -->
+        <!-- Screen2Auto as its publisher ships it (inceptive.ru); upstream renamed it. -->
+        <package android:name="ru.inceptive.screentwoauto" />
         <package android:name="android.loandamaps.it" />
         <package android:name="maps.kiao2client.android" />
         <package android:name="maps.mobilejiohubclient.android" />

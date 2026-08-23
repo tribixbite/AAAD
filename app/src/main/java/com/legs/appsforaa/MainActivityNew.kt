@@ -1,6 +1,9 @@
 package com.legs.appsforaa
 
 import android.content.Intent
+import android.net.Uri
+import androidx.appcompat.app.AlertDialog
+import com.legs.appsforaa.data.AppSource
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -241,6 +244,16 @@ class MainActivityNew : AppCompatActivity() {
             return
         }
 
+        // A manual source has no resolvable APK by definition — the publisher wants you to pick a
+        // build on their page. Sending that through the installer only to fail with "must be
+        // downloaded from its website" tells the user something they can do nothing with, so the
+        // page is opened instead. Upstream said the same thing in s2a_redirect and then did it.
+        val source = item.entry.source
+        if (source is AppSource.Manual) {
+            openPublisherPage(item, source)
+            return
+        }
+
         // Shizuku can be started or stopped at any moment, so re-check per attempt. The
         // permission prompt itself is awaited inside InstallManager.
         ShizukuInstaller.refreshInstalledState(packageManager)
@@ -282,6 +295,28 @@ class MainActivityNew : AppCompatActivity() {
                 getString(R.string.install_failed_reason, outcome.message)
         }
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+    }
+
+    /**
+     * Opens a manual entry's download page after saying what will happen.
+     *
+     * The install still runs through this app afterwards: the browser download lands as an APK the
+     * user opens, which reaches [SystemInstaller]'s path — unattributed, so Android Auto will not
+     * list it until it is converted. The dialog says so rather than letting that be discovered in
+     * the car.
+     */
+    private fun openPublisherPage(item: AppListItem, source: AppSource.Manual) {
+        AlertDialog.Builder(this)
+            .setTitle(item.entry.name)
+            .setMessage(getString(R.string.manual_source_message, item.entry.name))
+            .setPositiveButton(R.string.manual_source_open) { _, _ ->
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(source.url))
+                runCatching { startActivity(intent) }.onFailure {
+                    Toast.makeText(this, R.string.error_cannot_open_app, Toast.LENGTH_LONG).show()
+                }
+            }
+            .setNegativeButton(R.string.action_cancel, null)
+            .show()
     }
 
     private fun launchApp(item: AppListItem) {

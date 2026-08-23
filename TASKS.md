@@ -118,6 +118,15 @@ Design and rationale: [docs/standalone.md](docs/standalone.md).
   catalog rather than being given an invented or upstream-bucket URL. Options if they are wanted:
   build from source, add a `manual` source type entry pointing at the publisher's page, or accept
   upstream's AOSP-test-key builds knowingly.
+  **Progress 2026-08-23:** **Screen2Auto added** as a `manual` entry, verified from the
+  publisher's own page rather than assumed: `inceptive.ru/projects/s2a` is the official project,
+  the package is `ru.inceptive.screentwoauto`, and the download page offers versions with no
+  direct APK link — which is precisely what the `manual` source type is for. Catalog is now 8.
+  The app no longer routes a manual entry through the installer just to fail with "must be
+  downloaded from its website"; it opens the publisher's page after saying that the resulting
+  download installs through Android, not through AAAD, and so needs converting afterwards.
+  Verified on device. The remaining three (AAMirror, AAStream, AA Mirror Plus) still have no
+  publisher release anywhere and stay out.
 - [x] **T-06** Android Auto visibility: **installer attribution, not APK patching.**
   **Implemented**: `data/ReleaseResolver` (GitHub releases → concrete APK), `utils/ApkDownloader`
   (cancellable, progress), `utils/ShizukuInstaller` (`pm install-create -r -i com.android.vending

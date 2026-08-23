@@ -95,6 +95,17 @@
         "repo": "frankkienl/Nav2Contacts",
         "assetPattern": "\\.apk$"
       }
+    },
+    {
+      "id": "s2a",
+      "name": "Screen2Auto",
+      "packageName": "ru.inceptive.screentwoauto",
+      "category": "mirroring",
+      "descriptionRes": "s2a_description",
+      "source": {
+        "type": "manual",
+        "url": "https://inceptive.ru/projects/s2a/download"
+      }
     }
   ]
 }

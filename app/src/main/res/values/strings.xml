@@ -309,6 +309,8 @@
          user with nowhere to go. -->
     <string name="convert_no_projection">This app declares media support only, so Android Auto lists it but refuses to open it while driving. Converting will not change that — it needs a rewritten copy. Use the carify tool on your computer.</string>
     <string name="convert_scope_aa">Android Auto apps</string>
+    <string name="manual_source_message">%1$s is not published as a downloadable release — its developer distributes it from their own site, where you pick a version. That download installs through Android rather than through this app, so it will not be registered with Android Auto until you convert it here afterwards.</string>
+    <string name="manual_source_open">Open download page</string>
     <string name="convert_scope_all">All apps</string>
     <string name="convert_search_hint">Search installed apps</string>
     <string name="convert_no_aa_metadata">Converting fixes the installer, but this app declares no Android Auto support, so Android Auto still will not list it. A rewritten copy can add that — see the carify tool.</string>
