@@ -569,6 +569,29 @@ Design: [docs/agent-dash.md](docs/agent-dash.md).
   `[V]` in `docs/aa-visibility.md`, which is exactly the failure that convention exists to prevent;
   the section now records the correction.
 
+- [ ] **T-53** **Some clones appear in Android Auto and some do not — unresolved.** A carified
+  Service Browser opened full screen on a real head unit; a carified Samsung Calculator did not
+  appear at all, not even in Android Auto's reorder-apps screen. Everything measurable on the phone
+  is **identical** between the two:
+
+  | checked | Calculator clone | Service Browser clone |
+  | --- | --- | --- |
+  | resolves MAIN + `CAR_LAUNCHER` | yes | yes |
+  | installer | `com.android.vending` | `com.android.vending` |
+  | enabled / stopped / suspended | enabled, running, no | enabled, running, no |
+  | descriptor | `projection` | `projection` |
+  | `distractionOptimized` | application + activity | application + activity |
+  | label | `Calculator (Car)` | `Service Browser (Car)` |
+
+  Two differences remain, neither obviously causal: the icon (`res/Vc.xml`, an adaptive-icon XML,
+  versus a raster PNG) and `targetSdkVersion` (36 versus 34). Android Auto keeps its app-list state
+  private — nothing in `settings list secure/global` or `dumpsys` exposes it — so this cannot be
+  settled from the phone side.
+
+  `harness/tools/aa-app-scan.sh` captures gearhead's logcat during a connection, which is the only
+  available window into the decision. Run it, then connect, then read what Android Auto says about
+  the package.
+
 - [x] **T-52** **Fix AABrowser** — the complaint that started this whole thread. Its APK declares
   `<uses name="media"/>` and nothing else, so Android Auto lists it and refuses to open it while
   driving. `carify.sh --apk` rewrote it into `com.kododake.aabrowser.aaad` declaring `projection`,
