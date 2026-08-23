@@ -52,7 +52,16 @@ object ShizukuInstaller {
         data class Failure(val message: String) : Result
     }
 
-    /** Cheap, synchronous, safe to call from the UI thread. */
+    /**
+     * Cheap, synchronous, safe to call from the UI thread.
+     *
+     * [Availability.NotRunning] is **not** precise, and cannot be: without a binder there is
+     * nothing to ask. A server that is stopped and a server that is running but has not authorised
+     * this app look identical from here — Shizuku only hands the binder to apps the user has
+     * granted, and that grant is its own prompt rather than the Android permission. Observed on a
+     * real device: `shizuku_server` running as shell, `pingBinder()` still false. So the copy for
+     * this state names both possibilities instead of sending people to restart a running service.
+     */
     fun availability(): Availability = when {
         !isBinderAlive() -> if (isShizukuAppInstalled()) Availability.NotRunning
         else Availability.NotInstalled

@@ -4,6 +4,8 @@
  *   bun run src/cli.ts devices
  *   bun run src/cli.ts status
  *   bun run src/cli.ts matrix [--host 192.168.1.243] [--apps id,id]
+ *   bun run src/cli.ts convert --packages com.foo,com.bar [--serial ...]
+ *   bun run src/cli.ts convert --unattributed aa   # every AA-capable app lacking attribution
  *
  * Results are appended to `runs/<timestamp>/results.jsonl` — one JSON object per (device, app)
  * so runs diff cleanly and the dash can read them without parsing prose.
@@ -15,6 +17,8 @@ import { install, installerOf, isPlayAttributed, status, APP_ID } from "./app.ts
 import { allIds, packageNameFor } from "./catalog.ts";
 import { capture, launch } from "./capture.ts";
 import * as baseline from "./baseline.ts";
+import { convertViaAdb, currentInstaller } from "./attribute.ts";
+import { deviceInventory } from "./inventory.ts";
 
 interface Options {
   host?: string;
@@ -22,6 +26,9 @@ interface Options {
   serial?: string;
   /** Write this run's outcomes over the device's baseline. */
   accept?: boolean;
+  packages?: string[];
+  /** `aa` converts every catalog app on the device that is not Play-attributed. */
+  unattributed?: string;
 }
 
 function parseArgs(argv: string[]): { command: string; options: Options } {
@@ -35,6 +42,8 @@ function parseArgs(argv: string[]): { command: string; options: Options } {
     if (key === "--apps") options.apps = value.split(",").map((s) => s.trim()).filter(Boolean);
     if (key === "--serial") options.serial = value;
     if (key === "--accept") options.accept = value !== "false";
+    if (key === "--packages") options.packages = value.split(",").map((s) => s.trim()).filter(Boolean);
+    if (key === "--unattributed") options.unattributed = value;
   }
   return { command, options };
 }
@@ -201,6 +210,45 @@ async function cmdMatrix(options: Options): Promise<void> {
   if (changes.some((change) => change.kind === "broken")) process.exitCode = 1;
 }
 
+/**
+ * Converts packages to Play Store attribution over adb.
+ *
+ * Deliberately Shizuku-free — see `attribute.ts`. This is the path that works on a device where
+ * Shizuku will not stay running, and it converts any package, not only Android-Auto-capable ones.
+ */
+async function convertCommand(options: Options): Promise<void> {
+  const device = await requireDevice(options);
+
+  let targets = options.packages ?? [];
+  if (options.unattributed === "aa") {
+    const inventory = await deviceInventory(device.serial);
+    targets = inventory.entries
+      .filter((entry) => entry.installedVersion && !entry.playAttributed)
+      .map((entry) => entry.packageName);
+  }
+
+  if (targets.length === 0) {
+    console.error("Nothing to convert. Pass --packages a,b or --unattributed aa.");
+    process.exitCode = 1;
+    return;
+  }
+
+  console.log(`${device.model} (${device.serial}) · SDK ${device.sdk}`);
+  let failed = 0;
+  for (const packageName of targets) {
+    const before = await currentInstaller(device.serial, packageName);
+    const result = await convertViaAdb(device.serial, packageName, device.sdk);
+    const after = result.ok ? await currentInstaller(device.serial, packageName) : before;
+    const splits = result.apkCount > 1 ? ` (${result.apkCount} APKs)` : "";
+    if (!result.ok) failed++;
+    console.log(
+      `  ${result.ok ? "ok  " : "FAIL"} ${packageName}${splits} ` +
+        `${before ?? "none"} -> ${after ?? "none"}${result.ok ? "" : ` — ${result.message}`}`,
+    );
+  }
+  if (failed > 0) process.exitCode = 1;
+}
+
 const { command, options } = parseArgs(Bun.argv.slice(2));
 switch (command) {
   case "devices":
@@ -209,10 +257,13 @@ switch (command) {
   case "status":
     await cmdStatus(options);
     break;
+  case "convert":
+    await convertCommand(options);
+    break;
   case "matrix":
     await cmdMatrix(options);
     break;
   default:
-    console.error(`Unknown command: ${command}. Try devices | status | matrix.`);
+    console.error(`Unknown command: ${command}. Try devices | status | matrix | convert.`);
     process.exit(1);
 }

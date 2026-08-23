@@ -79,7 +79,11 @@
     <string name="onboarding_shizuku_enhanced_description">Silent installation without prompts. Requires one-time setup.</string>
     <string name="onboarding_shizuku_status">Shizuku Status:</string>
     <string name="onboarding_shizuku_not_installed">Not installed</string>
-    <string name="onboarding_shizuku_not_running">Installed but not running</string>
+    <!-- Deliberately covers two states at once. Without the binder the app cannot tell a stopped
+         server apart from one that is running but has not authorised AAAD, and naming only the
+         first sends people to restart a service that is already up. Confirmed on a real device:
+         shizuku_server running as shell, AAAD still reporting no binder. -->
+    <string name="onboarding_shizuku_not_running">Not running, or AAAD is not allowed in Shizuku yet</string>
     <string name="onboarding_shizuku_no_permission">Running but permission not granted</string>
     <string name="onboarding_shizuku_ready">Ready to use</string>
     <string name="onboarding_shizuku_install">Install Shizuku</string>
@@ -316,7 +320,7 @@
     <string name="install_done_attributed">%1$s installed and registered for Android Auto</string>
     <string name="install_handed_to_system">Confirm the install when Android asks. Without Shizuku the app is not registered for Android Auto — enable \"Unknown sources\" in Android Auto\'s developer settings.</string>
     <string name="install_failed_reason">Install failed: %1$s</string>
-    <string name="install_needs_shizuku">Shizuku is not running, and this install cannot ask you to confirm. Start Shizuku and try again.</string>
+    <string name="install_needs_shizuku">AAAD cannot reach Shizuku, and this install cannot ask you to confirm. Open Shizuku, start it if needed, and grant AAAD access.</string>
 
     <!-- Converting already-installed apps to Play Store attribution -->
     <string name="convert_title">Convert installed apps</string>
@@ -373,7 +377,7 @@
     <string name="car_installing">Installing %1$s…</string>
     <string name="car_install_done">%1$s installed</string>
     <string name="car_install_needs_phone">This install needs to be confirmed on your phone.</string>
-    <string name="car_needs_shizuku">Shizuku is not running. Start it on your phone and try again.</string>
+    <string name="car_needs_shizuku">AAAD cannot reach Shizuku. On your phone, open Shizuku, start it if needed, and grant AAAD access.</string>
     <string name="car_failed">Failed: %1$s</string>
     <string name="action_convert">Convert</string>
     <string name="convert_already_running">A conversion is already running</string>
@@ -425,7 +429,7 @@
     <string name="aa_setup_why">Android Auto only lists an app when the install is attributed to the Play Store. Shizuku does that automatically. Without it, the only alternative is to enable \"Unknown sources\" in Android Auto\'s own developer settings.</string>
     <string name="aa_setup_shizuku_ready">Shizuku is ready — you do not need these steps. Installs from this app are already registered with Android Auto.</string>
     <string name="aa_setup_shizuku_permission">Shizuku is running but has not been allowed for this app yet. Granting it is easier than the steps below.</string>
-    <string name="aa_setup_shizuku_not_running">Shizuku is installed but not running. Starting it is easier than the steps below.</string>
+    <string name="aa_setup_shizuku_not_running">Shizuku is installed but AAAD cannot reach it — either it is not running, or AAAD has not been allowed in Shizuku yet. Open Shizuku, start it if needed, and grant AAAD access. That is easier than the steps below.</string>
     <string name="aa_setup_shizuku_absent">Shizuku is not installed, so these steps are the only way to make sideloaded apps visible in Android Auto.</string>
     <string name="aa_setup_aa_version">Android Auto %1$s is installed</string>
     <string name="aa_setup_aa_missing">Android Auto is not installed on this device</string>

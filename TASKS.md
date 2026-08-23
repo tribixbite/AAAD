@@ -374,6 +374,37 @@ Design: [docs/agent-dash.md](docs/agent-dash.md).
   compiler flag the non-exhaustive `when` in `MainActivityNew`, which is the enum earning its keep.
 - [ ] **T-43** Structured logging to a file the harness can `adb pull`.
 
+- [x] **T-49** **Convert over adb, with no Shizuku.** `harness/src/attribute.ts` +
+  `cli.ts convert` perform the same attributed session the app does — create declaring the Play
+  Store, stream every APK the package owns, commit — straight from the host.
+
+  This exists because Shizuku is **not dependable on the host device**. `shizuku_server` runs as a
+  child of `adbd`, and this box's wireless-debugging port rotates (see `~/.claude/CLAUDE.md`), so
+  every rotation restarts adbd and takes Shizuku with it. Observed repeatedly: server up, then gone
+  minutes later with only read-only commands in between. Since Shizuku *is* the shell uid, adb can
+  do everything it can, and this path has nothing to lose.
+
+  ```bash
+  bun run src/cli.ts convert --packages com.foo,com.bar   # any package
+  bun run src/cli.ts convert --unattributed aa            # every unattributed catalog app
+  ```
+
+  Splits are handled — every APK is re-staged, since a session holding only the base of a split
+  app either fails to commit or yields an app missing its resources — and `--bypass-low-target-sdk-block`
+  is added from API 34.
+
+  *Verified:* Calculator on the host, `com.sec.android.app.samsungapps` → `com.android.vending`;
+  Aurora Store on the Saga, `com.google.android.packageinstaller` → `com.android.vending`; and
+  `--unattributed aa` caught Nav2Contacts sitting at `sksa.aa.customapps.dev`, i.e. an app AAAD's
+  own unattributed fallback had installed and Android Auto was never going to list.
+
+- [x] **T-50** **Stop reporting "Shizuku is not running" when it is.** Without a binder the app
+  cannot distinguish a stopped server from a running one that has not authorised AAAD — Shizuku
+  only hands its binder to apps the user has granted, through its own prompt rather than the
+  Android permission. Confirmed on device: `shizuku_server` running as shell, `pingBinder()` still
+  false. Naming only the first sends people to restart a service that is already up, so the copy
+  now names both possibilities and points at the one action that fixes either.
+
 - [x] **T-48** **Convert any installed app, not just Android-Auto-capable ones.** The convert
   screen listed only apps declaring the AA metadata key — 29 of 774 on a real phone — so the
   hundreds of others could not be converted at all. `InstalledAppScanner.scan(scope = ScanScope.ALL)`
