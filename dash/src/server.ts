@@ -22,6 +22,7 @@ import { describeDevice, onlineSerials } from "../../harness/src/adb.ts";
 import { deviceInventory } from "../../harness/src/inventory.ts";
 import { latestReleases } from "../../harness/src/releases.ts";
 import { isNewer } from "../../harness/src/version.ts";
+import { loadTasks } from "../../harness/src/tasks.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PUBLIC_DIR = join(HERE, "..", "public");
@@ -168,6 +169,7 @@ const server = Bun.serve({
     if (url.pathname === "/api/runs") return json(await listRuns());
     if (url.pathname === "/api/baselines") return json(await listBaselines());
     if (url.pathname === "/api/catalog") return json(await catalogView(url));
+    if (url.pathname === "/api/tasks") return json(await loadTasks());
 
     const shot = /^\/screenshots\/([^/]+)\/([^/]+)$/.exec(url.pathname);
     if (shot) return serveScreenshot(decodeURIComponent(shot[1]!), decodeURIComponent(shot[2]!));

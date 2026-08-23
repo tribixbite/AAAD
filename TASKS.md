@@ -300,9 +300,14 @@ Design: [docs/agent-dash.md](docs/agent-dash.md).
   `unknown` rather than implied. A truncated final JSONL line (interrupted run) is skipped instead
   of failing the page.
   *Still to add:* per-app timeline across runs (T-33's catalog view would pair with it).
-- [ ] **T-32** Task queue view backed by this file.
-  Deliberately not done yet: `TASKS.md` is read far more often in an editor than it would be in a
-  browser, so this is the lowest-value dash panel until something else needs the page.
+- [x] **T-32** Task queue view backed by this file. `harness/src/tasks.ts` parses `TASKS.md`
+  into phases with a done/total rollup; the dash renders open items first within each phase, done
+  ones dimmed rather than hidden, since the ratio is the useful part.
+
+  Parsing the prose rather than keeping a machine-readable copy alongside it means the two can
+  never disagree. Only the checkbox line is read — every task here carries paragraphs of rationale
+  beneath it, and treating those as rows would bury the list — and inline markdown is stripped,
+  because the dash renders text and would otherwise show backticks and link syntax verbatim.
 - [x] **T-33** Catalog inspector: catalog vs. installed state per device, update deltas.
   `harness/src/inventory.ts` reads each device in **one** `adb shell` call rather than one per
   package (seven round trips over wifi is visible lag on a page that refreshes every 15 s), and
@@ -324,7 +329,11 @@ Design: [docs/agent-dash.md](docs/agent-dash.md).
   through CDP (`Emulation.setDeviceMetricsOverride`, since `--window-size` only crops the
   screenshot): `scrollWidth === innerWidth`, no sideways body scroll — the table overflows only
   inside its own `.scroll-x` box, as intended.
-- [ ] **T-34** Decide integration depth with `../operad` and record it in `docs/agent-dash.md`.
+- [x] **T-34** Decided: the dash **stays a separate service**, recorded with its reasoning in
+  [docs/agent-dash.md](docs/agent-dash.md#relationship-to-operad-t-34). It turned out to be a
+  reader with no shared state, the coupling would be one-directional, and the duplication a plugin
+  would remove is a single device-listing function the harness needs anyway to run headless in CI.
+  What is shared instead is data: every panel has a plain JSON endpoint operad can poll.
 
 ## Phase 5 — App changes worth making
 

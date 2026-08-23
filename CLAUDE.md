@@ -160,7 +160,33 @@ Two commits are worth knowing about:
 | [TASKS.md](TASKS.md) | Prioritized backlog + decision log. `go` = take the next unchecked task |
 | [docs/build-setup.md](docs/build-setup.md) | Local Termux build, CI/CD, signing, recovering the missing classes |
 | [docs/testing-harness.md](docs/testing-harness.md) | Android Auto app testing platform design |
+| [docs/aa-visibility.md § projection](docs/aa-visibility.md#an-ordinary-activity-can-never-be-projected-v) | **Read before touching car code**: what makes an app openable in the car, and the corrected claim about it |
 | [docs/agent-dash.md](docs/agent-dash.md) | Claude/agent dashboard design |
+
+## Host-side tools (`harness/`)
+
+Everything here runs on this box against a connected phone. Shizuku is **not** required for any of
+it — Shizuku runs as the shell uid, which is exactly what `adb` already is.
+
+```bash
+cd harness
+bun run src/cli.ts devices                          # what is connected
+bun run src/cli.ts status                           # the app's own view of the device
+bun run src/cli.ts matrix --apps n2c                # install + screenshot + record a run
+bun run src/cli.ts convert --packages com.foo       # Play-attribute any installed package
+bun run src/cli.ts convert --unattributed aa        # every unattributed catalog app
+bun run src/cli.ts carify  --packages com.foo       # side-by-side Android-Auto-visible clone
+bun run src/cli.ts logs --level W                   # the app's own JSONL log, pulled off device
+tools/carify.sh --apk downloaded.apk                # same clone, from a file, no device needed
+```
+
+**`carify` is the one that makes an ordinary app appear in Android Auto.** It rewrites the APK
+under a new package name so the clone installs *alongside* the untouched original, declaring
+`projection` + `distractionOptimized` + `CAR_LAUNCHER`. That combination is the entire requirement
+— confirmed on a real head unit — and needs no car SDK. Split apps are merged first.
+
+The clone is re-signed with `~/.aaad-carify.keystore`. **Keep that file**: without it no clone can
+ever be updated in place.
 
 ## Working agreements
 

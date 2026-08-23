@@ -77,9 +77,25 @@ Two options, to be decided rather than drifted into:
 - **Operad plugin/panel.** Reuse operad's device inventory, SSE plumbing, and dashboard shell, and
   add AAAD-specific views. Less duplication, but binds this repo's release cadence to operad's.
 
-Recommendation: start as a **separate service** so Phase 4 isn't blocked on operad's internals, and
-revisit consolidation once the matrix view has proven what it needs. Record the decision here when
-made.
+**Decided (T-34): stay a separate service, and stay one.** The dash is finished and the question
+can now be answered from what it actually turned out to be rather than from what it might become.
+
+Three things settled it:
+
+- **It is a reader, not a service.** Every endpoint answers from `harness/runs/*`, the catalog
+  parser, `TASKS.md`, and live `adb` — all of which are files and processes on this box. There is
+  no state to share with operad, so a plugin would import a dashboard shell to render data it
+  already has locally.
+- **The coupling is real and one-directional.** Binding this repo's cadence to operad's buys
+  nothing here, while every operad refactor becomes a break here.
+- **The duplication it would remove is one function.** `harness/src/adb.ts` overlaps operad's
+  `android-engine.ts` only in listing devices, and this repo needs its own copy anyway because the
+  harness runs headless in CI without operad present.
+
+What is worth sharing is the *data*, not the code: every panel is backed by a plain JSON endpoint
+(`/api/devices`, `/api/catalog`, `/api/runs`, `/api/baselines`, `/api/tasks`), so operad can poll
+any of them without either side importing the other. If a combined view is ever wanted, that is
+the seam to use.
 
 ## Non-goals
 

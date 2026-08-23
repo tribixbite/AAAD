@@ -77,6 +77,9 @@
   <h2>Baselines</h2>
   <div id="baselines"><p class="empty">loading…</p></div>
 
+  <h2>Tasks</h2>
+  <div id="tasks"><p class="empty">loading…</p></div>
+
   <h2>Runs</h2>
   <div id="runs"><p class="empty">loading…</p></div>
 
@@ -180,6 +183,41 @@ function renderBaselines(baselines) {
     </div>`).join("");
 }
 
+/**
+ * Backlog rollup, parsed straight from TASKS.md.
+ *
+ * Open items first within each phase: a finished task is a record, an open one is work. Done rows
+ * stay visible but dimmed, because the ratio is the useful part.
+ */
+function renderTasks(phases) {
+  if (!phases.length) {
+    $("tasks").innerHTML = '<p class="empty">TASKS.md not found.</p>';
+    return;
+  }
+  const open = phases.reduce((n, p) => n + (p.total - p.done), 0);
+  const total = phases.reduce((n, p) => n + p.total, 0);
+  $("tasks").innerHTML = `
+    <div class="card row">
+      <strong class="grow">${total - open}/${total} done</strong>
+      <span class="pill ${open === 0 ? "ok" : "warn"}">${open} open</span>
+    </div>` +
+    phases.filter((phase) => phase.total > 0).map((phase) => `
+    <div class="card">
+      <div class="row">
+        <strong class="grow">${esc(phase.phase)}</strong>
+        <span class="pill ${phase.done === phase.total ? "ok" : ""}">${phase.done}/${phase.total}</span>
+      </div>
+      <div class="scroll-x"><table>
+        ${[...phase.tasks].sort((a, b) => Number(a.done) - Number(b.done)).map((task) => `
+          <tr style="${task.done ? "opacity:.5" : ""}">
+            <td>${task.done ? "✓" : "•"}</td>
+            <td>${esc(task.id)}</td>
+            <td style="white-space:normal">${esc(task.title)}</td>
+          </tr>`).join("")}
+      </table></div>
+    </div>`).join("");
+}
+
 function renderRuns(runs) {
   if (!runs.length) {
     $("runs").innerHTML = '<p class="empty">No runs yet. <span class="mono">cd harness &amp;&amp; bun run src/cli.ts matrix --apps &lt;id&gt;</span></p>';
@@ -215,14 +253,16 @@ function renderRuns(runs) {
 }
 
 async function refresh(refreshReleases = false) {
-  const [devices, runs, baselines, catalog] = await Promise.all([
+  const [devices, runs, baselines, catalog, tasks] = await Promise.all([
     getJSON("/api/devices").catch(() => []),
     getJSON("/api/runs").catch(() => []),
     getJSON("/api/baselines").catch(() => []),
     getJSON(refreshReleases ? "/api/catalog?refresh=1" : "/api/catalog").catch(() => ({ devices: [] })),
+    getJSON("/api/tasks").catch(() => []),
   ]);
   renderDevices(devices);
   renderCatalog(catalog);
+  renderTasks(tasks);
   renderRuns(runs);
   renderBaselines(baselines);
 }
