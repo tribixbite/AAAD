@@ -2,9 +2,14 @@ package com.legs.appsforaa.data
 
 import android.content.Context
 import android.content.pm.ApplicationInfo
+import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
+import android.os.SystemClock
 import com.legs.appsforaa.utils.Logger
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 
 /**
@@ -15,6 +20,19 @@ private const val AA_METADATA_KEY = "com.google.android.gms.car.application"
 
 /** The installer attribution Android Auto trusts. */
 private const val PLAY_STORE_PACKAGE = "com.android.vending"
+
+/** Which installed apps a scan should return. */
+enum class ScanScope {
+    /** Only apps declaring the Android Auto metadata key. */
+    ANDROID_AUTO,
+
+    /**
+     * Every installed app. Hundreds on a real phone, so callers need a filter in front of it —
+     * but conversion is a property of *any* package, not just an AA-capable one, and refusing to
+     * list the rest hides that.
+     */
+    ALL,
+}
 
 /** How an installed, Android-Auto-capable app stands with respect to AA visibility. */
 enum class ConversionState {
@@ -53,6 +71,15 @@ data class InstalledApp(
     val isSplit: Boolean get() = apkPaths.size > 1
 
     /**
+     * Whether the app declares the Android Auto metadata key at all.
+     *
+     * Decisive for what conversion buys: attribution is what Android Auto checks *second*. An app
+     * that never declares AA support will not be listed however it was installed, so converting it
+     * is legitimate — it fixes the attribution — but it will not put the app in the car.
+     */
+    val declaresAndroidAuto: Boolean get() = carCapabilities != null
+
+    /**
      * Android Auto will list it but refuse to open it while driving. Nothing on this phone can
      * change that — it is a statement the app makes in its own manifest.
      */
@@ -75,13 +102,21 @@ class InstalledAppScanner(private val context: Context) {
 
     private companion object {
         const val TAG = "InstalledAppScanner"
+
+        /** Enough chunks to saturate the IO pool without one coroutine per app. */
+        const val CHUNK_SIZE = 32
     }
 
     /**
-     * Every installed app declaring the Android Auto metadata key, with its conversion state.
+     * Installed apps with their conversion state.
      *
      * Requires `QUERY_ALL_PACKAGES`, which the manifest declares — without it this returns only
      * the handful of packages listed in `<queries>`.
+     *
+     * Uses `getInstalledPackages` rather than `getInstalledApplications` so each package's
+     * `versionName` arrives in the same call. Under [ScanScope.ALL] that is the difference between
+     * one binder round trip and one per app, and on a phone with several hundred apps the per-app
+     * version lookup alone was the bulk of the scan.
      */
     /**
      * @param includeSystemApps whether to report preinstalled apps. False for the convert screen:
@@ -90,28 +125,59 @@ class InstalledAppScanner(private val context: Context) {
      *   under nine greyed-out rows that make the screen look broken. True for diagnostics, where
      *   the complete picture is the point.
      */
-    suspend fun scan(includeSystemApps: Boolean = false): List<InstalledApp> = withContext(Dispatchers.IO) {
+    suspend fun scan(
+        scope: ScanScope = ScanScope.ANDROID_AUTO,
+        includeSystemApps: Boolean = false,
+    ): List<InstalledApp> = withContext(Dispatchers.IO) {
         val packageManager = context.packageManager
-        val flags = PackageManager.GET_META_DATA
         val installed = runCatching {
-            packageManager.getInstalledApplications(flags)
+            packageManager.getInstalledPackages(PackageManager.GET_META_DATA)
         }.getOrElse {
-            Logger.e(TAG, "Could not enumerate installed applications", it)
+            Logger.e(TAG, "Could not enumerate installed packages", it)
             return@withContext emptyList()
         }
 
         val ourPackage = context.packageName
-        installed.asSequence()
-            .filter { it.packageName != ourPackage }
-            .filter { declaresAndroidAuto(it) }
-            .filter { includeSystemApps || !isSystemApp(it) }
-            .mapNotNull { info -> toInstalledApp(packageManager, info) }
+        val candidates = installed.asSequence()
+            .mapNotNull { pkg -> pkg.applicationInfo?.let { pkg to it } }
+            .filter { (_, info) -> info.packageName != ourPackage }
+            .filter { (_, info) -> scope == ScanScope.ALL || declaresAndroidAuto(info) }
+            .filter { (_, info) -> includeSystemApps || !isSystemApp(info) }
+            .toList()
+
+        // Each app still costs an installer lookup and a label load, both of which cross into
+        // system_server or the target app's resources. At ALL scope that is ~800 apps, and doing
+        // it serially took seconds on a real phone. The work is IO-bound and independent per app,
+        // so it fans out; chunking keeps the coroutine count proportionate to the pool.
+        val started = SystemClock.elapsedRealtime()
+        val apps = coroutineScope {
+            candidates
+                .chunked(CHUNK_SIZE)
+                .map { chunk ->
+                    async { chunk.mapNotNull { (pkg, info) -> toInstalledApp(packageManager, pkg, info) } }
+                }
+                .awaitAll()
+                .flatten()
+        }
+
+        apps.asSequence()
             // Convertible first: the actionable rows belong at the top, not interleaved
             // alphabetically with rows that have nothing to do.
-            .sortedWith(compareBy({ it.state != ConversionState.CONVERTIBLE }, { it.label.lowercase() }))
+            // Convertible first, then apps Android Auto could actually list, then by name. The
+            // rows a user can act on belong at the top rather than interleaved alphabetically.
+            .sortedWith(
+                compareBy(
+                    { it.state != ConversionState.CONVERTIBLE },
+                    { !it.declaresAndroidAuto },
+                    { it.label.lowercase() },
+                )
+            )
             .toList()
-            .also { Logger.i(TAG, "Found ${it.size} Android Auto capable apps installed " +
-                "(includeSystemApps=$includeSystemApps)") }
+            .also {
+                Logger.i(TAG, "Found ${it.size} apps (scope=$scope " +
+                    "includeSystemApps=$includeSystemApps) in " +
+                    "${SystemClock.elapsedRealtime() - started}ms")
+            }
     }
 
     private fun declaresAndroidAuto(info: ApplicationInfo): Boolean =
@@ -123,15 +189,9 @@ class InstalledAppScanner(private val context: Context) {
 
     private fun toInstalledApp(
         packageManager: PackageManager,
+        packageInfo: PackageInfo,
         info: ApplicationInfo,
     ): InstalledApp? {
-        val packageInfo = runCatching {
-            packageManager.getPackageInfo(info.packageName, 0)
-        }.getOrElse {
-            Logger.w(TAG, "Skipping ${info.packageName}: no PackageInfo", it)
-            return null
-        }
-
         val installer = installerPackageOf(packageManager, info.packageName)
         val apkPaths = buildList {
             info.sourceDir?.let(::add)
@@ -152,7 +212,14 @@ class InstalledAppScanner(private val context: Context) {
             state = if (installer == PLAY_STORE_PACKAGE) ConversionState.ALREADY_ATTRIBUTED
             else ConversionState.CONVERTIBLE,
             isSystemApp = isSystemApp(info),
-            carCapabilities = AutomotiveDescriptor.forInstalled(packageManager, info.packageName),
+            // Guarded by the cheap metadata check: reading a descriptor opens the app's resources,
+            // and doing that for several hundred packages that plainly declare no car support
+            // would dominate the scan.
+            carCapabilities = if (declaresAndroidAuto(info)) {
+                AutomotiveDescriptor.forInstalled(packageManager, info.packageName)
+            } else {
+                null
+            },
         )
     }
 

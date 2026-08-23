@@ -6,6 +6,7 @@ import android.content.Intent
 import com.legs.appsforaa.BuildConfig
 import com.legs.appsforaa.data.CatalogRepository
 import com.legs.appsforaa.data.InstalledAppScanner
+import com.legs.appsforaa.data.ScanScope
 import com.legs.appsforaa.data.SelfUpdateChecker
 import com.legs.appsforaa.utils.InstallManager
 import com.legs.appsforaa.utils.Logger
@@ -122,10 +123,13 @@ class DebugAutomationReceiver : BroadcastReceiver() {
             Logger.e(TAG, "RESULT=ERROR missing --es package")
             return
         }
-        val app = InstalledAppScanner(context).scan(includeSystemApps = true)
+        // ALL scope: conversion applies to any package, and an explicit convert-by-name request
+        // must not answer "not installed" merely because the app declares no Android Auto support.
+        val app = InstalledAppScanner(context)
+            .scan(scope = ScanScope.ALL, includeSystemApps = true)
             .firstOrNull { it.packageName == packageName }
         if (app == null) {
-            Logger.e(TAG, "RESULT=ERROR $packageName is not installed or declares no AA metadata")
+            Logger.e(TAG, "RESULT=ERROR $packageName is not installed")
             return
         }
 

@@ -374,6 +374,31 @@ Design: [docs/agent-dash.md](docs/agent-dash.md).
   compiler flag the non-exhaustive `when` in `MainActivityNew`, which is the enum earning its keep.
 - [ ] **T-43** Structured logging to a file the harness can `adb pull`.
 
+- [x] **T-48** **Convert any installed app, not just Android-Auto-capable ones.** The convert
+  screen listed only apps declaring the AA metadata key — 29 of 774 on a real phone — so the
+  hundreds of others could not be converted at all. `InstalledAppScanner.scan(scope = ScanScope.ALL)`
+  now returns every app, with a scope toggle and a search box, because a 774-row list without a
+  filter is not usable.
+
+  Each row states what conversion will actually achieve. Converting an app with no AA metadata
+  fixes its installer but will **not** put it in Android Auto, and saying so on the row is the
+  difference between a fixed expectation and a bug report. The same caveat is repeated in the
+  confirmation dialog, which also now warns that **the app is stopped while it reinstalls** — a
+  detail that is harmless for most apps and destructive for a terminal, a keyboard or a launcher.
+
+  Scanning 774 apps serially took several seconds, so the per-app installer lookup and label load
+  now fan out across the IO pool in chunks: **2298ms** for 774 apps, logged on every scan.
+
+  Also fixed two things this surfaced: `getInstalledPackages` replaces a per-app `getPackageInfo`
+  call, and the descriptor read is guarded by the cheap metadata check so several hundred apps
+  that declare no car support never have their resources opened. And the debug receiver's
+  convert-by-name now scans at ALL scope — it used to answer "not installed" for any app without
+  AA metadata.
+
+  *Verified on device:* 774 apps listed in the All scope and 29 in the Android Auto scope on a
+  real phone; search narrows to 2; and a non-AA app (HTTP Toolkit) converted end to end,
+  `com.google.android.packageinstaller` → `com.android.vending`.
+
 - [x] **T-46** **Detect the "can't use while driving" condition.** `data/AutomotiveDescriptor`
   reads an app's `com.google.android.gms.car.application` XML and reports its `<uses>` set, for
   installed packages and for a downloaded APK before it is committed.
@@ -405,10 +430,25 @@ Design: [docs/agent-dash.md](docs/agent-dash.md).
   receiver pass `true`, because there the complete picture is the point and a convert-by-name
   request should never answer "not found" for an app that exists.
 
-- [ ] **T-44** **AAAD's own Android Auto surface — written, entirely unverified in a car.**
-  `car/AaadCarAppService` + `CarStatusScreen` show which installed AA apps registered, read-only:
-  installing an APK while driving is not a feature. Built on the official templated Car App
-  Library because the projected SDK those catalog apps use is not on Maven.
+- [ ] **T-44** **AAAD's own Android Auto surface — actionable, still unverified in a car.**
+  `car/AaadCarAppService` with four screens: a root menu, read-only status, **convert**, and
+  **install**. Convert and install are the point — those are the things you discover you need
+  while sitting in the car, which is the worst place to be told to go and find your phone.
+
+  Every action confirms on its own screen first (templates have no dialogs) and both list screens
+  ask `ConstraintManager` for the driving content limit rather than assuming one. Car install uses
+  `allowSystemFallback = false`: without Shizuku the fallback dialog appears on the *phone*, which
+  from the driver's seat nobody can answer, so it says so instead of reporting false progress.
+
+  The car list is scoped to AA-capable convertible apps, unlike the phone list which now offers
+  every installed app (T-48) — the driving list limit is small, and spending it on apps that can
+  never appear in the car would waste the screen.
+
+  *Verified:* the service resolves at system level —
+  `cmd package query-services -a androidx.car.app.CarAppService -c androidx.car.app.category.IOT`
+  returns `com.legs.appsforaa.car.AaadCarAppService`, alongside Messages, Meet and YouTube Music.
+  AAAD is also now Play-attributed on the Saga (`installer=com.android.vending`), so both
+  preconditions for Android Auto listing it are satisfied.
 
   Three things need a head unit (or the desktop head unit emulator) to settle:
   1. Whether Android Auto surfaces a **sideloaded** templated app at all, and whether AAAD being

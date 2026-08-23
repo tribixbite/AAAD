@@ -330,8 +330,23 @@
     </plurals>
     <string name="convert_installer_none">an unknown source</string>
     <string name="convert_state_ok">%1$s · already visible in Android Auto</string>
+    <!-- Attributed, but with no Android Auto support: "already visible in Android Auto" would be
+         plainly false, and it read as a contradiction next to the no-support caveat. -->
+    <string name="convert_state_attributed_no_aa">%1$s · installed from the Play Store, no Android Auto support</string>
     <string name="convert_state_needed">Installed by %1$s · Android Auto will not list it</string>
+    <!-- For an app that declares no Android Auto support: naming the installer is the whole
+         truth, and the caveat line explains what converting will and will not achieve. -->
+    <string name="convert_state_installer">Installed by %1$s</string>
+    <plurals name="convert_found_all">
+        <item quantity="one">%d app installed</item>
+        <item quantity="other">%d apps installed</item>
+    </plurals>
     <string name="convert_no_projection">This app declares media support only, so Android Auto will list it but refuse to open it while driving. Only its developer can change that — converting it will not help.</string>
+    <string name="convert_scope_aa">Android Auto apps</string>
+    <string name="convert_scope_all">All apps</string>
+    <string name="convert_search_hint">Search installed apps</string>
+    <string name="convert_no_aa_metadata">Converting fixes the installer, but this app declares no Android Auto support, so Android Auto still will not list it.</string>
+    <string name="convert_filtered">%1$d of %2$d apps</string>
 
     <!-- Android Auto car screen (templated Car App Library surface) -->
     <string name="car_title">Android Auto apps</string>
@@ -339,11 +354,35 @@
     <string name="car_ok">Registered with Android Auto · %1$s</string>
     <string name="car_not_registered">Not registered — reinstall it from AAAD on your phone</string>
     <string name="car_no_projection">Listed, but this app cannot open while driving</string>
+    <string name="car_menu_status">Installed apps</string>
+    <string name="car_menu_status_detail">What Android Auto sees</string>
+    <string name="car_menu_convert">Fix an app</string>
+    <string name="car_menu_convert_detail">Register an installed app with Android Auto</string>
+    <string name="car_menu_install">Install an app</string>
+    <string name="car_menu_install_detail">Add an app from the catalog</string>
+    <string name="car_confirm">Confirm</string>
+    <string name="car_convert_none">Every Android Auto app on this phone is already registered.</string>
+    <string name="car_convert_row">Installed by %1$s</string>
+    <string name="car_convert_confirm_title">Fix %1$s?</string>
+    <string name="car_convert_confirm">%1$s will be reinstalled from its own APK so Android Auto lists it. Your data is kept, but the app is stopped while it reinstalls.</string>
+    <string name="car_convert_done">%1$s is now registered with Android Auto</string>
+    <string name="car_install_none">Every app in the catalog is already installed.</string>
+    <string name="car_install_row">Not installed</string>
+    <string name="car_install_confirm_title">Install %1$s?</string>
+    <string name="car_install_confirm">%1$s will be downloaded from its publisher and installed so Android Auto lists it.</string>
+    <string name="car_installing">Installing %1$s…</string>
+    <string name="car_install_done">%1$s installed</string>
+    <string name="car_install_needs_phone">This install needs to be confirmed on your phone.</string>
+    <string name="car_needs_shizuku">Shizuku is not running. Start it on your phone and try again.</string>
+    <string name="car_failed">Failed: %1$s</string>
     <string name="action_convert">Convert</string>
     <string name="convert_already_running">A conversion is already running</string>
     <string name="convert_confirm_title">Convert %1$s?</string>
     <string name="convert_confirm_message">%1$s will be reinstalled from its own APK so Android Auto recognises it. It is the same app and the same signature, so your data and settings are kept.</string>
     <string name="convert_confirm_message_split">%1$s will be reinstalled from its own APK files so Android Auto recognises it. It is the same app and the same signature, so your data and settings are kept. This app ships as multiple APKs, which all get reinstalled together.</string>
+    <!-- Converting stops the target app. Harmless for most, but not if it is the terminal running
+         your session, your keyboard, or your launcher - so it is stated before the tap, not after. -->
+    <string name="convert_confirm_stopped">%1$s is stopped while it reinstalls. If you are relying on it right now — a terminal, a keyboard, a launcher — it will close.</string>
     <string name="convert_running">Converting %1$s…</string>
     <string name="convert_done">%1$s converted — Android Auto will now list it</string>
     <string name="convert_failed">Conversion failed: %1$s</string>

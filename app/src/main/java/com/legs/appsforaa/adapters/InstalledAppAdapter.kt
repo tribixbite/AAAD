@@ -55,20 +55,28 @@ class InstalledAppAdapter(
             )
 
             val installer = app.installerPackage ?: context.getString(R.string.convert_installer_none)
-            val state = when (app.state) {
-                ConversionState.ALREADY_ATTRIBUTED ->
+            val state = when {
+                app.state == ConversionState.ALREADY_ATTRIBUTED && app.declaresAndroidAuto ->
                     context.getString(R.string.convert_state_ok, app.versionName)
-                ConversionState.CONVERTIBLE ->
+                app.state == ConversionState.ALREADY_ATTRIBUTED ->
+                    context.getString(R.string.convert_state_attributed_no_aa, app.versionName)
+                // "Android Auto will not list it" is true of a non-AA app but for an unrelated
+                // reason, and stating it next to the caveat reads as contradictory.
+                app.declaresAndroidAuto ->
                     context.getString(R.string.convert_state_needed, installer)
+                else ->
+                    context.getString(R.string.convert_state_installer, installer)
             }
-            // Said on the row itself, because otherwise a converted app that still will not open
-            // in the car looks like the conversion failed. It did not — the app declares no
-            // projection support, and no install can add it. See AutomotiveDescriptor.
-            binding.appDetail.text = if (app.blockedWhileDriving) {
-                state + "\n" + context.getString(R.string.convert_no_projection)
-            } else {
-                state
+
+            // Only worth saying where there is an action to qualify. On a row with nothing to
+            // convert, a caveat about what converting would not achieve is just noise.
+            val caveat = when {
+                app.state != ConversionState.CONVERTIBLE -> null
+                !app.declaresAndroidAuto -> context.getString(R.string.convert_no_aa_metadata)
+                app.blockedWhileDriving -> context.getString(R.string.convert_no_projection)
+                else -> null
             }
+            binding.appDetail.text = if (caveat != null) state + "\n" + caveat else state
 
             val convertible = app.state == ConversionState.CONVERTIBLE
             binding.appAction.visibility = if (convertible) View.VISIBLE else View.GONE
