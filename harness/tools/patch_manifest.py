@@ -18,6 +18,9 @@ ET.register_namespace("android", ANDROID)
 
 path, old_pkg, new_pkg, label_suffix = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
 
+PROJECTION_CATEGORY = "com.google.android.gms.car.category.CATEGORY_PROJECTION"
+CAR_APP_SERVICE_ACTION = "androidx.car.app.CarAppService"
+
 tree = ET.parse(path)
 root = tree.getroot()
 
@@ -83,12 +86,45 @@ def set_meta(parent, name, *, value=None, resource=None):
         meta.set(f"{A}resource", resource)
 
 
-# 5. The two declarations that decide Android Auto behaviour.
-#    - the descriptor is what makes Android Auto consider the app at all
-#    - distractionOptimized is what lets its Activity run while the car is moving
+# 5. What car surface can this app actually back?
+#
+#    Declaring a capability the app cannot implement produces the worst outcome available: Android
+#    Auto lists the app and then has nothing to bind to. So the descriptor is chosen from what the
+#    APK already contains, and the caller is told when nothing backs it.
+#
+#    - `projection` needs a service filtering on CATEGORY_PROJECTION, implementing the unofficial
+#      SDK. Its CarActivity is NOT an android.app.Activity (CarStream's extends
+#      com.google.android.gms.car.e), so an ordinary Activity can never be projected by
+#      declaration alone.
+#    - `template` needs an androidx.car.app CarAppService.
+has_projection_service = False
+has_car_app_service = False
+for service in app.findall("service"):
+    for intent_filter in service.findall("intent-filter"):
+        cats = {c.get(f"{A}name") for c in intent_filter.findall("category")}
+        acts = {a.get(f"{A}name") for a in intent_filter.findall("action")}
+        if PROJECTION_CATEGORY in cats:
+            has_projection_service = True
+        if CAR_APP_SERVICE_ACTION in acts:
+            has_car_app_service = True
+
+if has_projection_service:
+    car_uses, backing = "projection", "the app's own CATEGORY_PROJECTION service"
+elif has_car_app_service:
+    car_uses, backing = "template", "the app's own androidx CarAppService"
+else:
+    car_uses, backing = "projection", None
+
 set_meta(app, "com.google.android.gms.car.application", resource="@xml/automotive_app_desc")
 set_meta(app, "distractionOptimized", value="true")
-changes.append("added car descriptor + distractionOptimized (application)")
+changes.append(f"car descriptor declares <uses name=\"{car_uses}\"/>")
+if backing:
+    changes.append(f"  backed by {backing}")
+else:
+    changes.append("  WARNING: nothing in this APK implements a car surface. Android Auto will")
+    changes.append("  list the clone and have nothing to bind to. See TASKS.md T-51.")
+print(f"CAR_USES={car_uses}")
+print(f"CAR_BACKED={'yes' if backing else 'no'}")
 
 # 6. Make the UI as adaptable as the manifest can: a phone Activity on a head unit is a fixed
 #    portrait box unless it is told otherwise. This cannot fix a layout that hardcodes phone

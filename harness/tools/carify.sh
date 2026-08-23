@@ -17,10 +17,13 @@
 #   * resizeableActivity=true and no screenOrientation lock, so a phone Activity has a chance of
 #     rendering usefully on a landscape head unit
 #
-# WHAT THIS CANNOT DO: it declares that the app is projectable; it does not make it so. A real
-# projected app (CarStream, Fermata) implements the unofficial car SDK. Declaring `projection` on
-# an ordinary Activity is unproven — Android Auto may list the clone and still fail to render it.
-# That is the open question of TASKS.md T-45 and it needs a head unit to settle.
+# WHAT THIS CANNOT DO: it declares a car surface; it does not implement one. The descriptor is
+# chosen from what the APK already contains — `projection` if the app has a CATEGORY_PROJECTION
+# service, `template` if it has an androidx CarAppService — and when neither exists the script
+# says so, because Android Auto will then list the clone with nothing to bind to. Android Auto
+# never projects an ordinary Activity: a projected app's UI is an SDK CarActivity, which is not an
+# android.app.Activity at all. Making an arbitrary app projectable means mirroring it onto the car
+# display (what Screen2Auto does). See TASKS.md T-51.
 #
 # Requires: java, APKEditor.jar, zipalign, apksigner, keytool, adb.
 set -euo pipefail
@@ -43,30 +46,42 @@ trap 'rm -rf "$WORK"' EXIT
 say() { printf '\n== %s\n' "$*"; }
 
 say "Pulling $PACKAGE from $SERIAL"
-# Only the base APK is cloned. A split app would need every split re-signed with the same key and
-# installed as one session; that is not handled yet, so it is refused rather than half-done.
 mapfile -t PATHS < <(adb -s "$SERIAL" shell "pm path $PACKAGE" | sed 's/^package://' | tr -d '\r' | grep -v '^$')
 [ "${#PATHS[@]}" -gt 0 ] || { echo "not installed: $PACKAGE"; exit 1; }
-if [ "${#PATHS[@]}" -gt 1 ]; then
-  echo "refusing: $PACKAGE ships ${#PATHS[@]} APKs (split app); cloning splits is not implemented"
-  exit 1
+
+if [ "${#PATHS[@]}" -eq 1 ]; then
+  adb -s "$SERIAL" pull "${PATHS[0]}" "$WORK/original.apk" >/dev/null
+else
+  # A split app is MERGED into a single APK rather than cloned split-by-split. Re-staging N
+  # re-signed splits through one install session would work, but the clone would then inherit the
+  # original's split layout for no benefit — and every config split it lacks (a density, an ABI,
+  # a language) becomes a missing-resource crash at runtime. Merging collapses that whole class of
+  # failure: one APK, every resource present, installs like any other.
+  echo "  ${#PATHS[@]} APKs (split app) — merging"
+  mkdir -p "$WORK/splits"
+  for path in "${PATHS[@]}"; do
+    adb -s "$SERIAL" pull "$path" "$WORK/splits/$(basename "$path")" >/dev/null
+  done
+  java -jar "$APKEDITOR" m -i "$WORK/splits" -o "$WORK/original.apk" >/dev/null
 fi
-adb -s "$SERIAL" pull "${PATHS[0]}" "$WORK/original.apk" >/dev/null
 
 say "Decoding"
 java -jar "$APKEDITOR" d -i "$WORK/original.apk" -o "$WORK/decoded" -t xml >/dev/null
 
 say "Patching the manifest"
-python3 "$HERE/patch_manifest.py" "$WORK/decoded/AndroidManifest.xml" \
-  "$PACKAGE" "$NEW_PACKAGE" " (Car)"
+PATCH_OUT="$(python3 "$HERE/patch_manifest.py" "$WORK/decoded/AndroidManifest.xml" \
+  "$PACKAGE" "$NEW_PACKAGE" " (Car)")"
+echo "$PATCH_OUT" | grep -v '^CAR_' || true
+CAR_USES="$(echo "$PATCH_OUT" | sed -n 's/^CAR_USES=//p')"
+CAR_BACKED="$(echo "$PATCH_OUT" | sed -n 's/^CAR_BACKED=//p')"
 
 say "Adding the car descriptor"
 RES_DIR="$(dirname "$(find "$WORK/decoded/resources" -maxdepth 3 -name package.json | head -1)")/res"
 mkdir -p "$RES_DIR/xml"
-cat > "$RES_DIR/xml/automotive_app_desc.xml" <<'XML'
+cat > "$RES_DIR/xml/automotive_app_desc.xml" <<XML
 <?xml version="1.0" encoding="utf-8"?>
 <automotiveApp>
-    <uses name="projection"/>
+    <uses name="$CAR_USES"/>
 </automotiveApp>
 XML
 
@@ -132,3 +147,14 @@ adb -s "$SERIAL" shell rm -f /data/local/tmp/carify.apk
 
 say "Result"
 adb -s "$SERIAL" shell "pm list packages -i $PACKAGE" | grep -E "package:($PACKAGE|$NEW_PACKAGE) " || true
+
+if [ "$CAR_BACKED" != "yes" ]; then
+  cat <<'WARN'
+
+  NOTE: nothing in this APK implements a car surface, so Android Auto will list the clone and
+  then have nothing to bind to. Android Auto never projects an ordinary Activity: a projected
+  app's UI is a CarActivity from the unofficial SDK, which does not extend android.app.Activity
+  (CarStream's extends com.google.android.gms.car.e). Making an arbitrary app projectable means
+  mirroring it onto the car display, which is what Screen2Auto does. See TASKS.md T-51.
+WARN
+fi

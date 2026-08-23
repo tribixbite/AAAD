@@ -319,6 +319,33 @@ Two corollaries matter for this fork:
 it is committed), so the condition is reported rather than discovered in traffic. Diagnostics marks
 such apps `D`, and the convert screen says so on the row.
 
+### An ordinary Activity can never be projected [V]
+
+Read out of CarStream's own APK, which is the working reference:
+
+- Its projected entry point is a `<service>` filtering on
+  `com.google.android.gms.car.category.CATEGORY_PROJECTION`, and that service
+  `extends com.google.android.apps.auto.sdk.CarActivityService`, overriding exactly one method:
+  `getCarActivity()`, which returns a `Class`.
+- That returned `CarActivity` **is not an `android.app.Activity`**. CarStream's extends
+  `com.google.android.gms.car.e`. It is an SDK-hosted UI object with its own lifecycle.
+- CarStream bundles the SDK to make this work: 65 classes of `com.google.android.apps.auto.sdk`
+  plus 43 of `com.google.android.gms.car`.
+
+So there is no path where Android Auto takes an app's existing Activity and draws it on the head
+unit. A projected app's car UI is written *as* a CarActivity, separately from its phone UI.
+
+The consequence for APK rewriting (T-45): adding `<uses name="projection"/>` to an app that has no
+CATEGORY_PROJECTION service produces the **worst** available outcome — Android Auto lists the app
+and then has nothing to bind to. `harness/tools/patch_manifest.py` therefore chooses the descriptor
+from what the APK already contains and warns when nothing backs it.
+
+Making an *arbitrary* app appear usefully in the car means mirroring it: a generic CarActivity that
+hosts a `VirtualDisplay`, launches the app's real Activity onto it, and forwards touches back. The
+forwarding is the hard part — `INJECT_EVENTS` is signature-level, so a normal app cannot do it, but
+the shell uid can, which is why Shizuku is the plausible route. That is Screen2Auto's job
+description, and it is tracked as T-51 rather than pretended at here.
+
 ### Two SDKs, and only one of them is obtainable
 
 The apps that open full screen are **projected** apps: an exported `<service>` filtering on
