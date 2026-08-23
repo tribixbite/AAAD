@@ -561,11 +561,11 @@ Design: [docs/agent-dash.md](docs/agent-dash.md).
   *Verified:* Bambu Handy, 5 APKs and 250 MB, merged, cloned, installed alongside the original and
   launched clean.
 
-  **It works on a real head unit.** A clone of an ordinary phone app — no car SDK, no
-  `CATEGORY_PROJECTION` service — appears in Android Auto and launches **full screen on the car
-  display**. `projection` + `distractionOptimized` + `CAR_LAUNCHER` is the entire requirement.
-  `template` is chosen instead only when the app already ships an androidx `CarAppService`, so it
-  presents its real templated surface rather than a projected window.
+  **Scope, measured (T-53):** the rewrite repairs an app that is car-capable but mis-declared —
+  AABrowser ships car-app code and declared `media`; its clone declares `projection` and Android
+  Auto lists it. It does **not** make an arbitrary phone app appear in the car; clones of apps with
+  no car implementation are absent from Android Auto's list however they are declared. The script
+  says so when nothing backs the declaration.
 
   Also takes a downloaded APK: `carify.sh --apk foo.apk` needs no device at all, since only the
   install does. The package name is read from the APK rather than passed in.
@@ -578,28 +578,32 @@ Design: [docs/agent-dash.md](docs/agent-dash.md).
   `[V]` in `docs/aa-visibility.md`, which is exactly the failure that convention exists to prevent;
   the section now records the correction.
 
-- [ ] **T-53** **Some clones appear in Android Auto and some do not — unresolved.** A carified
-  Service Browser opened full screen on a real head unit; a carified Samsung Calculator did not
-  appear at all, not even in Android Auto's reorder-apps screen. Everything measurable on the phone
-  is **identical** between the two:
+- [x] **T-53** **Resolved: declaring `projection` is necessary but not sufficient.** And the way
+  it was resolved is the more useful outcome — Android Auto's app list turns out to be readable
+  **on the phone**, from gearhead's *Customize launcher* screen
+  (`companion.settings.DefaultSettingsActivity` → Display → Customize launcher). Wrapped as
+  `harness/tools/aa-launcher-list.sh`. Nothing else exposes it: `dumpsys` says nothing, and a full
+  logcat capture during a package change produced **zero** gearhead lines, so the log-scraping tool
+  written for this was deleted — its premise was wrong.
 
-  | checked | Calculator clone | Service Browser clone |
-  | --- | --- | --- |
-  | resolves MAIN + `CAR_LAUNCHER` | yes | yes |
-  | installer | `com.android.vending` | `com.android.vending` |
-  | enabled / stopped / suspended | enabled, running, no | enabled, running, no |
-  | descriptor | `projection` | `projection` |
-  | `distractionOptimized` | application + activity | application + activity |
-  | label | `Calculator (Car)` | `Service Browser (Car)` |
+  Measured, three clones built identically:
 
-  Two differences remain, neither obviously causal: the icon (`res/Vc.xml`, an adaptive-icon XML,
-  versus a raster PNG) and `targetSdkVersion` (36 versus 34). Android Auto keeps its app-list state
-  private — nothing in `settings list secure/global` or `dumpsys` exposes it — so this cannot be
-  settled from the phone side.
+  | clone | in Android Auto's list |
+  | --- | --- |
+  | **AABrowser (Car)** | **yes** |
+  | Calculator (Car) | no |
+  | Service Browser (Car) | no |
 
-  `harness/tools/aa-app-scan.sh` captures gearhead's logcat during a connection, which is the only
-  available window into the decision. Run it, then connect, then read what Android Auto says about
-  the package.
+  All three resolve `MAIN` + `CAR_LAUNCHER`, are `installer=com.android.vending`, enabled, carry
+  `distractionOptimized`, and have a resolving descriptor. Adding `androidx.car.app.minCarApiLevel`
+  and `androidx.car.app.category.POI` + `APP_MAPS` to the Calculator clone changed nothing.
+
+  The separator is **code**. AABrowser already ships the androidx car-app library and a car entry
+  point; its APK merely declared `media`, so Android Auto listed it and refused to open it.
+  Calculator and Service Browser have no car implementation, and no manifest edit creates one.
+  So `carify` **repairs a mis-declared car app** — which is exactly the case that started this —
+  and cannot make an arbitrary phone app appear in the car. The warning removed in
+  `6135f1a` was right and is restored.
 
 - [x] **T-52** **Fix AABrowser** — the complaint that started this whole thread. Its APK declares
   `<uses name="media"/>` and nothing else, so Android Auto lists it and refuses to open it while

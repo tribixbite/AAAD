@@ -18,13 +18,15 @@
 #   * resizeableActivity=true and no screenOrientation lock, so a phone Activity has a chance of
 #     rendering usefully on a landscape head unit
 #
-# This WORKS for ordinary apps: confirmed on a real head unit, a clone of a plain phone app — no
-# car SDK, no CATEGORY_PROJECTION service — launches full screen on the car display. Android Auto
-# projects the app's existing Activity. The unofficial SDK that CarStream bundles is how an app
-# builds a *custom* car UI, not how it gets onto the display.
+# WHAT IT FIXES: an app that is car-capable but mis-declared. AABrowser is the case — it ships the
+# androidx car-app library and a car entry point, but its APK declared <uses name="media"/>, so
+# Android Auto listed it and then refused to open it while driving. The clone declares `projection`
+# and is listed.
 #
-# The one judgement call: an app that already ships an androidx CarAppService is declared
-# `template` instead, so it presents its real templated surface rather than a projected window.
+# WHAT IT CANNOT DO: make an arbitrary phone app appear in the car. Measured with
+# aa-launcher-list.sh, clones of apps with no car implementation are NOT listed by Android Auto,
+# however they are declared — the descriptor selects among surfaces the app's code already
+# provides, it does not create one. The script says so when nothing backs the declaration.
 #
 # Requires: java, APKEditor.jar, zipalign, apksigner, keytool, adb.
 set -euo pipefail
@@ -182,5 +184,10 @@ say "Result"
 adb -s "$SERIAL" shell "pm list packages -i $PACKAGE" | grep -E "package:($PACKAGE|$NEW_PACKAGE) " || true
 
 echo
-echo "  Declared <uses name=\"$CAR_USES\"/>. Connect the phone to the head unit and the clone"
-echo "  should appear in Android Auto's launcher and open full screen."
+echo "  Declared <uses name=\"$CAR_USES\"/>."
+if [ "$CAR_BACKED" = "yes" ]; then
+  echo "  Check it is listed:  tools/aa-launcher-list.sh $SERIAL"
+else
+  echo "  This APK has no car implementation, so Android Auto is unlikely to list the clone."
+  echo "  Confirm either way with:  tools/aa-launcher-list.sh $SERIAL"
+fi

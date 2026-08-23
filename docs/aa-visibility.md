@@ -319,38 +319,53 @@ Two corollaries matter for this fork:
 it is committed), so the condition is reported rather than discovered in traffic. Diagnostics marks
 such apps `D`, and the convert screen says so on the row.
 
-### An ordinary Activity CAN be projected [V]
+### Reading Android Auto's app list without a car [V]
 
-**Confirmed on a real head unit:** a rewritten clone of an ordinary phone app — no car SDK, no
-`CATEGORY_PROJECTION` service, no `CarActivity` — launches **full screen on the car display** when
-its APK declares:
+Android Auto's **Customize launcher** screen is the list it builds for the head unit, and it lives
+on the phone:
 
-```xml
-<!-- automotive_app_desc.xml -->
-<automotiveApp><uses name="projection"/></automotiveApp>
+```bash
+adb shell am start -n com.google.android.projection.gearhead/\
+  com.google.android.projection.gearhead.companion.settings.DefaultSettingsActivity
+# → Display → Customize launcher       (harness/tools/aa-launcher-list.sh does this)
 ```
-plus `distractionOptimized=true` on the application and the launcher activity, and
-`android.intent.category.CAR_LAUNCHER` on the launcher intent-filter.
 
-That is the whole requirement. Android Auto projects the app's existing Activity.
+This is the only window there is. `dumpsys` exposes nothing about the list, and a release gearhead
+logs nothing useful — a full logcat capture during a package change produced **zero** gearhead
+lines. Before this, "will Android Auto show my app?" could only be answered by driving.
 
-This corrects an earlier claim in this document that said the opposite, and the way it was wrong is
-worth keeping. CarStream *does* implement the unofficial SDK: its projected entry point is a
-service filtering on `CATEGORY_PROJECTION` extending
-`com.google.android.apps.auto.sdk.CarActivityService`, whose `getCarActivity()` returns a
-`CarActivity` that is **not** an `android.app.Activity` (it extends `com.google.android.gms.car.e`),
-and it bundles 108 SDK classes to provide all that. All of that is true and verified.
+### Declaring `projection` is necessary but NOT sufficient [V]
 
-The error was concluding from it that the SDK is *required*. What was verified was what one app
-chooses to do; what was asserted was what Android Auto demands. Reading an implementation tells you
-a sufficient path, never a necessary one — the SDK is how you get a **custom** car UI, not how you
-get on the display. Tagging that inference `[V]` is precisely the failure this document's
-convention exists to prevent.
+Measured with the list above, on one device, all three clones built the same way:
 
-So the practical rule is much simpler than it looked: **any app can be made to appear and run full
-screen in Android Auto by declaring `projection`, `distractionOptimized` and `CAR_LAUNCHER`** —
-which is what `harness/tools/carify.sh` does. AABrowser's failure was never exotic; its APK just
-declares `media` and nothing else.
+| clone | descriptor | in Android Auto's list |
+| --- | --- | --- |
+| **AABrowser (Car)** | `projection` | **yes** |
+| Calculator (Car) | `projection` | no |
+| Service Browser (Car) | `projection` | no |
+
+All three resolve for `MAIN` + `CAR_LAUNCHER`, are `installer=com.android.vending`, are enabled,
+carry `distractionOptimized` on the application and the launcher activity, and have a descriptor
+that resolves. The manifests are indistinguishable. Adding `androidx.car.app.minCarApiLevel` and
+`androidx.car.app.category.POI` + `APP_MAPS` to the Calculator clone changed nothing either.
+
+What separates them is **code**. AABrowser already ships car-app structure — the `androidx.car.app`
+library, a `CarAppPermissionActivity`, an `androidx.car.app.connection.provider`,
+`ACCESS_SURFACE`/`MAP_TEMPLATES` permissions — and its APK declared `media` only, which is why it
+was listed and then refused to open. Rewriting its descriptor to `projection` fixed the app it
+always nearly was. Calculator and Service Browser have no car implementation at all, and no
+manifest edit conjures one. Every app in that list — Spotify, Discord, Widgets for Auto, the Google
+apps — has a real media, template, or projection service behind it.
+
+So the rule is: **`carify` repairs an app that is car-capable but mis-declared. It cannot make an
+arbitrary phone app appear in the car.**
+
+This section has been wrong twice, in both directions, and the reason is worth keeping. First it
+asserted from CarStream's APK that an ordinary Activity can *never* be projected — reading one
+implementation and mistaking a sufficient path for a necessary one. Then a single report of a clone
+running full screen was taken to prove the opposite, and the caveat was removed from the tool. The
+first was over-inference from code, the second under-verification of a result: neither established
+*which* clone had worked. The list above is what an actual measurement looks like.
 
 ### Two SDKs, and only one of them is obtainable
 

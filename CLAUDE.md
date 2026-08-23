@@ -180,10 +180,15 @@ bun run src/cli.ts logs --level W                   # the app's own JSONL log, p
 tools/carify.sh --apk downloaded.apk                # same clone, from a file, no device needed
 ```
 
-**`carify` is the one that makes an ordinary app appear in Android Auto.** It rewrites the APK
-under a new package name so the clone installs *alongside* the untouched original, declaring
-`projection` + `distractionOptimized` + `CAR_LAUNCHER`. That combination is the entire requirement
-— confirmed on a real head unit — and needs no car SDK. Split apps are merged first.
+**`carify` repairs an app that is car-capable but mis-declared.** It rewrites the APK under a new
+package name so the clone installs *alongside* the untouched original, declaring `projection` +
+`distractionOptimized` + `CAR_LAUNCHER`. That fixed AABrowser, which ships car-app code but
+declared `media`. It does **not** make an arbitrary phone app appear in the car: measured with
+`tools/aa-launcher-list.sh`, clones of apps with no car implementation are not listed however they
+are declared. Split apps are merged first.
+
+`tools/aa-launcher-list.sh <serial>` prints the apps Android Auto will actually show, read off the
+phone. Use it instead of guessing — or driving.
 
 The clone is re-signed with `~/.aaad-carify.keystore`. **Keep that file**: without it no clone can
 ever be updated in place.

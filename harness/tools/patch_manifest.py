@@ -88,13 +88,13 @@ def set_meta(parent, name, *, value=None, resource=None):
 
 # 5. What car surface can this app actually back?
 #
-#    `projection` is the default and it WORKS for an ordinary app: confirmed on a real head unit,
-#    a clone with no car SDK and no CATEGORY_PROJECTION service launches full screen on the car
-#    display. Android Auto projects the app's existing Activity; the unofficial SDK is how an app
-#    gets a *custom* car UI, not how it gets onto the display.
+#    `projection` is necessary but NOT sufficient, measured with
+#    harness/tools/aa-launcher-list.sh: a clone of an app with no car implementation declares it
+#    and Android Auto still does not list the app. What the descriptor does is tell Android Auto
+#    which surface an app's EXISTING car code presents. It cannot conjure that code.
 #
-#    `template` is chosen only when the app already ships an androidx CarAppService, because such
-#    an app has a real templated surface and should present that rather than a projected window.
+#    So the descriptor is chosen from what the APK already contains, and when nothing backs it the
+#    caller is told, because the rewrite will not achieve what they are hoping for.
 has_projection_service = False
 has_car_app_service = False
 for service in app.findall("service"):
@@ -111,14 +111,19 @@ if has_car_app_service and not has_projection_service:
 elif has_projection_service:
     car_uses, backing = "projection", "the app's own CATEGORY_PROJECTION service"
 else:
-    car_uses, backing = "projection", "Android Auto projecting the launcher Activity"
+    car_uses, backing = "projection", None
 
 set_meta(app, "com.google.android.gms.car.application", resource="@xml/automotive_app_desc")
 set_meta(app, "distractionOptimized", value="true")
 changes.append(f"car descriptor declares <uses name=\"{car_uses}\"/>")
-changes.append(f"  backed by {backing}")
+if backing:
+    changes.append(f"  backed by {backing}")
+else:
+    changes.append("  WARNING: this APK contains no car implementation — no CATEGORY_PROJECTION")
+    changes.append("  service and no androidx CarAppService. Measured on device, Android Auto does")
+    changes.append("  not list such a clone however it is declared. See TASKS.md T-53.")
 print(f"CAR_USES={car_uses}")
-print(f"CAR_BACKED=yes")
+print(f"CAR_BACKED={'yes' if backing else 'no'}")
 
 # 6. Make the UI as adaptable as the manifest can: a phone Activity on a head unit is a fixed
 #    portrait box unless it is told otherwise. This cannot fix a layout that hardcodes phone
