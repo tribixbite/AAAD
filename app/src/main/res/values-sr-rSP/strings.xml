@@ -1,23 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="title_activity_about_payment">PRO Version</string>
-    <string name="switch_to_pro_statement">Бесплатна верзија AAAD омогућава једно бесплатно преузимање сваког месеца. Ако желите да преузмете више, пређите на PRO.</string>
-    <string name="congratsPro">Честитамо, имате PRO верзију!</string>    <string name="About">About</string>
-    <string name="have_promo_code">Имам промотивни код</string>
-    <string name="promo_code">Унесите промотивни код</string>
-    <string name="input_promo_code_here">Unesite kod ovde</string>    <string name="about_to_download">You are about to download %1$s. Do you wish to continue?</string>
-    <string name="warning_payment">At the end of the payment please manually press \"Return to merchant\" for the transaction to be validated.</string>
+<resources>    <string name="About">About</string>    <string name="about_to_download">You are about to download %1$s. Do you wish to continue?</string>
     <string name="attention">ПАЖЊА</string>
-    <string name="next_download_available">Следеће преузимање доступно: %1$s</string>
     <string name="connect_error">CONNECTION ERROR</string>
-    <plurals name="remaining_downloads">
-        <item quantity="one">You have 1 download remaining</item>
-        <item quantity="few">You have no download remaining</item>
-        <item quantity="other">You have no download remaining</item>
-    </plurals>
     <string name="about_part_one">"<![CDATA[AAAD (Android Auto Apps Downloader) is developed and mantained by Shmykelsa.<br><br>The available apps are made possible by the following developers:<br>]]>"</string>
-    <string name="pro_unlocked">Честитамо, PRO верзија откључана</string>
-    <string name="cancelled_payment">Куповина отказана</string>
     <string name="please_enter_code">Molimo unesite vaš promotivni kod</string>
     <string name="connection_error">Грешка везе, није могуће проверити</string>
     <string name="not_valid_code">Not a valid code</string>    <string name="downloading_progress">Downloading…</string>
@@ -33,22 +18,15 @@
     <string name="screen2auto_download">Preuzmite Screen2Auto</string>    <string name="aawidgets_description">Born with one single task. Bring a widget to Android Auto!</string>
     <string name="performance_monitor_description">Pratite performanse sistema na Android Auto</string>
     <string name="promotion">Остварујете право на 15% попуста</string>    <string name="loading">Учитавање…</string>
-    <string name="go_pro">ПОСТАНИ PRO</string>
     <string name="i_m_good">Добро сам</string>
-    <string name="nav2contacts_description">Brzo navigirajte do kontakata</string>    <string name="back_button_payment_close">Otkaži plaćanje i zatvori</string>
+    <string name="nav2contacts_description">Brzo navigirajte do kontakata</string>
     <string name="help">Помоћ</string>
-    <string name="help_dialog">Do you want to send an e-mail for help right now?</string>    <string name="i_want_to_transfer_license_here">I want to transfer license here</string>
-    <string name="i_want_to_transfer_license_from_here">Želim da prenesem licencu sa ovog uređaja</string>
-    <string name="license_transfer_help">Skenirajte QR kod na drugom uređaju da biste preneli licencu</string>
-    <string name="transfer_license">Transfer License</string>
+    <string name="help_dialog">Do you want to send an e-mail for help right now?</string>
     <string name="debug_mode_activate">Активирај отклањање грешака</string>
     <string name="debug_mode_performance_warning">Режим отклањања грешака може утицати на перформансе</string>
     <string name="debug_mode_deactivated">Режим отклањања грешака деактивиран</string>
     <string name="confirm">Потврда</string>
-    <string name="license_here_confirm">Želite li da prenesete licencu na ovaj uređaj?</string>
-    <string name="qr_tutorial">Otvorite AAAD na drugom uređaju i skenirajte ovaj QR kod</string>
-    <string name="license_done">Licenca uspešno prenesena!</string>
-    <string name="no_license_found">Nije pronađena važeća licenca</string>    <string name="qr_code_permission">The camera permission is needed to scan a QR code</string>
+    <string name="qr_tutorial">Otvorite AAAD na drugom uređaju i skenirajte ovaj QR kod</string>    <string name="qr_code_permission">The camera permission is needed to scan a QR code</string>
     <string name="success_transfer">Prenos uspešan</string>
     <string name="days_remaining">Преостаје %d дана до следећег преузимања</string>
     <string name="hours_remaining">Преостаје %d сати до следећег преузимања</string>
@@ -131,8 +109,6 @@
 
 
     <!-- License Transfer - New Modern UI -->
-    <string name="transfer_license_title">Пренеси лиценцу</string>
-    <string name="checking_license_status">Провера статуса лиценце…</string>
     <string name="qr_code_icon">Икона QR кода</string>
     <string name="receiver_title">Прими PRO лиценцу</string>
     <string name="receiver_subtitle">Прикажи овај QR код да пренесеш лиценцу на овај уређај</string>
@@ -141,7 +117,6 @@
     <string name="receiver_instructions_step1">На уређају са PRO, отвори AAAD и иди на Пренеси лиценцу</string>
     <string name="receiver_instructions_step2">Додирни дугме Скенирај QR код на том уређају</string>
     <string name="receiver_instructions_step3">Скенирај овај QR код да завршиш пренос</string>
-    <string name="transfer_license_icon">Икона преноса лиценце</string>
     <string name="sender_title">Пренеси PRO лиценцу</string>
     <string name="sender_subtitle">Пренеси своју лиценцу на нови уређај</string>
     <string name="sender_warning">⚠️ Упозорење: Преношењем лиценце уклонићеш PRO статус са овог уређаја и активираћеш га на новом уређају. Ова радња се не може опозвати.</string>
@@ -152,17 +127,13 @@
     <string name="sender_step_4">Додирни дугме испод и скенирај тај QR код</string>
     <string name="scan_qr_code">Скенирај QR код</string>
     <string name="camera_permission_required">Потребна дозвола за камеру за скенирање QR кодова</string>
-    <string name="error_checking_license">Неуспела провера статуса лиценце. Покушај поново.</string>
     <string name="error_generating_qr">Неуспело генерисање QR кода</string>
-    <string name="license_received_success">Лиценца успешно примљена!</string>
     <string name="scan_error_title">Грешка скенирања</string>
     <string name="scan_error_message">Неуспело скенирање QR кода. Покушај поново.</string>
     <string name="confirm_transfer_title">Потврди пренос</string>
     <string name="confirm_transfer_message">Да ли си сигуран да желиш да пренесеш своју PRO лиценцу на нови уређај? Ово ће уклонити PRO са овог уређаја.</string>
     <string name="confirm_transfer_yes">Пренеси лиценцу</string>
     <string name="confirm_transfer_no">Откажи</string>
-    <string name="license_transferred_success">Лиценца успешно пренесена!</string>
-    <string name="error_transferring_license">Неуспели пренос лиценце. Покушај поново.</string>
     <string name="support_title">Треба ти помоћ?</string>
     <string name="support_icon">Икона помоћи</string>
     <string name="support_subtitle">Ту смо да ти помогнемо!</string>
@@ -285,18 +256,6 @@
     <string name="progress_checking_updates">Провера ажурирања…</string>
 
     <!-- Pro Version -->
-    <string name="purchase_pro">Купи Pro</string>
-    <string name="pro_version_title">PRO верзија</string>
-    <string name="pro_version_icon">PRO верзија значка</string>
-    <string name="pro_thank_you_title">Хвала вам!</string>
-    <string name="pro_thank_you_message">Хвала вам што подржавате AAAD куповином PRO! Ваш допринос помаже да одржимо овај пројекат живим и омогућава нам да наставимо да вам доносимо најбоље Android Auto апликације.</string>
-    <string name="pro_since">PRO члан од %s</string>
-    <string name="pro_since_legacy">PRO члан</string>
-    <string name="pro_benefits_title">Ваше PRO погодности</string>
-    <string name="pro_benefit_unlimited">Неограничена преузимања апликација</string>
-    <string name="pro_benefit_no_cooldown">Без периода чекања између преузимања</string>
-    <string name="pro_benefit_support">Подршка сталном развоју</string>
-    <string name="pro_closing_message">Заиста ценимо ваше поверење и подршку. Уживајте у неограниченом приступу свим AAAD апликацијама!</string>
 
     <!-- Support -->
     <string name="support_no_email_app">Нема инсталиране апликације за е-пошту. Молимо инсталирајте апликацију за е-пошту (Gmail, Outlook, итд.) или пошаљите е-пошту директно на help.aaad@gmail.com са другог уређаја.</string>

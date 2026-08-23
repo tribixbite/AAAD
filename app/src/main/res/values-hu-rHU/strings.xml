@@ -1,22 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="title_activity_about_payment">Pro verzió</string>
-    <string name="switch_to_pro_statement">Az AAAD ingyenes verziója havonta egy ingyenes letöltést tesz lehetővé. Ha többet szeretnél letölteni, válts PRO verzióra.</string>
-    <string name="congratsPro">Gratulálunk, PRO verziód van!</string>    <string name="About">Névjegy</string>
-    <string name="have_promo_code">Van promóciós kódom</string>
-    <string name="promo_code">Promóciós kód megadása</string>
-    <string name="input_promo_code_here">Adja meg a kódot itt</string>    <string name="about_to_download">A(z) %1$s letöltésére készül. Szeretnéd folytatni?</string>
-    <string name="warning_payment">A fizetés végén kérjük, nyomja meg manuálisan a „Visszatérés a kereskedőhöz” gombot a tranzakció érvényesítéséhez.</string>
+<resources>    <string name="About">Névjegy</string>    <string name="about_to_download">A(z) %1$s letöltésére készül. Szeretnéd folytatni?</string>
     <string name="attention">FIGYELEM</string>
-    <string name="next_download_available">Következő letöltés elérhető: %1$s</string>
     <string name="connect_error">KAPCSOLÓDÁSI HIBA</string>
-    <plurals name="remaining_downloads">
-        <item quantity="one">Nincs több letöltés</item>
-        <item quantity="other">Nincs több letöltés</item>
-    </plurals>
     <string name="about_part_one">"<![CDATA[AAAD (Android Auto Apps Downloader) Shmykelsa fejlesztő és karbantartó. <br><br>Az elérhető alkalmazásokat a következő fejlesztők teszik lehetővé:<br>]]>"</string>
-    <string name="pro_unlocked">Gratulálunk, PRO verzió feloldva</string>
-    <string name="cancelled_payment">Vásárlás törölve</string>
     <string name="please_enter_code">Kérjük, adja meg promóciós kódját</string>
     <string name="connection_error">Kapcsolati hiba, nem sikerült ellenőrizni</string>
     <string name="not_valid_code">Érvénytelen kód</string>    <string name="downloading_progress">Letöltés: </string>
@@ -31,22 +17,15 @@
     <string name="screen2auto_download">Screen2Auto letöltése</string>    <string name="aawidgets_description">Egyetlen céllal született. Hozhat egy programfeladatot az Android Auto alkalmazásba!</string>
     <string name="performance_monitor_description">Figyelje a rendszer teljesítményét az Android Autón</string>
     <string name="promotion">Jogosult vagy 15% kedvezményre</string>    <string name="loading">Betöltés…</string>
-    <string name="go_pro">PRO BESZERZÉSE</string>
     <string name="i_m_good">Jól vagyok</string>
-    <string name="nav2contacts_description">Gyorsan navigáljon a névjegyekhez</string>    <string name="back_button_payment_close">Fizetés megszakítása és bezárás</string>
+    <string name="nav2contacts_description">Gyorsan navigáljon a névjegyekhez</string>
     <string name="help">Súgó</string>
-    <string name="help_dialog">Szeretne most e-mailt küldeni segítségért?</string>    <string name="i_want_to_transfer_license_here">Engedély másolása másik eszközre</string>
-    <string name="i_want_to_transfer_license_from_here">Át szeretném vinni a licencem erről az eszközről</string>
-    <string name="license_transfer_help">Olvassa be a QR-kódot egy másik eszközön a licenc átviteléhez</string>
-    <string name="transfer_license">Engedély másolása</string>
+    <string name="help_dialog">Szeretne most e-mailt küldeni segítségért?</string>
     <string name="debug_mode_activate">Hibakeresés aktiválása</string>
     <string name="debug_mode_performance_warning">A hibakeresési mód befolyásolhatja a teljesítményt</string>
     <string name="debug_mode_deactivated">Hibakeresési mód kikapcsolva</string>
     <string name="confirm">Megerősítés</string>
-    <string name="license_here_confirm">Szeretné átvinni a licencet erre az eszközre?</string>
-    <string name="qr_tutorial">Nyissa meg az AAAD-t a másik eszközön és olvassa be ezt a QR-kódot</string>
-    <string name="license_done">Licenc sikeresen átvéve!</string>
-    <string name="no_license_found">Nem található érvényes licenc</string>    <string name="qr_code_permission">A QR-kód beolvasásához a kamera engedélye szükséges</string>
+    <string name="qr_tutorial">Nyissa meg az AAAD-t a másik eszközön és olvassa be ezt a QR-kódot</string>    <string name="qr_code_permission">A QR-kód beolvasásához a kamera engedélye szükséges</string>
     <string name="success_transfer">Átvitel sikeres</string>
     <string name="email_dialog" comment="&#10;Dialog window">Párbeszéd ablak</string>
     <string name="input_email">Adja meg az e-mail címét</string>
@@ -154,8 +133,6 @@
 
 
     <!-- License Transfer - New Modern UI -->
-    <string name="transfer_license_title">Licenc átvitele</string>
-    <string name="checking_license_status">Licenc állapotának ellenőrzése…</string>
     <string name="qr_code_icon">QR-kód ikon</string>
     <string name="receiver_title">PRO licenc fogadása</string>
     <string name="receiver_subtitle">Mutasd ezt a QR-kódot a licenc erre az eszközre való átviteléhez</string>
@@ -164,7 +141,6 @@
     <string name="receiver_instructions_step1">A PRO-val rendelkező eszközön nyisd meg az AAAD-t és lépj a Licenc átvitele menüpontba</string>
     <string name="receiver_instructions_step2">Érintsd meg a QR-kód beolvasása gombot azon az eszközön</string>
     <string name="receiver_instructions_step3">Olvasd be ezt a QR-kódot az átvitel befejezéséhez</string>
-    <string name="transfer_license_icon">Licenc átvitel ikon</string>
     <string name="sender_title">PRO licenc átvitele</string>
     <string name="sender_subtitle">Vidd át a licencedet egy új eszközre</string>
     <string name="sender_warning">⚠️ Figyelmeztetés: A licenc átvitele eltávolítja a PRO státuszt erről az eszközről és aktiválja az új eszközön. Ez a művelet nem vonható vissza.</string>
@@ -175,17 +151,13 @@
     <string name="sender_step_4">Érintsd meg az alábbi gombot és olvasd be azt a QR-kódot</string>
     <string name="scan_qr_code">QR-kód beolvasása</string>
     <string name="camera_permission_required">Kameraengedély szükséges a QR-kódok beolvasásához</string>
-    <string name="error_checking_license">Nem sikerült ellenőrizni a licenc állapotát. Próbáld újra.</string>
     <string name="error_generating_qr">Nem sikerült létrehozni a QR-kódot</string>
-    <string name="license_received_success">Licenc sikeresen fogadva!</string>
     <string name="scan_error_title">Beolvasási hiba</string>
     <string name="scan_error_message">Nem sikerült beolvasni a QR-kódot. Próbáld újra.</string>
     <string name="confirm_transfer_title">Átvitel megerősítése</string>
     <string name="confirm_transfer_message">Biztos, hogy át akarod vinni a PRO licencedet az új eszközre? Ez eltávolítja a PRO-t erről az eszközről.</string>
     <string name="confirm_transfer_yes">Licenc átvitele</string>
     <string name="confirm_transfer_no">Mégse</string>
-    <string name="license_transferred_success">Licenc sikeresen átvíve!</string>
-    <string name="error_transferring_license">Nem sikerült átvinni a licencet. Próbáld újra.</string>
     <string name="support_title">Segítségre van szükséged?</string>
     <string name="support_icon">Súgó ikon</string>
     <string name="support_subtitle">Azért vagyunk itt, hogy segítsünk!</string>
@@ -295,18 +267,6 @@
     <string name="progress_checking_updates">Frissítések ellenőrzése…</string>
 
     <!-- Pro Version -->
-    <string name="purchase_pro">Pro vásárlás</string>
-    <string name="pro_version_title">PRO verzió</string>
-    <string name="pro_version_icon">PRO verzió jelvény</string>
-    <string name="pro_thank_you_title">Köszönjük!</string>
-    <string name="pro_thank_you_message">Köszönjük, hogy PRO vásárlásával támogatja az AAAD-t! Hozzájárulása segít életben tartani ezt a projektet, és lehetővé teszi számunkra, hogy továbbra is a legjobb Android Auto alkalmazásokat hozzuk el Önnek.</string>
-    <string name="pro_since">PRO tag %s óta</string>
-    <string name="pro_since_legacy">PRO tag</string>
-    <string name="pro_benefits_title">Az Ön PRO előnyei</string>
-    <string name="pro_benefit_unlimited">Korlátlan alkalmazásletöltések</string>
-    <string name="pro_benefit_no_cooldown">Nincs várakozási idő a letöltések között</string>
-    <string name="pro_benefit_support">Támogatja a folyamatos fejlesztést</string>
-    <string name="pro_closing_message">Őszintén értékeljük bizalmát és támogatását. Élvezze korlátlan hozzáférését az összes AAAD alkalmazáshoz!</string>
 
     <!-- Support -->
     <string name="support_no_email_app">Nincs telepítve e-mail alkalmazás. Telepítsen egy e-mail alkalmazást (Gmail, Outlook stb.), vagy küldjön e-mailt közvetlenül a help.aaad@gmail.com címre másik eszközről.</string>

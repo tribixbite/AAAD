@@ -1,24 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="title_activity_about_payment">PRO версія</string>
-    <string name="switch_to_pro_statement">Безкоштовна версія AAAD дозволяє одне безкоштовне завантаження щомісяця. Якщо ви хочете завантажувати більше, переходьте на PRO.</string>
-    <string name="congratsPro">Вітаємо, у вас PRO версія!</string>    <string name="About">Про додаток</string>
-    <string name="have_promo_code">У мене є промокод</string>
-    <string name="promo_code">Введіть промокод</string>
-    <string name="input_promo_code_here">Введіть код тут</string>    <string name="about_to_download">Ви збираєтесь завантажити %1$s. Бажаєте продовжити?</string>
-    <string name="warning_payment">В кінці платежу, будь ласка, натисніть кнопку \"Повернутися до продавця\", щоб підтвердити транзакцію.</string>
+<resources>    <string name="About">Про додаток</string>    <string name="about_to_download">Ви збираєтесь завантажити %1$s. Бажаєте продовжити?</string>
     <string name="attention">УВАГА</string>
-    <string name="next_download_available">Наступне завантаження доступне: %1$s</string>
     <string name="connect_error">Помилка при підключенні</string>
-    <plurals name="remaining_downloads">
-        <item quantity="one">You have 1 download remaining</item>
-        <item quantity="few">У вас залишилось ще декілька завантажень</item>
-        <item quantity="many">У вас залишилось ще багато завантажень</item>
-        <item quantity="other">У вас не залишилося завантажень</item>
-    </plurals>
     <string name="about_part_one">"<![CDATA[AAAD (Android Auto Apps Downloader) розробляється і контролюється Shmykelsa.<br><br>Доступні додатки стають можливими завдяки:<br>]]>"</string>
-    <string name="pro_unlocked">Вітаємо, PRO версія розблокована</string>
-    <string name="cancelled_payment">Покупка скасована</string>
     <string name="please_enter_code">Будь ласка, введіть промокод</string>
     <string name="connection_error">Помилка з\'єднання, не вдалося перевірити</string>
     <string name="not_valid_code">Не дійсний код</string>    <string name="downloading_progress">Завантаження…</string>
@@ -34,22 +18,15 @@
     <string name="screen2auto_download">Завантажити Screen2Auto</string>    <string name="aawidgets_description">Потрібен для одного. Принести віджети на Android Auto!</string>
     <string name="performance_monitor_description">Відстежуйте продуктивність системи на Android Auto</string>
     <string name="promotion">Ви маєте право на знижку 15%</string>    <string name="loading">Завантаження…</string>
-    <string name="go_pro">ОТРИМАТИ PRO</string>
     <string name="i_m_good">Усе гаразд</string>
-    <string name="nav2contacts_description">Швидко переходьте до контактів</string>    <string name="back_button_payment_close">Скасувати платіж та закрити</string>
+    <string name="nav2contacts_description">Швидко переходьте до контактів</string>
     <string name="help">Допомога</string>
-    <string name="help_dialog">Ви хочете надіслати e-mail для отримання допомоги саме зараз?</string>    <string name="i_want_to_transfer_license_here">Я хочу перенести сюди ліцензію</string>
-    <string name="i_want_to_transfer_license_from_here">Хочу передати ліцензію з цього пристрою</string>
-    <string name="license_transfer_help">Скануйте QR-код на іншому пристрої для передачі ліцензії</string>
-    <string name="transfer_license">Перенести ліцензію</string>
+    <string name="help_dialog">Ви хочете надіслати e-mail для отримання допомоги саме зараз?</string>
     <string name="debug_mode_activate">Активувати налагодження</string>
     <string name="debug_mode_performance_warning">Режим налагодження може вплинути на продуктивність</string>
     <string name="debug_mode_deactivated">Режим налагодження деактивовано</string>
     <string name="confirm">Підтвердження</string>
-    <string name="license_here_confirm">Бажаєте передати ліцензію на цей пристрій?</string>
-    <string name="qr_tutorial">Відкрийте AAAD на іншому пристрої та скануйте цей QR-код</string>
-    <string name="license_done">Ліцензію успішно передано!</string>
-    <string name="no_license_found">Дійсну ліцензію не знайдено</string>    <string name="qr_code_permission">Для сканування QR-коду потрібен дозвіл на камеру</string>
+    <string name="qr_tutorial">Відкрийте AAAD на іншому пристрої та скануйте цей QR-код</string>    <string name="qr_code_permission">Для сканування QR-коду потрібен дозвіл на камеру</string>
     <string name="success_transfer">Передача успішна</string>
     <string name="email_dialog" comment="&#10;Dialog window">Електронна пошта буде використовуватися для підтвердження купівлі, якщо це необхідно</string>
     <string name="input_email">Введіть адресу електронної пошти</string>
@@ -135,8 +112,6 @@
 
 
     <!-- License Transfer - New Modern UI -->
-    <string name="transfer_license_title">Передати ліцензію</string>
-    <string name="checking_license_status">Перевірка статусу ліцензії…</string>
     <string name="qr_code_icon">Значок QR-коду</string>
     <string name="receiver_title">Отримати PRO-ліцензію</string>
     <string name="receiver_subtitle">Покажіть цей QR-код для передачі ліцензії на цей пристрій</string>
@@ -145,7 +120,6 @@
     <string name="receiver_instructions_step1">На пристрої з PRO відкрийте AAAD і перейдіть до Передати ліцензію</string>
     <string name="receiver_instructions_step2">Натисніть кнопку Сканувати QR-код на цьому пристрої</string>
     <string name="receiver_instructions_step3">Скануйте цей QR-код для завершення передачі</string>
-    <string name="transfer_license_icon">Значок передачі ліцензії</string>
     <string name="sender_title">Передати PRO-ліцензію</string>
     <string name="sender_subtitle">Передайте свою ліцензію на новий пристрій</string>
     <string name="sender_warning">⚠️ Увага: Передача ліцензії видалить PRO-статус з цього пристрою та активує його на новому пристрої. Цю дію неможливо скасувати.</string>
@@ -156,17 +130,13 @@
     <string name="sender_step_4">Натисніть кнопку нижче і скануйте цей QR-код</string>
     <string name="scan_qr_code">Сканувати QR-код</string>
     <string name="camera_permission_required">Для сканування QR-кодів потрібен дозвіл на використання камери</string>
-    <string name="error_checking_license">Не вдалося перевірити статус ліцензії. Спробуйте ще раз.</string>
     <string name="error_generating_qr">Не вдалося створити QR-код</string>
-    <string name="license_received_success">Ліцензію успішно отримано!</string>
     <string name="scan_error_title">Помилка сканування</string>
     <string name="scan_error_message">Не вдалося відсканувати QR-код. Спробуйте ще раз.</string>
     <string name="confirm_transfer_title">Підтвердіть передачу</string>
     <string name="confirm_transfer_message">Ви впевнені, що хочете передати свою PRO-ліцензію на новий пристрій? Це видалить PRO з цього пристрою.</string>
     <string name="confirm_transfer_yes">Передати ліцензію</string>
     <string name="confirm_transfer_no">Скасувати</string>
-    <string name="license_transferred_success">Ліцензію успішно передано!</string>
-    <string name="error_transferring_license">Не вдалося передати ліцензію. Спробуйте ще раз.</string>
     <string name="support_title">Потрібна допомога?</string>
     <string name="support_icon">Значок допомоги</string>
     <string name="support_subtitle">Ми тут, щоб допомогти вам!</string>
@@ -288,18 +258,6 @@
     <string name="progress_checking_updates">Перевірка оновлень…</string>
 
     <!-- Pro Version -->
-    <string name="purchase_pro">Придбати Pro</string>
-    <string name="pro_version_title">PRO версія</string>
-    <string name="pro_version_icon">Значок PRO версії</string>
-    <string name="pro_thank_you_title">Дякуємо!</string>
-    <string name="pro_thank_you_message">Дякуємо за підтримку AAAD вашою покупкою PRO! Ваш внесок допомагає підтримувати цей проект і дозволяє нам продовжувати надавати вам найкращі додатки Android Auto.</string>
-    <string name="pro_since">PRO-член з %s</string>
-    <string name="pro_since_legacy">PRO-член</string>
-    <string name="pro_benefits_title">Ваші переваги PRO</string>
-    <string name="pro_benefit_unlimited">Необмежені завантаження додатків</string>
-    <string name="pro_benefit_no_cooldown">Без періоду очікування між завантаженнями</string>
-    <string name="pro_benefit_support">Підтримка постійної розробки</string>
-    <string name="pro_closing_message">Ми щиро цінуємо вашу довіру та підтримку. Насолоджуйтесь необмеженим доступом до всіх додатків AAAD!</string>
 
     <!-- Support -->
     <string name="support_no_email_app">Електронна пошта не встановлена. Установіть додаток електронної пошти (Gmail, Outlook тощо) або надішліть листа на help.aaad@gmail.com безпосередньо з іншого пристрою.</string>

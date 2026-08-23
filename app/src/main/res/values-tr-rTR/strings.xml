@@ -1,22 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="title_activity_about_payment">PRO sürümü</string>
-    <string name="switch_to_pro_statement">AAAD\'nin ücretsiz sürümü ayda bir ücretsiz indirme yapmanıza izin verir. Daha fazla indirmek istiyorsanız, PRO\'ya yükseltin.</string>
-    <string name="congratsPro">Tebrikler, PRO sürümüne sahipsiniz!</string>    <string name="About">Hakkında</string>
-    <string name="have_promo_code">Promosyon kodum var</string>
-    <string name="promo_code">Promosyon kodu gir</string>
-    <string name="input_promo_code_here">Kodu buraya girin</string>    <string name="about_to_download">%1$s dosyasını indirmek üzeresiniz. Devam etmek istiyor musunuz?</string>
-    <string name="warning_payment">Ödeme işleminin sonunda, işlemin onaylanması için lütfen manuel olarak \"Satıcıya geri dön\" seçeneğine basın.</string>
+<resources>    <string name="About">Hakkında</string>    <string name="about_to_download">%1$s dosyasını indirmek üzeresiniz. Devam etmek istiyor musunuz?</string>
     <string name="attention">DİKKAT</string>
-    <string name="next_download_available">Sonraki indirme tarihi: %1$s</string>
     <string name="connect_error">BAĞLANTI HATASI</string>
-    <plurals name="remaining_downloads">
-        <item quantity="one">1 indirme hakkınız kaldı</item>
-        <item quantity="other">İndirme hakkınız kalmadı</item>
-    </plurals>
     <string name="about_part_one">"<![CDATA[AAAD (Android Auto Apps Downloader), Shmykelsa tarafından geliştirilmekte ve sürdürülmektedir..<br><br>Mevcut uygulamalar aşağıdaki geliştiriciler tarafından mümkün kılınmıştır::<br>]]>"</string>
-    <string name="pro_unlocked">Tebrikler, PRO sürüm kilidi açıldı</string>
-    <string name="cancelled_payment">Satın alma iptal edildi</string>
     <string name="please_enter_code">Lütfen promosyon kodunuzu girin</string>
     <string name="connection_error">Bağlantı hatası, doğrulanamadı</string>
     <string name="not_valid_code">Geçerli bir kod değil</string>    <string name="downloading_progress">İndiriliyor…</string>
@@ -31,22 +17,15 @@
     <string name="screen2auto_download">Screen2Auto İndir</string>    <string name="aawidgets_description">Tek bir görevle doğdu. Android Auto\'ya bir widget getirin!</string>
     <string name="performance_monitor_description">Android Auto\'da sistem performansını izleyin</string>
     <string name="promotion">%15 indirim almaya hak kazandınız</string>    <string name="loading">Yükleniyor…</string>
-    <string name="go_pro">PRO OL</string>
     <string name="i_m_good">İyiyim</string>
-    <string name="nav2contacts_description">Kişilerinize hızlıca gidin</string>    <string name="back_button_payment_close">Ödemeyi iptal et ve kapat</string>
+    <string name="nav2contacts_description">Kişilerinize hızlıca gidin</string>
     <string name="help">Yardım</string>
-    <string name="help_dialog">Şu anda yardım için bir e-posta göndermek istiyor musunuz?</string>    <string name="i_want_to_transfer_license_here">Buradan lisansı transfer etmek istiyorum</string>
-    <string name="i_want_to_transfer_license_from_here">Lisansımı bu cihazdan aktarmak istiyorum</string>
-    <string name="license_transfer_help">Lisansınızı aktarmak için başka bir cihazda QR kodunu tarayın</string>
-    <string name="transfer_license">Lisansı transfer et</string>
+    <string name="help_dialog">Şu anda yardım için bir e-posta göndermek istiyor musunuz?</string>
     <string name="debug_mode_activate">Hata ayıklamayı etkinleştir</string>
     <string name="debug_mode_performance_warning">Hata ayıklama modu performansı etkileyebilir</string>
     <string name="debug_mode_deactivated">Hata ayıklama modu devre dışı</string>
     <string name="confirm">Onay</string>
-    <string name="license_here_confirm">Lisansınızı bu cihaza aktarmak istiyor musunuz?</string>
-    <string name="qr_tutorial">Diğer cihazınızda AAAD\'yi açın ve bu QR kodunu tarayın</string>
-    <string name="license_done">Lisans başarıyla aktarıldı!</string>
-    <string name="no_license_found">Geçerli lisans bulunamadı</string>    <string name="qr_code_permission">Kamera izini QR kodunu taramak için gereklidir</string>
+    <string name="qr_tutorial">Diğer cihazınızda AAAD\'yi açın ve bu QR kodunu tarayın</string>    <string name="qr_code_permission">Kamera izini QR kodunu taramak için gereklidir</string>
     <string name="success_transfer">Aktarım başarılı</string>
     <string name="email_dialog" comment="&#10;Dialog window">Bu email eğer ihtuyaç olursa satın alma onayı için kullanılacaktır</string>
     <string name="input_email">E-posta adresinizi girin</string>
@@ -132,8 +111,6 @@
 
 
     <!-- License Transfer - New Modern UI -->
-    <string name="transfer_license_title">Lisansı Aktar</string>
-    <string name="checking_license_status">Lisans durumu kontrol ediliyor…</string>
     <string name="qr_code_icon">QR kod simgesi</string>
     <string name="receiver_title">PRO Lisansı Al</string>
     <string name="receiver_subtitle">Bu cihaza lisans aktarmak için bu QR kodunu göster</string>
@@ -142,7 +119,6 @@
     <string name="receiver_instructions_step1">PRO bulunan cihazda AAAD\'yi açın ve Lisansı Aktar\'a gidin</string>
     <string name="receiver_instructions_step2">O cihazda QR Kodunu Tara düğmesine dokunun</string>
     <string name="receiver_instructions_step3">Aktarımı tamamlamak için bu QR kodunu tarayın</string>
-    <string name="transfer_license_icon">Lisans aktarım simgesi</string>
     <string name="sender_title">PRO Lisansını Aktar</string>
     <string name="sender_subtitle">Lisansınızı yeni bir cihaza aktarın</string>
     <string name="sender_warning">⚠️ Uyarı: Lisansınızı aktarmak bu cihazdan PRO durumunu kaldıracak ve yeni cihazda etkinleştirecektir. Bu işlem geri alınamaz.</string>
@@ -153,17 +129,13 @@
     <string name="sender_step_4">Aşağıdaki düğmeye dokunun ve o QR kodunu tarayın</string>
     <string name="scan_qr_code">QR Kodunu Tara</string>
     <string name="camera_permission_required">QR kodlarını taramak için kamera izni gereklidir</string>
-    <string name="error_checking_license">Lisans durumu kontrol edilemedi. Lütfen tekrar deneyin.</string>
     <string name="error_generating_qr">QR kodu oluşturulamadı</string>
-    <string name="license_received_success">Lisans başarıyla alındı!</string>
     <string name="scan_error_title">Tarama Hatası</string>
     <string name="scan_error_message">QR kodu taranamadı. Lütfen tekrar deneyin.</string>
     <string name="confirm_transfer_title">Aktarımı Onayla</string>
     <string name="confirm_transfer_message">PRO lisansınızı yeni cihaza aktarmak istediğinizden emin misiniz? Bu, bu cihazdan PRO\'yu kaldıracaktır.</string>
     <string name="confirm_transfer_yes">Lisansı Aktar</string>
     <string name="confirm_transfer_no">İptal</string>
-    <string name="license_transferred_success">Lisans başarıyla aktarıldı!</string>
-    <string name="error_transferring_license">Lisans aktarılamadı. Lütfen tekrar deneyin.</string>
     <string name="support_title">Yardıma mı İhtiyacınız Var?</string>
     <string name="support_icon">Yardım simgesi</string>
     <string name="support_subtitle">Size yardımcı olmak için buradayız!</string>
@@ -285,18 +257,6 @@
     <string name="progress_checking_updates">Güncellemeler kontrol ediliyor…</string>
 
     <!-- Pro Version -->
-    <string name="purchase_pro">Pro Satın Al</string>
-    <string name="pro_version_title">PRO Sürümü</string>
-    <string name="pro_version_icon">PRO sürüm rozeti</string>
-    <string name="pro_thank_you_title">Teşekkür Ederiz!</string>
-    <string name="pro_thank_you_message">PRO satın alımınızla AAAD\'yi desteklediğiniz için teşekkür ederiz! Katkınız bu projeyi canlı tutmamıza ve size en iyi Android Auto uygulamalarını sunmaya devam etmemize yardımcı oluyor.</string>
-    <string name="pro_since">%s tarihinden beri PRO üyesi</string>
-    <string name="pro_since_legacy">PRO üyesi</string>
-    <string name="pro_benefits_title">PRO Avantajlarınız</string>
-    <string name="pro_benefit_unlimited">Sınırsız uygulama indirme</string>
-    <string name="pro_benefit_no_cooldown">İndirmeler arasında bekleme süresi yok</string>
-    <string name="pro_benefit_support">Devam eden geliştirmeyi destekleyin</string>
-    <string name="pro_closing_message">Güven ve desteğiniz için gerçekten minnettarız. Tüm AAAD uygulamalarına sınırsız erişiminizin keyfini çıkarın!</string>
 
     <!-- Support -->
     <string name="support_no_email_app">E-posta uygulaması yüklü değil. Lütfen bir e-posta uygulaması (Gmail, Outlook, vb.) yükleyin veya başka bir cihazdan doğrudan help.aaad@gmail.com adresine e-posta gönderin.</string>

@@ -1,22 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="title_activity_about_payment">PRO Version</string>
-    <string name="switch_to_pro_statement">Gratisversjonen av AAAD tillater én gratis nedlasting hver måned. Hvis du vil laste ned mer, oppgrader til PRO.</string>
-    <string name="congratsPro">Gratulerer, du har PRO-versjonen!</string>    <string name="About">About</string>
-    <string name="have_promo_code">Jeg har en kampanjekode</string>
-    <string name="promo_code">Skriv inn kampanjekode</string>
-    <string name="input_promo_code_here">Skriv inn kode her</string>    <string name="about_to_download">You are about to download %1$s. Do you wish to continue?</string>
-    <string name="warning_payment">At the end of the payment please manually press \"Return to merchant\" for the transaction to be validated.</string>
+<resources>    <string name="About">About</string>    <string name="about_to_download">You are about to download %1$s. Do you wish to continue?</string>
     <string name="attention">ADVARSEL</string>
-    <string name="next_download_available">Neste nedlasting tilgjengelig: %1$s</string>
     <string name="connect_error">CONNECTION ERROR</string>
-    <plurals name="remaining_downloads">
-        <item quantity="one">You have 1 download remaining</item>
-        <item quantity="other">You have no download remaining</item>
-    </plurals>
     <string name="about_part_one">"<![CDATA[AAAD (Android Auto Apps Downloader) is developed and mantained by Shmykelsa.<br><br>The available apps are made possible by the following developers:<br>]]>"</string>
-    <string name="pro_unlocked">Gratulerer, PRO-versjon låst opp</string>
-    <string name="cancelled_payment">Kjøp avbrutt</string>
     <string name="please_enter_code">Vennligst skriv inn kampanjekoden din</string>
     <string name="connection_error">Tilkoblingsfeil, kunne ikke verifisere</string>
     <string name="not_valid_code">Not a valid code</string>    <string name="downloading_progress">Downloading…</string>
@@ -32,22 +18,15 @@
     <string name="screen2auto_download">Last ned Screen2Auto</string>    <string name="aawidgets_description">Born with one single task. Bring a widget to Android Auto!</string>
     <string name="performance_monitor_description">Overvåk systemytelse på Android Auto</string>
     <string name="promotion">Du er kvalifisert for 15% rabatt</string>    <string name="loading">Laster…</string>
-    <string name="go_pro">BLI PRO</string>
     <string name="i_m_good">Jeg er fornøyd</string>
-    <string name="nav2contacts_description">Naviger raskt til kontaktene dine</string>    <string name="back_button_payment_close">Avbryt betaling og lukk</string>
+    <string name="nav2contacts_description">Naviger raskt til kontaktene dine</string>
     <string name="help">Hjelp</string>
-    <string name="help_dialog">Do you want to send an e-mail for help right now?</string>    <string name="i_want_to_transfer_license_here">I want to transfer license here</string>
-    <string name="i_want_to_transfer_license_from_here">Jeg vil overføre lisensen min fra denne enheten</string>
-    <string name="license_transfer_help">Skann QR-koden på en annen enhet for å overføre lisensen din</string>
-    <string name="transfer_license">Transfer License</string>
+    <string name="help_dialog">Do you want to send an e-mail for help right now?</string>
     <string name="debug_mode_activate">Aktiver feilsøking</string>
     <string name="debug_mode_performance_warning">Feilsøkingsmodus kan påvirke ytelsen</string>
     <string name="debug_mode_deactivated">Feilsøkingsmodus deaktivert</string>
     <string name="confirm">Bekreftelse</string>
-    <string name="license_here_confirm">Vil du overføre lisensen din til denne enheten?</string>
-    <string name="qr_tutorial">Åpne AAAD på den andre enheten din og skann denne QR-koden</string>
-    <string name="license_done">Lisens overført!</string>
-    <string name="no_license_found">Ingen gyldig lisens funnet</string>    <string name="qr_code_permission">The camera permission is needed to scan a QR code</string>
+    <string name="qr_tutorial">Åpne AAAD på den andre enheten din og skann denne QR-koden</string>    <string name="qr_code_permission">The camera permission is needed to scan a QR code</string>
     <string name="success_transfer">Overføring vellykket</string>
     <string name="days_remaining">%d dager igjen til neste nedlasting</string>
     <string name="hours_remaining">%d timer igjen til neste nedlasting</string>
@@ -141,8 +120,6 @@
 
 
     <!-- License Transfer - New Modern UI -->
-    <string name="transfer_license_title">Overfør lisens</string>
-    <string name="checking_license_status">Kontrollerer lisenstatus…</string>
     <string name="qr_code_icon">QR-kodeikon</string>
     <string name="receiver_title">Motta PRO-lisens</string>
     <string name="receiver_subtitle">Vis denne QR-koden for å overføre en lisens til denne enheten</string>
@@ -151,7 +128,6 @@
     <string name="receiver_instructions_step1">På enheten med PRO, åpne AAAD og gå til Overfør lisens</string>
     <string name="receiver_instructions_step2">Trykk på knappen Skann QR-kode på den enheten</string>
     <string name="receiver_instructions_step3">Skann denne QR-koden for å fullføre overføringen</string>
-    <string name="transfer_license_icon">Lisensoverføringsikon</string>
     <string name="sender_title">Overfør PRO-lisens</string>
     <string name="sender_subtitle">Overfør lisensen din til en ny enhet</string>
     <string name="sender_warning">⚠️ Advarsel: Overføring av lisensen vil fjerne PRO-status fra denne enheten og aktivere den på den nye enheten. Denne handlingen kan ikke angres.</string>
@@ -162,17 +138,13 @@
     <string name="sender_step_4">Trykk på knappen nedenfor og skann den QR-koden</string>
     <string name="scan_qr_code">Skann QR-kode</string>
     <string name="camera_permission_required">Kameratillatelse kreves for å skanne QR-koder</string>
-    <string name="error_checking_license">Kunne ikke kontrollere lisenstatus. Prøv igjen.</string>
     <string name="error_generating_qr">Kunne ikke generere QR-kode</string>
-    <string name="license_received_success">Lisens mottatt!</string>
     <string name="scan_error_title">Skanningsfeil</string>
     <string name="scan_error_message">Kunne ikke skanne QR-kode. Prøv igjen.</string>
     <string name="confirm_transfer_title">Bekreft overføring</string>
     <string name="confirm_transfer_message">Er du sikker på at du vil overføre PRO-lisensen din til den nye enheten? Dette fjerner PRO fra denne enheten.</string>
     <string name="confirm_transfer_yes">Overfør lisens</string>
     <string name="confirm_transfer_no">Avbryt</string>
-    <string name="license_transferred_success">Lisens overført!</string>
-    <string name="error_transferring_license">Kunne ikke overføre lisens. Prøv igjen.</string>
     <string name="support_title">Trenger du hjelp?</string>
     <string name="support_icon">Hjelp-ikon</string>
     <string name="support_subtitle">Vi er her for å hjelpe deg!</string>
@@ -292,18 +264,6 @@
     <string name="progress_checking_updates">Sjekker etter oppdateringer…</string>
 
     <!-- Pro Version -->
-    <string name="purchase_pro">Kjøp Pro</string>
-    <string name="pro_version_title">PRO-versjon</string>
-    <string name="pro_version_icon">PRO-versjonsmerke</string>
-    <string name="pro_thank_you_title">Takk!</string>
-    <string name="pro_thank_you_message">Takk for at du støtter AAAD med ditt PRO-kjøp! Ditt bidrag hjelper til med å holde dette prosjektet i live og lar oss fortsette å bringe deg de beste Android Auto-appene.</string>
-    <string name="pro_since">PRO-medlem siden %s</string>
-    <string name="pro_since_legacy">PRO-medlem</string>
-    <string name="pro_benefits_title">Dine PRO-fordeler</string>
-    <string name="pro_benefit_unlimited">Ubegrensede appnedlastninger</string>
-    <string name="pro_benefit_no_cooldown">Ingen nedkjølingsperiode mellom nedlastninger</string>
-    <string name="pro_benefit_support">Støtt kontinuerlig utvikling</string>
-    <string name="pro_closing_message">Vi setter virkelig pris på din tillit og støtte. Nyt din ubegrensede tilgang til alle AAAD-apper!</string>
 
     <!-- Support -->
     <string name="support_no_email_app">Ingen e-postapp installert. Installer en e-postapp (Gmail, Outlook, etc.) eller send e-post til help.aaad@gmail.com direkte fra en annen enhet.</string>

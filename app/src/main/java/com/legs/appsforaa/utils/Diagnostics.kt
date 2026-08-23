@@ -78,8 +78,8 @@ object Diagnostics {
                 appendLine()
                 appendLine("  ! = Android Auto will not list this app; it can be converted.")
                 appendLine("  D = declares no 'projection', so Android Auto lists it but blocks it")
-                appendLine("      while driving. That is the app's own manifest — installing it")
-                appendLine("      differently cannot change it.")
+                appendLine("      while driving. Installing it differently cannot change that, but a")
+                appendLine("      rewritten copy can: harness/tools/carify.sh")
             }
         }
     }

@@ -166,6 +166,36 @@ export async function installerOf(serial: string, packageName: string): Promise<
   return /installer=(\S+)/.exec(line ?? "")?.[1] ?? null;
 }
 
+/**
+ * Pulls the app's own JSONL log off the device.
+ *
+ * Preferred over logcat for anything after the fact: logcat is a device-wide ring buffer, so a
+ * slow install or a chatty system service can evict this app's lines before they are read, and a
+ * run that lost its verdict that way looks exactly like a run that failed.
+ *
+ * Returns [] when the file is absent — an app that has not run yet has nothing to say, which is
+ * not an error.
+ */
+export async function pullAppLog(
+  serial: string,
+  packageName = APP_ID,
+): Promise<Record<string, unknown>[]> {
+  const path = `/sdcard/Android/data/${packageName}/files/aaad-log.jsonl`;
+  const { stdout } = await shell(serial, `cat ${path}`, 60_000);
+  return stdout
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith("{"))
+    .flatMap((line) => {
+      try {
+        return [JSON.parse(line) as Record<string, unknown>];
+      } catch {
+        // A torn final line means the app was writing as it was read; drop that record only.
+        return [];
+      }
+    });
+}
+
 export function isPlayAttributed(installer: string | null): boolean {
   return installer === PLAY_STORE;
 }

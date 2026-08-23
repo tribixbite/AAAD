@@ -1,24 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="title_activity_about_payment">Полная версия</string>
-    <string name="switch_to_pro_statement">Бесплатная версия AAAD позволяет загружать одно приложение бесплатно каждый месяц. Если вы хотите загружать больше, переходите на PRO.</string>
-    <string name="congratsPro">Поздравляем, у вас PRO версия!</string>    <string name="About">О приложении</string>
-    <string name="have_promo_code">У меня есть промокод</string>
-    <string name="promo_code">Введите промокод</string>
-    <string name="input_promo_code_here">Введите код здесь</string>    <string name="about_to_download">Вы собираетесь установить %1$s. Продолжить?</string>
-    <string name="warning_payment">После оплаты, пожалуйста, вручную нажмите \"Вернуться к продавцу\", для подтверждения транзакции. </string>
+<resources>    <string name="About">О приложении</string>    <string name="about_to_download">Вы собираетесь установить %1$s. Продолжить?</string>
     <string name="attention">ВНИМАНИЕ</string>
-    <string name="next_download_available">Следующая загрузка будет доступна: %1$s</string>
     <string name="connect_error">ОШИБКА СОЕДИНЕНИЯ</string>
-    <plurals name="remaining_downloads">
-        <item quantity="one">Вы можете произвести одну установку</item>
-        <item quantity="few">У вас закончились бесплатные установки</item>
-        <item quantity="many">У вас закончились бесплатные установки</item>
-        <item quantity="other">У вас закончились бесплатные установки</item>
-    </plurals>
     <string name="about_part_one">"<![CDATA[AAAD (Android Auto Apps Downloader) разработан и наполнен приложениями Shmykelsa.<br><br>Доступные приложения созданы следующими разработчиками:<br>]]>"</string>
-    <string name="pro_unlocked">Поздравляем, PRO версия разблокирована</string>
-    <string name="cancelled_payment">Покупка отменена</string>
     <string name="please_enter_code">Пожалуйста, введите промокод</string>
     <string name="connection_error">Ошибка подключения, не удалось проверить</string>
     <string name="not_valid_code">Неверный код</string>    <string name="downloading_progress">Загружается…</string>
@@ -33,22 +17,15 @@
     <string name="screen2auto_download">Скачать Screen2Auto</string>    <string name="aawidgets_description">Создано для единственной цели - добавить виджет для Android Auto!</string>
     <string name="performance_monitor_description">Мониторьте производительность системы в Android Auto</string>
     <string name="promotion">Вы имеете право на скидку 15%</string>    <string name="loading">Загрузка…</string>
-    <string name="go_pro">ПОЛУЧИТЬ PRO</string>
     <string name="i_m_good">Всё в порядке</string>
-    <string name="nav2contacts_description">Быстро переходите к контактам</string>    <string name="back_button_payment_close">Отменить платеж и закрыть</string>
+    <string name="nav2contacts_description">Быстро переходите к контактам</string>
     <string name="help">Помощь</string>
-    <string name="help_dialog">Вы хотите отправить e-mail прямо сейчас для получения помощи?</string>    <string name="i_want_to_transfer_license_here">Я хочу перенести лицензию с этого устройства</string>
-    <string name="i_want_to_transfer_license_from_here">Я хочу перенести лицензию с этого устройства</string>
-    <string name="license_transfer_help">Отсканируйте QR-код на другом устройстве для переноса лицензии</string>
-    <string name="transfer_license">Перенос лицензии</string>
+    <string name="help_dialog">Вы хотите отправить e-mail прямо сейчас для получения помощи?</string>
     <string name="debug_mode_activate">Активировать отладку</string>
     <string name="debug_mode_performance_warning">Режим отладки может повлиять на производительность</string>
     <string name="debug_mode_deactivated">Режим отладки деактивирован</string>
     <string name="confirm">Подтверждение</string>
-    <string name="license_here_confirm">Хотите перенести лицензию на это устройство?</string>
-    <string name="qr_tutorial">Откройте AAAD на другом устройстве и отсканируйте этот QR-код</string>
-    <string name="license_done">Лицензия успешно перенесена!</string>
-    <string name="no_license_found">Действительная лицензия не найдена</string>    <string name="qr_code_permission">Для сканирования QR-кодов необходимо предоставить доступ к камере!</string>
+    <string name="qr_tutorial">Откройте AAAD на другом устройстве и отсканируйте этот QR-код</string>    <string name="qr_code_permission">Для сканирования QR-кодов необходимо предоставить доступ к камере!</string>
     <string name="success_transfer">Перенос выполнен успешно</string>
     <string name="email_dialog" comment="&#10;Dialog window">Адрес электронной почты будет использован для проверки вашей покупки, если это необходимо</string>
     <string name="input_email">Введите адрес электронной почты</string>
@@ -145,8 +122,6 @@
 
 
     <!-- License Transfer - New Modern UI -->
-    <string name="transfer_license_title">Передать лицензию</string>
-    <string name="checking_license_status">Проверка статуса лицензии…</string>
     <string name="qr_code_icon">Значок QR-кода</string>
     <string name="receiver_title">Получить PRO-лицензию</string>
     <string name="receiver_subtitle">Покажите этот QR-код для передачи лицензии на это устройство</string>
@@ -155,7 +130,6 @@
     <string name="receiver_instructions_step1">На устройстве с PRO откройте AAAD и перейдите в Передать лицензию</string>
     <string name="receiver_instructions_step2">Нажмите кнопку Сканировать QR-код на этом устройстве</string>
     <string name="receiver_instructions_step3">Отсканируйте этот QR-код для завершения передачи</string>
-    <string name="transfer_license_icon">Значок передачи лицензии</string>
     <string name="sender_title">Передать PRO-лицензию</string>
     <string name="sender_subtitle">Передайте свою лицензию на новое устройство</string>
     <string name="sender_warning">⚠️ Внимание: Передача лицензии удалит PRO-статус с этого устройства и активирует его на новом устройстве. Это действие нельзя отменить.</string>
@@ -166,17 +140,13 @@
     <string name="sender_step_4">Нажмите кнопку ниже и отсканируйте этот QR-код</string>
     <string name="scan_qr_code">Сканировать QR-код</string>
     <string name="camera_permission_required">Требуется разрешение на использование камеры для сканирования QR-кодов</string>
-    <string name="error_checking_license">Не удалось проверить статус лицензии. Попробуйте еще раз.</string>
     <string name="error_generating_qr">Не удалось создать QR-код</string>
-    <string name="license_received_success">Лицензия успешно получена!</string>
     <string name="scan_error_title">Ошибка сканирования</string>
     <string name="scan_error_message">Не удалось отсканировать QR-код. Попробуйте еще раз.</string>
     <string name="confirm_transfer_title">Подтвердите передачу</string>
     <string name="confirm_transfer_message">Вы уверены, что хотите передать свою PRO-лицензию на новое устройство? Это удалит PRO с этого устройства.</string>
     <string name="confirm_transfer_yes">Передать лицензию</string>
     <string name="confirm_transfer_no">Отмена</string>
-    <string name="license_transferred_success">Лицензия успешно передана!</string>
-    <string name="error_transferring_license">Не удалось передать лицензию. Попробуйте еще раз.</string>
     <string name="support_title">Нужна помощь?</string>
     <string name="support_icon">Значок помощи</string>
     <string name="support_subtitle">Мы здесь, чтобы помочь вам!</string>
@@ -292,24 +262,12 @@
     <string name="hero_subtitle">Установите пользовательские приложения для вашего опыта Android Auto</string>
     <string name="refresh_apps">Обновить приложения</string>
     <string name="privacy">Политика конфиденциальности</string>
-    <string name="purchase_pro">Купить PRO</string>
     <string name="support_no_email_app">Не установлено приложение электронной почты. Пожалуйста, установите приложение электронной почты (Gmail, Outlook и т.д.) или отправьте электронное письмо на help.aaad@gmail.com непосредственно с другого устройства.</string>
     <string name="support_attachment_not_supported">Вложение не поддерживается, отправка письма без журналов</string>
     <string name="support_attachment_failed_fallback">Не удалось прикрепить журналы, отправка письма без вложения</string>
     <string name="support_email_body_greeting">Здравствуйте, служба поддержки AAAD,</string>
     <string name="installation_timeout_message_secure">Время проверки установки истекло. Ваша загрузка была учтена в вашем месячном лимите по соображениям безопасности.</string>
     <string name="download_was_counted">Загрузка была учтена в вашем месячном лимите</string>
-    <string name="pro_version_title">Версия PRO</string>
-    <string name="pro_version_icon">Значок версии PRO</string>
-    <string name="pro_thank_you_title">Спасибо!</string>
-    <string name="pro_thank_you_message">Спасибо за поддержку AAAD вашей покупкой PRO! Ваш вклад помогает поддерживать этот проект и позволяет нам продолжать предоставлять вам лучшие приложения Android Auto.</string>
-    <string name="pro_since">PRO-участник с %s</string>
-    <string name="pro_since_legacy">PRO-участник</string>
-    <string name="pro_benefits_title">Ваши PRO-преимущества</string>
-    <string name="pro_benefit_unlimited">Неограниченные загрузки приложений</string>
-    <string name="pro_benefit_no_cooldown">Без периода ожидания между загрузками</string>
-    <string name="pro_benefit_support">Поддержка текущей разработки</string>
-    <string name="pro_closing_message">Мы искренне ценим ваше доверие и поддержку. Наслаждайтесь неограниченным доступом ко всем приложениям AAAD!</string>
     <string name="verifying_authorization">Проверка авторизации загрузки…</string>
     <string name="please_sign_in">Пожалуйста, войдите, чтобы загружать приложения</string>
     <string name="network_error">Ошибка сети. Пожалуйста, проверьте ваше подключение и повторите попытку.</string>

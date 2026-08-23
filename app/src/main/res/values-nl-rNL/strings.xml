@@ -1,22 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="title_activity_about_payment">Pro Versie</string>
-    <string name="switch_to_pro_statement">De gratis versie van AAAD stelt je in staat om één gratis download per maand te hebben. Als je meer wilt downloaden, upgrade naar PRO.</string>
-    <string name="congratsPro">Gefeliciteerd, je hebt de PRO-versie!</string>    <string name="About">Thema</string>
-    <string name="have_promo_code">Ik heb een promocode</string>
-    <string name="promo_code">Voer promocode in</string>
-    <string name="input_promo_code_here">Voer code hier in</string>    <string name="about_to_download">You are about to download %1$s. Do you wish to continue?</string>
-    <string name="warning_payment">Aan het einde van de betaling, druk op \"Terug naar handelaar\" om de transactie te valideren.</string>
+<resources>    <string name="About">Thema</string>    <string name="about_to_download">You are about to download %1$s. Do you wish to continue?</string>
     <string name="attention">LET OP</string>
-    <string name="next_download_available">Volgende download beschikbaar op: %1$s</string>
     <string name="connect_error">CONNECTIE PROBLEEM</string>
-    <plurals name="remaining_downloads">
-        <item quantity="one">Je hebt 1 download resterend</item>
-        <item quantity="other">U heeft geen downloads resterend</item>
-    </plurals>
     <string name="about_part_one">"<![CDATA[AAAD (Android Auto Apps Downloader) wordt ontwikkeld en bijgehouden door Shmykelsa.<br><br>De beschikbare apps worden mogelijk gemaakt door de volgende ontwikkelaars:<br>]]>"</string>
-    <string name="pro_unlocked">Gefeliciteerd, PRO-versie ontgrendeld</string>
-    <string name="cancelled_payment">Aankoop geannuleerd</string>
     <string name="please_enter_code">Voer je promocode in</string>
     <string name="connection_error">Verbindingsfout, kon niet verifiëren</string>
     <string name="not_valid_code">Geen geldige code</string>    <string name="downloading_progress">Downloaden…</string>
@@ -32,22 +18,15 @@
     <string name="screen2auto_download">Download Screen2Auto</string>    <string name="aawidgets_description">Geboren met een enkele taak. Breng een widget naar Android Auto!</string>
     <string name="performance_monitor_description">Bewaak systeemprestaties op Android Auto</string>
     <string name="promotion">Je komt in aanmerking voor 15% korting</string>    <string name="loading">Laden…</string>
-    <string name="go_pro">WORD PRO</string>
     <string name="i_m_good">Het is goed</string>
-    <string name="nav2contacts_description">Navigeer snel naar je contacten</string>    <string name="back_button_payment_close">Betaling annuleren en sluiten</string>
+    <string name="nav2contacts_description">Navigeer snel naar je contacten</string>
     <string name="help">Hulp</string>
-    <string name="help_dialog">Wilt u nu een e-mail voor hulp verzenden?</string>    <string name="i_want_to_transfer_license_here">I want to transfer license here</string>
-    <string name="i_want_to_transfer_license_from_here">Ik wil mijn licentie vanaf dit apparaat overdragen</string>
-    <string name="license_transfer_help">Scan de QR-code op een ander apparaat om je licentie over te dragen</string>
-    <string name="transfer_license">Overdracht van licentie</string>
+    <string name="help_dialog">Wilt u nu een e-mail voor hulp verzenden?</string>
     <string name="debug_mode_activate">Debug activeren</string>
     <string name="debug_mode_performance_warning">Debugmodus kan de prestaties beïnvloeden</string>
     <string name="debug_mode_deactivated">Debugmodus gedeactiveerd</string>
     <string name="confirm">Bevestiging</string>
-    <string name="license_here_confirm">Wil je je licentie naar dit apparaat overdragen?</string>
-    <string name="qr_tutorial">Open AAAD op je andere apparaat en scan deze QR-code</string>
-    <string name="license_done">Licentie succesvol overgedragen!</string>
-    <string name="no_license_found">Geen geldige licentie gevonden</string>    <string name="qr_code_permission">Toestemming nodig om QR code te scannen met camera</string>
+    <string name="qr_tutorial">Open AAAD op je andere apparaat en scan deze QR-code</string>    <string name="qr_code_permission">Toestemming nodig om QR code te scannen met camera</string>
     <string name="success_transfer">Overdracht geslaagd</string>
     <string name="email_dialog" comment="&#10;Dialog window">Het e-mailadres wordt gebruikt om uw aankoop te verifiëren, indien nodig</string>
     <string name="input_email">Voer je e-mailadres in</string>
@@ -144,8 +123,6 @@
 
 
     <!-- License Transfer - New Modern UI -->
-    <string name="transfer_license_title">Licentie overdragen</string>
-    <string name="checking_license_status">Licentiestatus controleren…</string>
     <string name="qr_code_icon">QR-codepictogram</string>
     <string name="receiver_title">PRO-licentie ontvangen</string>
     <string name="receiver_subtitle">Toon deze QR-code om een licentie naar dit apparaat over te dragen</string>
@@ -154,7 +131,6 @@
     <string name="receiver_instructions_step1">Open op het apparaat met PRO AAAD en ga naar Licentie overdragen</string>
     <string name="receiver_instructions_step2">Tik op de knop QR-code scannen op dat apparaat</string>
     <string name="receiver_instructions_step3">Scan deze QR-code om de overdracht te voltooien</string>
-    <string name="transfer_license_icon">Licentieoverdracht-pictogram</string>
     <string name="sender_title">PRO-licentie overdragen</string>
     <string name="sender_subtitle">Draag je licentie over naar een nieuw apparaat</string>
     <string name="sender_warning">⚠️ Waarschuwing: Het overdragen van je licentie verwijdert de PRO-status van dit apparaat en activeert deze op het nieuwe apparaat. Deze actie kan niet ongedaan worden gemaakt.</string>
@@ -165,17 +141,13 @@
     <string name="sender_step_4">Tik op de knop hieronder en scan die QR-code</string>
     <string name="scan_qr_code">QR-code scannen</string>
     <string name="camera_permission_required">Cameratoestemming vereist om QR-codes te scannen</string>
-    <string name="error_checking_license">Kon licentiestatus niet controleren. Probeer het opnieuw.</string>
     <string name="error_generating_qr">Kon QR-code niet genereren</string>
-    <string name="license_received_success">Licentie succesvol ontvangen!</string>
     <string name="scan_error_title">Scanfout</string>
     <string name="scan_error_message">Kon QR-code niet scannen. Probeer het opnieuw.</string>
     <string name="confirm_transfer_title">Overdracht bevestigen</string>
     <string name="confirm_transfer_message">Weet je zeker dat je je PRO-licentie wilt overdragen naar het nieuwe apparaat? Dit verwijdert PRO van dit apparaat.</string>
     <string name="confirm_transfer_yes">Licentie overdragen</string>
     <string name="confirm_transfer_no">Annuleren</string>
-    <string name="license_transferred_success">Licentie succesvol overgedragen!</string>
-    <string name="error_transferring_license">Kon licentie niet overdragen. Probeer het opnieuw.</string>
     <string name="support_title">Hulp nodig?</string>
     <string name="support_icon">Helppictogram</string>
     <string name="support_subtitle">We zijn er om je te helpen!</string>
@@ -313,7 +285,6 @@
     <string name="hero_subtitle">Installeer aangepaste apps voor je Android Auto-ervaring</string>
     <string name="refresh_apps">Apps verversen</string>
     <string name="privacy">Privacybeleid</string>
-    <string name="purchase_pro">Pro kopen</string>
     <string name="aatorque_description">AATorque brengt de OBD-II voertuigdiagnostiek-app Torque Pro naar Android Auto. Monitor de prestaties van je auto, bekijk diagnostische gegevens en krijg toegang tot realtime voertuiginformatie rechtstreeks vanaf het display van je auto.</string>
 
     <!-- Installation timeout -->
@@ -321,17 +292,6 @@
     <string name="download_was_counted">Download is geteld voor je maandelijkse limiet</string>
 
     <!-- Pro Version Activity -->
-    <string name="pro_version_title">PRO-versie</string>
-    <string name="pro_version_icon">PRO-versie badge</string>
-    <string name="pro_thank_you_title">Bedankt!</string>
-    <string name="pro_thank_you_message">Bedankt voor het ondersteunen van AAAD met je PRO-aankoop! Je bijdrage helpt dit project levend te houden en stelt ons in staat je de beste Android Auto-apps te blijven brengen.</string>
-    <string name="pro_since">PRO-lid sinds %s</string>
-    <string name="pro_since_legacy">PRO-lid</string>
-    <string name="pro_benefits_title">Je PRO-voordelen</string>
-    <string name="pro_benefit_unlimited">Onbeperkte app-downloads</string>
-    <string name="pro_benefit_no_cooldown">Geen wachttijd tussen downloads</string>
-    <string name="pro_benefit_support">Ondersteuning doorlopende ontwikkeling</string>
-    <string name="pro_closing_message">We waarderen je vertrouwen en ondersteuning enorm. Geniet van je onbeperkte toegang tot alle AAAD-apps!</string>
 
     <!-- Server-Side Download Authorization -->
     <string name="verifying_authorization">Downloadautorisatie verifiëren…</string>

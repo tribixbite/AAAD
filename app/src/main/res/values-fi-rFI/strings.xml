@@ -1,22 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="title_activity_about_payment">PRO Version</string>
-    <string name="switch_to_pro_statement">AAAD:n ilmainen versio sallii yhden ilmaisen latauksen kuukaudessa. Jos haluat ladata enemmän, päivitä PRO-versioon.</string>
-    <string name="congratsPro">Onnittelut, sinulla on PRO-versio!</string>    <string name="About">About</string>
-    <string name="have_promo_code">Minulla on kampanjakoodi</string>
-    <string name="promo_code">Syötä kampanjakoodi</string>
-    <string name="input_promo_code_here">Syötä koodi tähän</string>    <string name="about_to_download">You are about to download %1$s. Do you wish to continue?</string>
-    <string name="warning_payment">At the end of the payment please manually press \"Return to merchant\" for the transaction to be validated.</string>
+<resources>    <string name="About">About</string>    <string name="about_to_download">You are about to download %1$s. Do you wish to continue?</string>
     <string name="attention">HUOMIO</string>
-    <string name="next_download_available">Seuraava lataus saatavilla: %1$s</string>
     <string name="connect_error">CONNECTION ERROR</string>
-    <plurals name="remaining_downloads">
-        <item quantity="one">You have 1 download remaining</item>
-        <item quantity="other">You have no download remaining</item>
-    </plurals>
     <string name="about_part_one">"<![CDATA[AAAD (Android Auto Apps Downloader) is developed and mantained by Shmykelsa.<br><br>The available apps are made possible by the following developers:<br>]]>"</string>
-    <string name="pro_unlocked">Onnittelut, PRO-versio avattu</string>
-    <string name="cancelled_payment">Osto peruutettu</string>
     <string name="please_enter_code">Syötä kampanjakoodisi</string>
     <string name="connection_error">Yhteysvirhe, ei voitu tarkistaa</string>
     <string name="not_valid_code">Not a valid code</string>    <string name="downloading_progress">Downloading…</string>
@@ -32,22 +18,15 @@
     <string name="screen2auto_download">Lataa Screen2Auto</string>    <string name="aawidgets_description">Born with one single task. Bring a widget to Android Auto!</string>
     <string name="performance_monitor_description">Valvo järjestelmän suorituskykyä Android Autossa</string>
     <string name="promotion">Olet oikeutettu 15%% alennukseen</string>    <string name="loading">Ladataan…</string>
-    <string name="go_pro">HANKI PRO</string>
     <string name="i_m_good">Olen tyytyväinen</string>
-    <string name="nav2contacts_description">Navigoi nopeasti yhteystietoihisi</string>    <string name="back_button_payment_close">Peruuta maksu ja sulje</string>
+    <string name="nav2contacts_description">Navigoi nopeasti yhteystietoihisi</string>
     <string name="help">Ohje</string>
-    <string name="help_dialog">Do you want to send an e-mail for help right now?</string>    <string name="i_want_to_transfer_license_here">I want to transfer license here</string>
-    <string name="i_want_to_transfer_license_from_here">Haluan siirtää lisenssini tältä laitteelta</string>
-    <string name="license_transfer_help">Skannaa QR-koodi toisella laitteella siirtääksesi lisenssisi</string>
-    <string name="transfer_license">Transfer License</string>
+    <string name="help_dialog">Do you want to send an e-mail for help right now?</string>
     <string name="debug_mode_activate">Aktivoi virheenkorjaus</string>
     <string name="debug_mode_performance_warning">Virheenkorjaustila saattaa vaikuttaa suorituskykyyn</string>
     <string name="debug_mode_deactivated">Virheenkorjaustila poistettu käytöstä</string>
     <string name="confirm">Vahvistus</string>
-    <string name="license_here_confirm">Haluatko siirtää lisenssisi tälle laitteelle?</string>
-    <string name="qr_tutorial">Avaa AAAD toisella laitteellasi ja skannaa tämä QR-koodi</string>
-    <string name="license_done">Lisenssi siirretty onnistuneesti!</string>
-    <string name="no_license_found">Kelvollista lisenssiä ei löytynyt</string>    <string name="qr_code_permission">The camera permission is needed to scan a QR code</string>
+    <string name="qr_tutorial">Avaa AAAD toisella laitteellasi ja skannaa tämä QR-koodi</string>    <string name="qr_code_permission">The camera permission is needed to scan a QR code</string>
     <string name="success_transfer">Siirto onnistui</string>
     <string name="days_remaining">%d päivää jäljellä seuraavaan lataukseen</string>
     <string name="hours_remaining">%d tuntia jäljellä seuraavaan lataukseen</string>
@@ -152,8 +131,6 @@
 
 
     <!-- License Transfer - New Modern UI -->
-    <string name="transfer_license_title">Siirrä lisenssi</string>
-    <string name="checking_license_status">Tarkistetaan lisenssin tilaa…</string>
     <string name="qr_code_icon">QR-koodikuvake</string>
     <string name="receiver_title">Vastaanota PRO-lisenssi</string>
     <string name="receiver_subtitle">Näytä tämä QR-koodi siirtääksesi lisenssin tälle laitteelle</string>
@@ -162,7 +139,6 @@
     <string name="receiver_instructions_step1">Avaa PRO-laitteessa AAAD ja siirry kohtaan Siirrä lisenssi</string>
     <string name="receiver_instructions_step2">Napauta Skannaa QR-koodi -painiketta kyseisessä laitteessa</string>
     <string name="receiver_instructions_step3">Skannaa tämä QR-koodi viimeistelläksesi siirron</string>
-    <string name="transfer_license_icon">Lisenssinsiirtokuvake</string>
     <string name="sender_title">Siirrä PRO-lisenssi</string>
     <string name="sender_subtitle">Siirrä lisenssisi uuteen laitteeseen</string>
     <string name="sender_warning">⚠️ Varoitus: Lisenssin siirtäminen poistaa PRO-tilan tästä laitteesta ja aktivoi sen uudessa laitteessa. Tätä toimintoa ei voi perua.</string>
@@ -173,17 +149,13 @@
     <string name="sender_step_4">Napauta alla olevaa painiketta ja skannaa kyseinen QR-koodi</string>
     <string name="scan_qr_code">Skannaa QR-koodi</string>
     <string name="camera_permission_required">Kameralupa vaaditaan QR-koodien skannaamiseen</string>
-    <string name="error_checking_license">Lisenssin tilan tarkistaminen epäonnistui. Yritä uudelleen.</string>
     <string name="error_generating_qr">QR-koodin luominen epäonnistui</string>
-    <string name="license_received_success">Lisenssi vastaanotettu onnistuneesti!</string>
     <string name="scan_error_title">Skannausvirhe</string>
     <string name="scan_error_message">QR-koodin skannaus epäonnistui. Yritä uudelleen.</string>
     <string name="confirm_transfer_title">Vahvista siirto</string>
     <string name="confirm_transfer_message">Haluatko varmasti siirtää PRO-lisenssisi uuteen laitteeseen? Tämä poistaa PRO:n tästä laitteesta.</string>
     <string name="confirm_transfer_yes">Siirrä lisenssi</string>
     <string name="confirm_transfer_no">Peruuta</string>
-    <string name="license_transferred_success">Lisenssi siirretty onnistuneesti!</string>
-    <string name="error_transferring_license">Lisenssin siirtäminen epäonnistui. Yritä uudelleen.</string>
     <string name="support_title">Tarvitsetko apua?</string>
     <string name="support_icon">Ohjeikuvake</string>
     <string name="support_subtitle">Olemme täällä auttamassa sinua!</string>
@@ -294,18 +266,6 @@
     <string name="progress_checking_updates">Tarkistetaan päivityksiä…</string>
 
     <!-- Pro Version -->
-    <string name="purchase_pro">Osta Pro</string>
-    <string name="pro_version_title">PRO-versio</string>
-    <string name="pro_version_icon">PRO-version merkki</string>
-    <string name="pro_thank_you_title">Kiitos!</string>
-    <string name="pro_thank_you_message">Kiitos AAAD:n tukemisesta PRO-ostoksellasi! Panoksesi auttaa pitämään tämän projektin elossa ja mahdollistaa parhaisiin Android Auto -sovelluksiin tutustumisen.</string>
-    <string name="pro_since">PRO-jäsen %s lähtien</string>
-    <string name="pro_since_legacy">PRO-jäsen</string>
-    <string name="pro_benefits_title">PRO-etusi</string>
-    <string name="pro_benefit_unlimited">Rajattomat sovellusten lataukset</string>
-    <string name="pro_benefit_no_cooldown">Ei odotusaikaa latausten välillä</string>
-    <string name="pro_benefit_support">Tue jatkuvaa kehitystä</string>
-    <string name="pro_closing_message">Arvostamme vilpittömästi luottamustasi ja tukeasi. Nauti rajattomasta pääsystäsi kaikkiin AAAD-sovelluksiin!</string>
 
     <!-- Support -->
     <string name="support_no_email_app">Sähköpostisovellusta ei ole asennettu. Asenna sähköpostisovellus (Gmail, Outlook jne.) tai lähetä sähköpostia osoitteeseen help.aaad@gmail.com suoraan toiselta laitteelta.</string>

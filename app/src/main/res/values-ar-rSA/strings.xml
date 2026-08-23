@@ -1,26 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="title_activity_about_payment">PRO Vers13ion</string>
-    <string name="switch_to_pro_statement">النسخة المجانية من AAAD تسمح لك بتنزيل مجاني واحد كل شهر. إذا كنت تريد تنزيل المزيد، قم بالترقية إلى PRO.</string>
-    <string name="congratsPro">تهانينا، لديك النسخة PRO!</string>    <string name="About">حول</string>
-    <string name="have_promo_code">لدي رمز ترويجي</string>
-    <string name="promo_code">أدخل الرمز الترويجي</string>
-    <string name="input_promo_code_here">أدخل الرمز هنا</string>    <string name="about_to_download">أنت على وشك تنزيل %1$s. هل ترغب في المتابعة؟</string>
-    <string name="warning_payment">At the end of the payment please manually press \"Return to merchant\" for the transaction to be validated.</string>
+<resources>    <string name="About">حول</string>    <string name="about_to_download">أنت على وشك تنزيل %1$s. هل ترغب في المتابعة؟</string>
     <string name="attention">تنبيه</string>
-    <string name="next_download_available">التنزيل التالي متاح في: %1$s</string>
     <string name="connect_error">خطأ في عملية الإتصال</string>
-    <plurals name="remaining_downloads">
-        <item quantity="zero">You have 1 download remaining</item>
-        <item quantity="one">لا يزال لديك تحميل واحد</item>
-        <item quantity="two">لديك تحميل واحد متبق</item>
-        <item quantity="few">You have no download remaining</item>
-        <item quantity="many">لديك 1 تحميل متبقي</item>
-        <item quantity="other">ليس لديك تحميل متبقي</item>
-    </plurals>
     <string name="about_part_one">"&lt;br&gt;<![CDATA[AAAAD (تحميل تطبيقات أندرويد اوتو) تم تطويره و دعمه بواسطة Shmykelsa.<br><br>التطبيقات المتاحة تم تزويدها من قبل المطورين التاليين:<br>]]>"</string>
-    <string name="pro_unlocked">تهانينا، تم فتح النسخة PRO</string>
-    <string name="cancelled_payment">تم إلغاء الشراء</string>
     <string name="please_enter_code">الرجاء إدخال رمز الترويج الخاص بك</string>
     <string name="connection_error">خطأ في الاتصال، تعذر التحقق</string>
     <string name="not_valid_code">رمز غير صحيح</string>    <string name="downloading_progress">جارٍ التنزيل…</string>
@@ -36,22 +18,15 @@
     <string name="screen2auto_download">تنزيل Screen2Auto</string>    <string name="aawidgets_description">وُلد مع مهمة واحدة. أحضر عنصر واجهة المستخدم إلى أندرويد تلقائيًا!</string>
     <string name="performance_monitor_description">مراقبة أداء النظام على Android Auto</string>
     <string name="promotion">أنت مؤهل للحصول على خصم 15%</string>    <string name="loading">جار التحميل…</string>
-    <string name="go_pro">احصل على PRO</string>
     <string name="i_m_good">أنا بخير</string>
-    <string name="nav2contacts_description">الانتقال السريع إلى جهات الاتصال</string>    <string name="back_button_payment_close">إلغاء الدفع وإغلاق</string>
+    <string name="nav2contacts_description">الانتقال السريع إلى جهات الاتصال</string>
     <string name="help">مساعدة</string>
-    <string name="help_dialog">هل تريد إرسال بريد إلكتروني للحصول على مساعدة الآن؟</string>    <string name="i_want_to_transfer_license_here">أريد نقل الترخيص هنا</string>
-    <string name="i_want_to_transfer_license_from_here">أريد نقل ترخيصي من هذا الجهاز</string>
-    <string name="license_transfer_help">امسح رمز QR على جهاز آخر لنقل الترخيص</string>
-    <string name="transfer_license">ترخيص التحويل</string>
+    <string name="help_dialog">هل تريد إرسال بريد إلكتروني للحصول على مساعدة الآن؟</string>
     <string name="debug_mode_activate">تفعيل وضع التصحيح</string>
     <string name="debug_mode_performance_warning">قد يؤثر وضع التصحيح على الأداء</string>
     <string name="debug_mode_deactivated">تم إلغاء تفعيل وضع التصحيح</string>
     <string name="confirm">تأكيد</string>
-    <string name="license_here_confirm">هل تريد نقل ترخيصك إلى هذا الجهاز؟</string>
-    <string name="qr_tutorial">افتح AAAD على جهازك الآخر وامسح رمز QR هذا</string>
-    <string name="license_done">تم نقل الترخيص بنجاح!</string>
-    <string name="no_license_found">لم يتم العثور على ترخيص صالح</string>    <string name="qr_code_permission">إذن الكاميرا مطلوب لمسح رمز QR</string>
+    <string name="qr_tutorial">افتح AAAD على جهازك الآخر وامسح رمز QR هذا</string>    <string name="qr_code_permission">إذن الكاميرا مطلوب لمسح رمز QR</string>
     <string name="success_transfer">النقل ناجح</string>
     <string name="email_dialog" comment="&#10;Dialog window">سيتم استخدام البريد الإلكتروني للتحقق من عملية الشراء الخاصة بك، إذا لزم الأمر</string>
     <string name="input_email">أدخل بريدك الإلكتروني</string>
@@ -159,8 +134,6 @@
 
 
     <!-- License Transfer - New Modern UI -->
-    <string name="transfer_license_title">نقل الترخيص</string>
-    <string name="checking_license_status">جارٍ التحقق من حالة الترخيص…</string>
     <string name="qr_code_icon">أيقونة رمز الاستجابة السريعة</string>
     <string name="receiver_title">استلام ترخيص PRO</string>
     <string name="receiver_subtitle">اعرض رمز الاستجابة السريعة هذا لنقل ترخيص إلى هذا الجهاز</string>
@@ -169,7 +142,6 @@
     <string name="receiver_instructions_step1">على الجهاز الذي يحتوي على PRO، افتح AAAD وانتقل إلى نقل الترخيص</string>
     <string name="receiver_instructions_step2">اضغط على زر مسح رمز الاستجابة السريعة على ذلك الجهاز</string>
     <string name="receiver_instructions_step3">امسح رمز الاستجابة السريعة هذا لإكمال النقل</string>
-    <string name="transfer_license_icon">أيقونة نقل الترخيص</string>
     <string name="sender_title">نقل ترخيص PRO</string>
     <string name="sender_subtitle">انقل ترخيصك إلى جهاز جديد</string>
     <string name="sender_warning">⚠️ تحذير: سيؤدي نقل ترخيصك إلى إزالة حالة PRO من هذا الجهاز وتفعيلها على الجهاز الجديد. لا يمكن التراجع عن هذا الإجراء.</string>
@@ -180,17 +152,13 @@
     <string name="sender_step_4">اضغط على الزر أدناه وامسح رمز الاستجابة السريعة ذاك</string>
     <string name="scan_qr_code">مسح رمز الاستجابة السريعة</string>
     <string name="camera_permission_required">يتطلب إذن الكاميرا لمسح رموز QR</string>
-    <string name="error_checking_license">فشل التحقق من حالة الترخيص. حاول مرة أخرى.</string>
     <string name="error_generating_qr">فشل إنشاء رمز الاستجابة السريعة</string>
-    <string name="license_received_success">تم استلام الترخيص بنجاح!</string>
     <string name="scan_error_title">خطأ في المسح</string>
     <string name="scan_error_message">فشل مسح رمز الاستجابة السريعة. حاول مرة أخرى.</string>
     <string name="confirm_transfer_title">تأكيد النقل</string>
     <string name="confirm_transfer_message">هل أنت متأكد من رغبتك في نقل ترخيص PRO إلى الجهاز الجديد؟ سيؤدي هذا إلى إزالة PRO من هذا الجهاز.</string>
     <string name="confirm_transfer_yes">نقل الترخيص</string>
     <string name="confirm_transfer_no">إلغاء</string>
-    <string name="license_transferred_success">تم نقل الترخيص بنجاح!</string>
-    <string name="error_transferring_license">فشل نقل الترخيص. حاول مرة أخرى.</string>
     <string name="support_title">هل تحتاج إلى مساعدة؟</string>
     <string name="support_icon">أيقونة المساعدة</string>
     <string name="support_subtitle">نحن هنا لمساعدتك!</string>
@@ -305,24 +273,12 @@
     <string name="hero_subtitle">تثبيت تطبيقات مخصصة لتجربة Android Auto الخاصة بك</string>
     <string name="refresh_apps">تحديث التطبيقات</string>
     <string name="privacy">سياسة الخصوصية</string>
-    <string name="purchase_pro">شراء النسخة الاحترافية</string>
     <string name="support_no_email_app">لم يتم تثبيت تطبيق بريد إلكتروني. يرجى تثبيت تطبيق بريد إلكتروني (Gmail، Outlook، إلخ) أو إرسال بريد إلكتروني إلى help.aaad@gmail.com مباشرة من جهاز آخر.</string>
     <string name="support_attachment_not_supported">المرفق غير مدعوم، إرسال البريد الإلكتروني بدون السجلات</string>
     <string name="support_attachment_failed_fallback">تعذر إرفاق السجلات، إرسال البريد الإلكتروني بدون مرفق</string>
     <string name="support_email_body_greeting">مرحبًا دعم AAAD،</string>
     <string name="installation_timeout_message_secure">انتهت مهلة التحقق من التثبيت. تم احتساب تنزيلك ضمن حدك الشهري لأسباب أمنية.</string>
     <string name="download_was_counted">تم احتساب التنزيل ضمن حدك الشهري</string>
-    <string name="pro_version_title">النسخة الاحترافية</string>
-    <string name="pro_version_icon">شارة النسخة الاحترافية</string>
-    <string name="pro_thank_you_title">شكرًا لك!</string>
-    <string name="pro_thank_you_message">شكرًا لك على دعم AAAD من خلال شرائك للنسخة الاحترافية! مساهمتك تساعد في الحفاظ على هذا المشروع حيًا وتتيح لنا الاستمرار في تقديم أفضل تطبيقات Android Auto لك.</string>
-    <string name="pro_since">عضو احترافي منذ %s</string>
-    <string name="pro_since_legacy">عضو احترافي</string>
-    <string name="pro_benefits_title">مزاياك الاحترافية</string>
-    <string name="pro_benefit_unlimited">تنزيلات تطبيقات غير محدودة</string>
-    <string name="pro_benefit_no_cooldown">لا توجد فترة انتظار بين التنزيلات</string>
-    <string name="pro_benefit_support">دعم التطوير المستمر</string>
-    <string name="pro_closing_message">نحن نقدر حقًا ثقتك ودعمك. استمتع بوصولك غير المحدود إلى جميع تطبيقات AAAD!</string>
     <string name="update_available_badge">تحديث</string>
     <string name="verifying_authorization">التحقق من تصريح التنزيل…</string>
     <string name="please_sign_in">يرجى تسجيل الدخول لتنزيل التطبيقات</string>

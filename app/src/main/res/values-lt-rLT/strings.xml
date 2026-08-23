@@ -1,24 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="title_activity_about_payment">PRO Versija</string>
-    <string name="switch_to_pro_statement">Nemokama AAAD versija leidžia turėti vieną nemokamą atsisiuntimą kas mėnesį. Jei norite atsisiųsti daugiau, pereikite prie PRO.</string>
-    <string name="congratsPro">Sveikiname, turite PRO versiją!</string>    <string name="About">Apie</string>
-    <string name="have_promo_code">Turiu akcijos kodą</string>
-    <string name="promo_code">Įveskite akcijos kodą</string>
-    <string name="input_promo_code_here">Įveskite kodą čia</string>    <string name="about_to_download">Bus parsiunčiama %1$s. Ar norite tęsti?</string>
-    <string name="warning_payment">At the end of the payment please manually press \"Return to merchant\" for the transaction to be validated.</string>
+<resources>    <string name="About">Apie</string>    <string name="about_to_download">Bus parsiunčiama %1$s. Ar norite tęsti?</string>
     <string name="attention">DĖMESIO</string>
-    <string name="next_download_available">Kitas atsisiuntimas galimas: %1$s</string>
     <string name="connect_error">PRISIJUNGIMO KLAIDA</string>
-    <plurals name="remaining_downloads">
-        <item quantity="one">Liko 1 parsisiuntimas</item>
-        <item quantity="few">You have no download remaining</item>
-        <item quantity="many">You have no download remaining</item>
-        <item quantity="other">You have no download remaining</item>
-    </plurals>
     <string name="about_part_one">"<![CDATA[AAAD (Android Auto Apps Downloader) is developed and mantained by Shmykelsa.<br><br>The available apps are made possible by the following developers:<br>]]>"</string>
-    <string name="pro_unlocked">Sveikiname, PRO versija atrakinta</string>
-    <string name="cancelled_payment">Pirkimas atšauktas</string>
     <string name="please_enter_code">Įveskite savo reklaminį kodą</string>
     <string name="connection_error">Ryšio klaida, nepavyko patikrinti</string>
     <string name="not_valid_code">Netinkamas kodas</string>    <string name="downloading_progress">Siunčiama…</string>
@@ -34,22 +18,15 @@
     <string name="screen2auto_download">Atsisiųsti Screen2Auto</string>    <string name="aawidgets_description">Born with one single task. Bring a widget to Android Auto!</string>
     <string name="performance_monitor_description">Stebėkite sistemos veikimą Android Auto</string>
     <string name="promotion">Galite gauti 15% nuolaidą</string>    <string name="loading">Įkeliama…</string>
-    <string name="go_pro">ĮSIGYTI PRO</string>
     <string name="i_m_good">Man gerai</string>
-    <string name="nav2contacts_description">Greitai pereikite prie kontaktų</string>    <string name="back_button_payment_close">Atšaukti mokėjimą ir uždaryti</string>
+    <string name="nav2contacts_description">Greitai pereikite prie kontaktų</string>
     <string name="help">Pagalba</string>
-    <string name="help_dialog">Ar norite siųsti el. laišką pagalbai gauti?</string>    <string name="i_want_to_transfer_license_here">Noriu perkelti licenciją į šį įrenginį</string>
-    <string name="i_want_to_transfer_license_from_here">Noriu perkelti licenciją iš šio įrenginio</string>
-    <string name="license_transfer_help">Nuskaitykite QR kodą kitame įrenginyje, kad perkelti licenciją</string>
-    <string name="transfer_license">Perkelti licenciją</string>
+    <string name="help_dialog">Ar norite siųsti el. laišką pagalbai gauti?</string>
     <string name="debug_mode_activate">Aktyvuoti derinimą</string>
     <string name="debug_mode_performance_warning">Derinimo režimas gali turėti įtakos našumui</string>
     <string name="debug_mode_deactivated">Derinimo režimas išjungtas</string>
     <string name="confirm">Patvirtinimas</string>
-    <string name="license_here_confirm">Ar norite perkelti licenciją į šį įrenginį?</string>
-    <string name="qr_tutorial">Atidarykite AAAD kitame įrenginyje ir nuskaitykite šį QR kodą</string>
-    <string name="license_done">Licencija sėkmingai perkelta!</string>
-    <string name="no_license_found">Nerasta galiojanti licencija</string>    <string name="qr_code_permission">Reikalingas kameros leidimas norit nuskenuoti QR kodą</string>
+    <string name="qr_tutorial">Atidarykite AAAD kitame įrenginyje ir nuskaitykite šį QR kodą</string>    <string name="qr_code_permission">Reikalingas kameros leidimas norit nuskenuoti QR kodą</string>
     <string name="success_transfer">Perkėlimas sėkmingas</string>
     <string name="days_remaining">Liko %d dienų iki kito atsisiuntimo</string>
     <string name="hours_remaining">Liko %d valandų iki kito atsisiuntimo</string>
@@ -143,8 +120,6 @@
 
 
     <!-- License Transfer - New Modern UI -->
-    <string name="transfer_license_title">Perkelti licenciją</string>
-    <string name="checking_license_status">Tikrinama licencijos būsena…</string>
     <string name="qr_code_icon">QR kodo piktograma</string>
     <string name="receiver_title">Gauti PRO licenciją</string>
     <string name="receiver_subtitle">Parodykite šį QR kodą, kad perkeltumėte licenciją į šį įrenginį</string>
@@ -153,7 +128,6 @@
     <string name="receiver_instructions_step1">Įrenginyje su PRO atidarykite AAAD ir eikite į Perkelti licenciją</string>
     <string name="receiver_instructions_step2">Bakstelėkite mygtuką Skenuoti QR kodą tame įrenginyje</string>
     <string name="receiver_instructions_step3">Nuskaitykite šį QR kodą, kad užbaigtumėte perkėlimą</string>
-    <string name="transfer_license_icon">Licencijos perkėlimo piktograma</string>
     <string name="sender_title">Perkelti PRO licenciją</string>
     <string name="sender_subtitle">Perkelkite savo licenciją į naują įrenginį</string>
     <string name="sender_warning">⚠️ Įspėjimas: Perkėlus licenciją bus pašalintas PRO statusas iš šio įrenginio ir aktyvuotas naujame įrenginyje. Šio veiksmo negalima atšaukti.</string>
@@ -164,17 +138,13 @@
     <string name="sender_step_4">Bakstelėkite mygtuką žemiau ir nuskaitykite tą QR kodą</string>
     <string name="scan_qr_code">Skenuoti QR kodą</string>
     <string name="camera_permission_required">Reikalingas kameros leidimas QR kodų skenavimui</string>
-    <string name="error_checking_license">Nepavyko patikrinti licencijos būsenos. Bandykite dar kartą.</string>
     <string name="error_generating_qr">Nepavyko sugeneruoti QR kodo</string>
-    <string name="license_received_success">Licencija gauta sėkmingai!</string>
     <string name="scan_error_title">Skenavimo klaida</string>
     <string name="scan_error_message">Nepavyko nuskaityti QR kodo. Bandykite dar kartą.</string>
     <string name="confirm_transfer_title">Patvirtinti perkėlimą</string>
     <string name="confirm_transfer_message">Ar tikrai norite perkelti savo PRO licenciją į naują įrenginį? Tai pašalins PRO iš šio įrenginio.</string>
     <string name="confirm_transfer_yes">Perkelti licenciją</string>
     <string name="confirm_transfer_no">Atšaukti</string>
-    <string name="license_transferred_success">Licencija perkelta sėkmingai!</string>
-    <string name="error_transferring_license">Nepavyko perkelti licencijos. Bandykite dar kartą.</string>
     <string name="support_title">Reikia pagalbos?</string>
     <string name="support_icon">Pagalbos piktograma</string>
     <string name="support_subtitle">Mes čia, kad jums padėtume!</string>
@@ -294,18 +264,6 @@
     <string name="progress_checking_updates">Tikrinami naujinimai…</string>
 
     <!-- Pro Version -->
-    <string name="purchase_pro">Įsigyti Pro</string>
-    <string name="pro_version_title">PRO versija</string>
-    <string name="pro_version_icon">PRO versijos ženklelis</string>
-    <string name="pro_thank_you_title">Ačiū!</string>
-    <string name="pro_thank_you_message">Ačiū, kad palaikote AAAD įsigydami PRO! Jūsų indėlis padeda išlaikyti šį projektą gyvą ir leidžia mums toliau teikti jums geriausias Android Auto programas.</string>
-    <string name="pro_since">PRO narys nuo %s</string>
-    <string name="pro_since_legacy">PRO narys</string>
-    <string name="pro_benefits_title">Jūsų PRO privilegijos</string>
-    <string name="pro_benefit_unlimited">Neriboti programų atsisiuntimai</string>
-    <string name="pro_benefit_no_cooldown">Nėra laukimo laiko tarp atsisiuntimų</string>
-    <string name="pro_benefit_support">Palaikykite tęstinę plėtrą</string>
-    <string name="pro_closing_message">Tikrai vertiname jūsų pasitikėjimą ir paramą. Mėgaukitės neribota prieiga prie visų AAAD programų!</string>
 
     <!-- Support -->
     <string name="support_no_email_app">El. pašto programa neįdiegta. Įdiekite el. pašto programą (Gmail, Outlook ir kt.) arba siųskite el. laišką tiesiogiai į help.aaad@gmail.com iš kito įrenginio.</string>

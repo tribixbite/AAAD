@@ -1,21 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="title_activity_about_payment">PRO Version</string>
-    <string name="switch_to_pro_statement">Phiên bản miễn phí của AAAD cho phép bạn có một lượt tải miễn phí mỗi tháng. Nếu bạn muốn tải nhiều hơn, hãy nâng cấp lên PRO.</string>
-    <string name="congratsPro">Chúc mừng, bạn có phiên bản PRO!</string>    <string name="About">Thông tin</string>
-    <string name="have_promo_code">Tôi có mã khuyến mãi</string>
-    <string name="promo_code">Nhập mã khuyến mãi</string>
-    <string name="input_promo_code_here">Nhập mã tại đây</string>    <string name="about_to_download">You are about to download %1$s. Do you wish to continue?</string>
-    <string name="warning_payment">Sau khi hoàn tất thanh toán, hãy nhấn vào \"Return to merchant\" để xác thực giao dịch.</string>
+<resources>    <string name="About">Thông tin</string>    <string name="about_to_download">You are about to download %1$s. Do you wish to continue?</string>
     <string name="attention">CHÚ Ý</string>
-    <string name="next_download_available">Lượt tải tiếp theo có sẵn vào: %1$s</string>
     <string name="connect_error">LỖI KẾT NỐI</string>
-    <plurals name="remaining_downloads">
-        <item quantity="other">Bạn còn 1 lần tải miễn phí</item>
-    </plurals>
     <string name="about_part_one">"<![CDATA[AAAD (Android Auto Apps Downloader) được phát triển và bảo trì bởi Shmykelsa.<br><br>Các ứng dụng khác được tích hợp bởi các nhà phát triển sau:<br>]]>"</string>
-    <string name="pro_unlocked">Chúc mừng, đã mở khóa phiên bản PRO</string>
-    <string name="cancelled_payment">Mua hàng đã bị hủy</string>
     <string name="please_enter_code">Vui lòng nhập mã khuyến mãi</string>
     <string name="connection_error">Lỗi kết nối, không thể xác minh</string>
     <string name="not_valid_code">Mã vừa nhập không đúng</string>    <string name="downloading_progress">Đang tải…</string>
@@ -31,22 +18,15 @@
     <string name="screen2auto_download">Tải Screen2Auto</string>    <string name="aawidgets_description">Born with one single task. Bring a widget to Android Auto!</string>
     <string name="performance_monitor_description">Giám sát hiệu suất hệ thống trên Android Auto</string>
     <string name="promotion">Bạn đủ điều kiện được giảm 15%</string>    <string name="loading">Đang tải…</string>
-    <string name="go_pro">NÂNG CẤP PRO</string>
     <string name="i_m_good">Tôi ổn</string>
-    <string name="nav2contacts_description">Điều hướng nhanh đến danh bạ</string>    <string name="back_button_payment_close">Hủy thanh toán và đóng</string>
+    <string name="nav2contacts_description">Điều hướng nhanh đến danh bạ</string>
     <string name="help">Trợ giúp</string>
-    <string name="help_dialog">Bạn có muốn gửi một e-mail yêu cầu giúp đỡ ngay bây giờ không?</string>    <string name="i_want_to_transfer_license_here">I want to transfer license here</string>
-    <string name="i_want_to_transfer_license_from_here">Tôi muốn chuyển giấy phép từ thiết bị này</string>
-    <string name="license_transfer_help">Quét mã QR trên thiết bị khác để chuyển giấy phép</string>
-    <string name="transfer_license">Chuyển tiếp giấy phép</string>
+    <string name="help_dialog">Bạn có muốn gửi một e-mail yêu cầu giúp đỡ ngay bây giờ không?</string>
     <string name="debug_mode_activate">Kích hoạt gỡ lỗi</string>
     <string name="debug_mode_performance_warning">Chế độ gỡ lỗi có thể ảnh hưởng đến hiệu suất</string>
     <string name="debug_mode_deactivated">Chế độ gỡ lỗi đã tắt</string>
     <string name="confirm">Xác nhận</string>
-    <string name="license_here_confirm">Bạn có muốn chuyển giấy phép sang thiết bị này không?</string>
-    <string name="qr_tutorial">Mở AAAD trên thiết bị khác và quét mã QR này</string>
-    <string name="license_done">Chuyển giấy phép thành công!</string>
-    <string name="no_license_found">Không tìm thấy giấy phép hợp lệ</string>    <string name="qr_code_permission">Cần trao quyền sử dụng camera để quét mã QR</string>
+    <string name="qr_tutorial">Mở AAAD trên thiết bị khác và quét mã QR này</string>    <string name="qr_code_permission">Cần trao quyền sử dụng camera để quét mã QR</string>
     <string name="success_transfer">Chuyển thành công</string>
     <string name="email_dialog" comment="&#10;Dialog window">The e-mail will be used in order to verify your purchase, if needed</string>
     <string name="input_email">Nhập địa chỉ email</string>
@@ -132,8 +112,6 @@
 
 
     <!-- License Transfer - New Modern UI -->
-    <string name="transfer_license_title">Chuyển Giấy Phép</string>
-    <string name="checking_license_status">Đang kiểm tra trạng thái giấy phép…</string>
     <string name="qr_code_icon">Biểu tượng mã QR</string>
     <string name="receiver_title">Nhận Giấy Phép PRO</string>
     <string name="receiver_subtitle">Hiển thị mã QR này để chuyển giấy phép sang thiết bị này</string>
@@ -142,7 +120,6 @@
     <string name="receiver_instructions_step1">Trên thiết bị có PRO, mở AAAD và chuyển đến Chuyển Giấy Phép</string>
     <string name="receiver_instructions_step2">Nhấn vào nút Quét Mã QR trên thiết bị đó</string>
     <string name="receiver_instructions_step3">Quét mã QR này để hoàn tất việc chuyển</string>
-    <string name="transfer_license_icon">Biểu tượng chuyển giấy phép</string>
     <string name="sender_title">Chuyển Giấy Phép PRO</string>
     <string name="sender_subtitle">Chuyển giấy phép của bạn sang thiết bị mới</string>
     <string name="sender_warning">⚠️ Cảnh báo: Chuyển giấy phép sẽ xóa trạng thái PRO khỏi thiết bị này và kích hoạt nó trên thiết bị mới. Hành động này không thể hoàn tác.</string>
@@ -153,17 +130,13 @@
     <string name="sender_step_4">Nhấn vào nút bên dưới và quét mã QR đó</string>
     <string name="scan_qr_code">Quét Mã QR</string>
     <string name="camera_permission_required">Yêu cầu quyền máy ảnh để quét mã QR</string>
-    <string name="error_checking_license">Không thể kiểm tra trạng thái giấy phép. Vui lòng thử lại.</string>
     <string name="error_generating_qr">Không thể tạo mã QR</string>
-    <string name="license_received_success">Đã nhận giấy phép thành công!</string>
     <string name="scan_error_title">Lỗi Quét</string>
     <string name="scan_error_message">Không thể quét mã QR. Vui lòng thử lại.</string>
     <string name="confirm_transfer_title">Xác Nhận Chuyển</string>
     <string name="confirm_transfer_message">Bạn có chắc chắn muốn chuyển giấy phép PRO của mình sang thiết bị mới không? Điều này sẽ xóa PRO khỏi thiết bị này.</string>
     <string name="confirm_transfer_yes">Chuyển Giấy Phép</string>
     <string name="confirm_transfer_no">Hủy</string>
-    <string name="license_transferred_success">Đã chuyển giấy phép thành công!</string>
-    <string name="error_transferring_license">Không thể chuyển giấy phép. Vui lòng thử lại.</string>
     <string name="support_title">Cần Giúp Đỡ?</string>
     <string name="support_icon">Biểu tượng trợ giúp</string>
     <string name="support_subtitle">Chúng tôi luôn sẵn sàng giúp đỡ bạn!</string>
@@ -285,18 +258,6 @@
     <string name="progress_checking_updates">Đang kiểm tra cập nhật…</string>
 
     <!-- Pro Version -->
-    <string name="purchase_pro">Mua Pro</string>
-    <string name="pro_version_title">Phiên bản PRO</string>
-    <string name="pro_version_icon">Huy hiệu phiên bản PRO</string>
-    <string name="pro_thank_you_title">Cảm ơn bạn!</string>
-    <string name="pro_thank_you_message">Cảm ơn bạn đã hỗ trợ AAAD bằng cách mua PRO! Đóng góp của bạn giúp duy trì dự án này và cho phép chúng tôi tiếp tục mang đến những ứng dụng Android Auto tốt nhất cho bạn.</string>
-    <string name="pro_since">Thành viên PRO từ %s</string>
-    <string name="pro_since_legacy">Thành viên PRO</string>
-    <string name="pro_benefits_title">Quyền lợi PRO của bạn</string>
-    <string name="pro_benefit_unlimited">Tải xuống ứng dụng không giới hạn</string>
-    <string name="pro_benefit_no_cooldown">Không có thời gian chờ giữa các lần tải xuống</string>
-    <string name="pro_benefit_support">Hỗ trợ phát triển liên tục</string>
-    <string name="pro_closing_message">Chúng tôi thực sự trân trọng sự tin tưởng và hỗ trợ của bạn. Tận hưởng quyền truy cập không giới hạn vào tất cả các ứng dụng AAAD!</string>
 
     <!-- Support -->
     <string name="support_no_email_app">Không có ứng dụng email được cài đặt. Vui lòng cài đặt ứng dụng email (Gmail, Outlook, v.v.) hoặc gửi email trực tiếp đến help.aaad@gmail.com từ thiết bị khác.</string>

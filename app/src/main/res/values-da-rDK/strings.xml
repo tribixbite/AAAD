@@ -1,22 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="title_activity_about_payment">PRO Version</string>
-    <string name="switch_to_pro_statement">Den gratis version af AAAD tillader én gratis download hver måned. Hvis du vil downloade mere, skal du opgradere til PRO.</string>
-    <string name="congratsPro">Tillykke, du har PRO-versionen!</string>    <string name="About">Om</string>
-    <string name="have_promo_code">Jeg har en kampagnekode</string>
-    <string name="promo_code">Indtast kampagnekode</string>
-    <string name="input_promo_code_here">Indtast kode her</string>    <string name="about_to_download">Du er ved at downloade %1$s. Vil du fortsætte?</string>
-    <string name="warning_payment">Ved afslutningen af betalingen skal du manuelt trykke på \"Return to merchant\", for at transaktionen kan blive valideret.</string>
+<resources>    <string name="About">Om</string>    <string name="about_to_download">Du er ved at downloade %1$s. Vil du fortsætte?</string>
     <string name="attention">BEMÆRK</string>
-    <string name="next_download_available">Næste download tilgængelig: %1$s</string>
     <string name="connect_error">FORBINDELSESFEJL</string>
-    <plurals name="remaining_downloads">
-        <item quantity="one">Du har 1 overførsel tilbage</item>
-        <item quantity="other">Du har ingen overførsel tilbage</item>
-    </plurals>
     <string name="about_part_one">"<![CDATA[AAAD (Android Auto Apps Downloader) er udviklet og vedligeholdt af Shmykelsa.<br><br>De tilgængelige apps er gjort mulige af følgende udviklere:<br>]]>"</string>
-    <string name="pro_unlocked">Tillykke, PRO-version låst op</string>
-    <string name="cancelled_payment">Køb annulleret</string>
     <string name="please_enter_code">Indtast venligst din kampagnekode</string>
     <string name="connection_error">Forbindelsesfejl, kunne ikke verificere</string>
     <string name="not_valid_code">Ikke en gyldig kode</string>    <string name="downloading_progress">Henter…</string>
@@ -32,22 +18,15 @@
     <string name="screen2auto_download">Download Screen2Auto</string>    <string name="aawidgets_description">Født med en enkelt opgave. Medbring en widget til Android Auto!</string>
     <string name="performance_monitor_description">Overvåg systemets ydeevne på Android Auto</string>
     <string name="promotion">Du er berettiget til 15% rabat</string>    <string name="loading">Indlæser…</string>
-    <string name="go_pro">BLI PRO</string>
     <string name="i_m_good">Jeg har det godt</string>
-    <string name="nav2contacts_description">Naviger hurtigt til dine kontakter</string>    <string name="back_button_payment_close">Annuller betaling og luk</string>
+    <string name="nav2contacts_description">Naviger hurtigt til dine kontakter</string>
     <string name="help">Hjælp</string>
-    <string name="help_dialog">Vil du sende en e-mail til hjælp lige nu?</string>    <string name="i_want_to_transfer_license_here">Jeg ønsker at overføre licensen hertil</string>
-    <string name="i_want_to_transfer_license_from_here">Jeg vil overføre min licens fra denne enhed</string>
-    <string name="license_transfer_help">Scan QR-koden på en anden enhed for at overføre din licens</string>
-    <string name="transfer_license">Overfør Licens</string>
+    <string name="help_dialog">Vil du sende en e-mail til hjælp lige nu?</string>
     <string name="debug_mode_activate">Aktiver fejlfinding</string>
     <string name="debug_mode_performance_warning">Fejlfindingstilstand kan påvirke ydeevnen</string>
     <string name="debug_mode_deactivated">Fejlfindingstilstand deaktiveret</string>
     <string name="confirm">Bekræftelse</string>
-    <string name="license_here_confirm">Vil du overføre din licens til denne enhed?</string>
-    <string name="qr_tutorial">Åbn AAAD på din anden enhed og scan denne QR-kode</string>
-    <string name="license_done">Licens overført!</string>
-    <string name="no_license_found">Ingen gyldig licens fundet</string>    <string name="qr_code_permission">Kamera-tilladelse er nødvendig for at scanne en QR-kode</string>
+    <string name="qr_tutorial">Åbn AAAD på din anden enhed og scan denne QR-kode</string>    <string name="qr_code_permission">Kamera-tilladelse er nødvendig for at scanne en QR-kode</string>
     <string name="success_transfer">Overførsel lykkedes</string>
     <string name="email_dialog" comment="&#10;Dialog window">The e-mail will be used in order to verify your purchase, if needed</string>
     <string name="input_email">Indtast din e-mailadresse</string>
@@ -155,8 +134,6 @@
 
 
     <!-- License Transfer - New Modern UI -->
-    <string name="transfer_license_title">Overfør licens</string>
-    <string name="checking_license_status">Kontrollerer licensstatus…</string>
     <string name="qr_code_icon">QR-kode-ikon</string>
     <string name="receiver_title">Modtag PRO-licens</string>
     <string name="receiver_subtitle">Vis denne QR-kode for at overføre en licens til denne enhed</string>
@@ -165,7 +142,6 @@
     <string name="receiver_instructions_step1">På enheden med PRO skal du åbne AAAD og gå til Overfør licens</string>
     <string name="receiver_instructions_step2">Tryk på knappen Scan QR-kode på den enhed</string>
     <string name="receiver_instructions_step3">Scan denne QR-kode for at fuldføre overførslen</string>
-    <string name="transfer_license_icon">Licensoverførselsikon</string>
     <string name="sender_title">Overfør PRO-licens</string>
     <string name="sender_subtitle">Overfør din licens til en ny enhed</string>
     <string name="sender_warning">⚠️ Advarsel: Overførsel af din licens vil fjerne PRO-status fra denne enhed og aktivere den på den nye enhed. Denne handling kan ikke fortrydes.</string>
@@ -176,17 +152,13 @@
     <string name="sender_step_4">Tryk på knappen nedenfor og scan den QR-kode</string>
     <string name="scan_qr_code">Scan QR-kode</string>
     <string name="camera_permission_required">Kameratilladelse påkrævet for at scanne QR-koder</string>
-    <string name="error_checking_license">Kunne ikke kontrollere licensstatus. Prøv igen.</string>
     <string name="error_generating_qr">Kunne ikke generere QR-kode</string>
-    <string name="license_received_success">Licens modtaget!</string>
     <string name="scan_error_title">Scanningsfejl</string>
     <string name="scan_error_message">Kunne ikke scanne QR-kode. Prøv igen.</string>
     <string name="confirm_transfer_title">Bekræft overførsel</string>
     <string name="confirm_transfer_message">Er du sikker på, at du vil overføre din PRO-licens til den nye enhed? Dette vil fjerne PRO fra denne enhed.</string>
     <string name="confirm_transfer_yes">Overfør licens</string>
     <string name="confirm_transfer_no">Annuller</string>
-    <string name="license_transferred_success">Licens overført!</string>
-    <string name="error_transferring_license">Kunne ikke overføre licens. Prøv igen.</string>
     <string name="support_title">Brug for hjælp?</string>
     <string name="support_icon">Hjælp-ikon</string>
     <string name="support_subtitle">Vi er her for at hjælpe dig!</string>
@@ -303,21 +275,9 @@
     <string name="hero_subtitle">Installer tilpassede apps til din Android Auto-oplevelse</string>
     <string name="refresh_apps">Opdater apps</string>
     <string name="privacy">Privatlivspolitik</string>
-    <string name="purchase_pro">Køb Pro</string>
     <string name="aatorque_description">AATorque bringer OBD-II køretøjsdiagnostik-appen Torque Pro til Android Auto. Overvåg din bils ydeevne, se diagnostikdata og få adgang til køretøjsinformation i realtid direkte fra bilens display.</string>
     <string name="installation_timeout_message_secure">Installationsverifikation fik timeout. Din download er blevet talt med i din månedlige grænse af sikkerhedsmæssige årsager.</string>
     <string name="download_was_counted">Download blev talt med i din månedlige grænse</string>
-    <string name="pro_version_title">PRO-version</string>
-    <string name="pro_version_icon">PRO-versions badge</string>
-    <string name="pro_thank_you_title">Tak!</string>
-    <string name="pro_thank_you_message">Tak fordi du støtter AAAD med dit PRO-køb! Dit bidrag hjælper med at holde dette projekt i live og gør det muligt for os at fortsætte med at bringe dig de bedste Android Auto-apps.</string>
-    <string name="pro_since">PRO-medlem siden %s</string>
-    <string name="pro_since_legacy">PRO-medlem</string>
-    <string name="pro_benefits_title">Dine PRO-fordele</string>
-    <string name="pro_benefit_unlimited">Ubegrænsede appdownloads</string>
-    <string name="pro_benefit_no_cooldown">Ingen ventetid mellem downloads</string>
-    <string name="pro_benefit_support">Støt løbende udvikling</string>
-    <string name="pro_closing_message">Vi sætter virkelig pris på din tillid og støtte. Nyd din ubegrænsede adgang til alle AAAD-apps!</string>
     <string name="verifying_authorization">Verificerer downloadautorisation…</string>
     <string name="please_sign_in">Log ind for at downloade apps</string>
     <string name="network_error">Netværksfejl. Kontroller din forbindelse og prøv igen.</string>

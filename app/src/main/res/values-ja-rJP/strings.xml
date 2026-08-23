@@ -1,21 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="title_activity_about_payment">PRO Version</string>
-    <string name="switch_to_pro_statement">AAADの無料版では、月に1回無料でダウンロードできます。もっとダウンロードしたい場合は、PROにアップグレードしてください。</string>
-    <string name="congratsPro">おめでとうございます、PRO版をお持ちです！</string>    <string name="About">About</string>
-    <string name="have_promo_code">プロモコードがあります</string>
-    <string name="promo_code">プロモコードを入力</string>
-    <string name="input_promo_code_here">コードをここに入力</string>    <string name="about_to_download">%1$sをダウンロードしようとしています。続行しますか？</string>
-    <string name="warning_payment">支払いの終了時、取引を検証するために手動で「Return to merchant」を押してください</string>
+<resources>    <string name="About">About</string>    <string name="about_to_download">%1$sをダウンロードしようとしています。続行しますか？</string>
     <string name="attention">注意</string>
-    <string name="next_download_available">次のダウンロード可能日時: %1$s</string>
     <string name="connect_error">接続エラー</string>
-    <plurals name="remaining_downloads">
-        <item quantity="other">ダウンロード回数がありません</item>
-    </plurals>
     <string name="about_part_one">"<![CDATA[AAAD(Android Auto Apps Downloader) はShmykelsa氏によって開発され、管理されています。 <br><br>利用可能なアプリは、次の開発者によって実現しました:<br>]]>"</string>
-    <string name="pro_unlocked">おめでとうございます、PRO版がアンロックされました</string>
-    <string name="cancelled_payment">購入がキャンセルされました</string>
     <string name="please_enter_code">プロモコードを入力してください</string>
     <string name="connection_error">接続エラー、確認できませんでした</string>
     <string name="not_valid_code">無効なコードです</string>    <string name="downloading_progress">ダウンロード中…</string>
@@ -31,22 +18,15 @@
     <string name="screen2auto_download">Screen2Autoをダウンロード</string>    <string name="aawidgets_description">たったひとつの役割のために誕生しました。Android Autoにウィジェットをもたらします</string>
     <string name="performance_monitor_description">Android Autoでシステムパフォーマンスを監視</string>
     <string name="promotion">15％割引の対象です</string>    <string name="loading">読み込み中…</string>
-    <string name="go_pro">PROにする</string>
     <string name="i_m_good">大丈夫です</string>
-    <string name="nav2contacts_description">連絡先に素早くナビゲート</string>    <string name="back_button_payment_close">支払いをキャンセルして閉じる</string>
+    <string name="nav2contacts_description">連絡先に素早くナビゲート</string>
     <string name="help">ヘルプ</string>
-    <string name="help_dialog">今すぐヘルプのためにE メールを送信しますか?</string>    <string name="i_want_to_transfer_license_here">このデバイスにライセンスを転送する</string>
-    <string name="i_want_to_transfer_license_from_here">このデバイスからライセンスを転送したい</string>
-    <string name="license_transfer_help">別のデバイスでQRコードをスキャンしてライセンスを転送</string>
-    <string name="transfer_license">ライセンスの転送</string>
+    <string name="help_dialog">今すぐヘルプのためにE メールを送信しますか?</string>
     <string name="debug_mode_activate">デバッグを有効化</string>
     <string name="debug_mode_performance_warning">デバッグモードはパフォーマンスに影響する可能性があります</string>
     <string name="debug_mode_deactivated">デバッグモードが無効化されました</string>
     <string name="confirm">確認</string>
-    <string name="license_here_confirm">このデバイスにライセンスを転送しますか？</string>
-    <string name="qr_tutorial">別のデバイスでAAADを開き、このQRコードをスキャンしてください</string>
-    <string name="license_done">ライセンスの転送が完了しました！</string>
-    <string name="no_license_found">有効なライセンスが見つかりません</string>    <string name="qr_code_permission">QRコードをスキャンするにはカメラの権限が必要です</string>
+    <string name="qr_tutorial">別のデバイスでAAADを開き、このQRコードをスキャンしてください</string>    <string name="qr_code_permission">QRコードをスキャンするにはカメラの権限が必要です</string>
     <string name="success_transfer">転送成功</string>
     <string name="email_dialog" comment="&#10;Dialog window">The e-mail will be used in order to verify your purchase, if needed</string>
     <string name="input_email">メールアドレスを入力</string>
@@ -143,8 +123,6 @@
 
 
     <!-- License Transfer - New Modern UI -->
-    <string name="transfer_license_title">ライセンスの転送</string>
-    <string name="checking_license_status">ライセンス状態を確認中…</string>
     <string name="qr_code_icon">QRコードアイコン</string>
     <string name="receiver_title">PROライセンスを受信</string>
     <string name="receiver_subtitle">このQRコードを表示してライセンスをこのデバイスに転送</string>
@@ -153,7 +131,6 @@
     <string name="receiver_instructions_step1">PROを持っているデバイスで、AAADを開いてライセンスの転送に移動</string>
     <string name="receiver_instructions_step2">そのデバイスでQRコードをスキャンボタンをタップ</string>
     <string name="receiver_instructions_step3">このQRコードをスキャンして転送を完了</string>
-    <string name="transfer_license_icon">ライセンス転送アイコン</string>
     <string name="sender_title">PROライセンスの転送</string>
     <string name="sender_subtitle">ライセンスを新しいデバイスに転送</string>
     <string name="sender_warning">⚠️ 警告：ライセンスを転送すると、このデバイスからPROステータスが削除され、新しいデバイスでアクティブ化されます。この操作は元に戻せません。</string>
@@ -164,17 +141,13 @@
     <string name="sender_step_4">下のボタンをタップしてそのQRコードをスキャン</string>
     <string name="scan_qr_code">QRコードをスキャン</string>
     <string name="camera_permission_required">QRコードをスキャンするにはカメラ権限が必要です</string>
-    <string name="error_checking_license">ライセンス状態の確認に失敗しました。もう一度お試しください。</string>
     <string name="error_generating_qr">QRコードの生成に失敗しました</string>
-    <string name="license_received_success">ライセンスの受信に成功しました！</string>
     <string name="scan_error_title">スキャンエラー</string>
     <string name="scan_error_message">QRコードのスキャンに失敗しました。もう一度お試しください。</string>
     <string name="confirm_transfer_title">転送を確認</string>
     <string name="confirm_transfer_message">PROライセンスを新しいデバイスに転送してもよろしいですか？これによりこのデバイスからPROが削除されます。</string>
     <string name="confirm_transfer_yes">ライセンスを転送</string>
     <string name="confirm_transfer_no">キャンセル</string>
-    <string name="license_transferred_success">ライセンスの転送に成功しました！</string>
-    <string name="error_transferring_license">ライセンスの転送に失敗しました。もう一度お試しください。</string>
     <string name="support_title">ヘルプが必要ですか？</string>
     <string name="support_icon">ヘルプアイコン</string>
     <string name="support_subtitle">私たちはあなたを助けるためにここにいます！</string>
@@ -290,24 +263,12 @@
     <string name="hero_subtitle">Android Auto体験用のカスタムアプリをインストール</string>
     <string name="refresh_apps">アプリを更新</string>
     <string name="privacy">プライバシーポリシー</string>
-    <string name="purchase_pro">PROを購入</string>
     <string name="support_no_email_app">メールアプリがインストールされていません。メールアプリ（Gmail、Outlookなど）をインストールするか、別のデバイスから直接help.aaad@gmail.comにメールを送信してください。</string>
     <string name="support_attachment_not_supported">添付ファイルがサポートされていません。ログなしでメールを送信します</string>
     <string name="support_attachment_failed_fallback">ログを添付できませんでした。添付ファイルなしでメールを送信します</string>
     <string name="support_email_body_greeting">AAADサポート様、</string>
     <string name="installation_timeout_message_secure">インストール確認がタイムアウトしました。セキュリティ上の理由により、ダウンロードは月間制限にカウントされました。</string>
     <string name="download_was_counted">ダウンロードは月間制限にカウントされました</string>
-    <string name="pro_version_title">PROバージョン</string>
-    <string name="pro_version_icon">PROバージョンバッジ</string>
-    <string name="pro_thank_you_title">ありがとうございます！</string>
-    <string name="pro_thank_you_message">PRO購入でAAADをサポートしていただきありがとうございます！あなたの貢献はこのプロジェクトの継続を支援し、最高のAndroid Autoアプリを提供し続けることを可能にします。</string>
-    <string name="pro_since">%s からPROメンバー</string>
-    <string name="pro_since_legacy">PROメンバー</string>
-    <string name="pro_benefits_title">PROの特典</string>
-    <string name="pro_benefit_unlimited">無制限のアプリダウンロード</string>
-    <string name="pro_benefit_no_cooldown">ダウンロード間の待機時間なし</string>
-    <string name="pro_benefit_support">継続的な開発のサポート</string>
-    <string name="pro_closing_message">あなたの信頼とサポートに心から感謝いたします。すべてのAAADアプリへの無制限アクセスをお楽しみください！</string>
     <string name="update_available_badge">アップデート</string>
     <string name="verifying_authorization">ダウンロード認証を確認中…</string>
     <string name="please_sign_in">アプリをダウンロードするにはサインインしてください</string>

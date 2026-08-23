@@ -1,21 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="title_activity_about_payment">专业版</string>
-    <string name="switch_to_pro_statement">AAAD免费版允许您每月免费下载一次。如果您想下载更多，请升级到PRO。</string>
-    <string name="congratsPro">恭喜，您拥有PRO版本！</string>    <string name="About">关于</string>
-    <string name="have_promo_code">我有促销码</string>
-    <string name="promo_code">输入促销码</string>
-    <string name="input_promo_code_here">在此输入代码</string>    <string name="about_to_download">您即将下载 %1$s。您想要继续吗？</string>
-    <string name="warning_payment">在付款结束时，请点击“返回商家”来验证交易。</string>
+<resources>    <string name="About">关于</string>    <string name="about_to_download">您即将下载 %1$s。您想要继续吗？</string>
     <string name="attention">注意</string>
-    <string name="next_download_available">下次下载可用时间：%1$s</string>
     <string name="connect_error">连接错误</string>
-    <plurals name="remaining_downloads">
-        <item quantity="other">剩余1次下载机会</item>
-    </plurals>
     <string name="about_part_one">"<![CDATA[AAAD (Android Auto Apps Downloader) 是由 Shmykelsa 开发和管理的。<br><br>以下开发者使应用成为可能：<br>]]>"</string>
-    <string name="pro_unlocked">恭喜，PRO版本已解锁</string>
-    <string name="cancelled_payment">购买已取消</string>
     <string name="please_enter_code">请输入您的促销代码</string>
     <string name="connection_error">连接错误，无法验证</string>
     <string name="not_valid_code">无效的代码</string>    <string name="downloading_progress">正在下载…</string>
@@ -30,22 +17,15 @@
     <string name="screen2auto_download">下载Screen2Auto</string>    <string name="aawidgets_description">生来就有一个挑战—为Android Auto新增一个Widget！</string>
     <string name="performance_monitor_description">在Android Auto上监控系统性能</string>
     <string name="promotion">您有资格享受15%的折扣</string>    <string name="loading">加载中…</string>
-    <string name="go_pro">升级PRO</string>
     <string name="i_m_good">我很好</string>
-    <string name="nav2contacts_description">快速导航到您的联系人</string>    <string name="back_button_payment_close">取消付款并关闭</string>
+    <string name="nav2contacts_description">快速导航到您的联系人</string>
     <string name="help">帮助</string>
-    <string name="help_dialog">您想要立即发送电子邮件以获取帮助吗？</string>    <string name="i_want_to_transfer_license_here">我想转移许可证到这里</string>
-    <string name="i_want_to_transfer_license_from_here">我想从此设备转移我的许可证</string>
-    <string name="license_transfer_help">在另一台设备上扫描二维码以转移您的许可证</string>
-    <string name="transfer_license">转移许可证</string>
+    <string name="help_dialog">您想要立即发送电子邮件以获取帮助吗？</string>
     <string name="debug_mode_activate">激活调试</string>
     <string name="debug_mode_performance_warning">调试模式可能影响性能</string>
     <string name="debug_mode_deactivated">调试模式已停用</string>
     <string name="confirm">确认</string>
-    <string name="license_here_confirm">您想将许可证转移到此设备吗？</string>
-    <string name="qr_tutorial">在您的另一台设备上打开AAAD并扫描此二维码</string>
-    <string name="license_done">许可证转移成功！</string>
-    <string name="no_license_found">未找到有效许可证</string>    <string name="qr_code_permission">应用需要访问摄像头的权限以扫描二维码</string>
+    <string name="qr_tutorial">在您的另一台设备上打开AAAD并扫描此二维码</string>    <string name="qr_code_permission">应用需要访问摄像头的权限以扫描二维码</string>
     <string name="success_transfer">转移成功</string>
     <string name="email_dialog" comment="&#10;Dialog window">如果需要，电子邮件将用于验证您的购买</string>
     <string name="input_email">输入您的电子邮件</string>
@@ -142,8 +122,6 @@
 
 
     <!-- License Transfer - New Modern UI -->
-    <string name="transfer_license_title">转移许可证</string>
-    <string name="checking_license_status">正在检查许可证状态…</string>
     <string name="qr_code_icon">二维码图标</string>
     <string name="receiver_title">接收PRO许可证</string>
     <string name="receiver_subtitle">显示此二维码以将许可证转移到此设备</string>
@@ -152,7 +130,6 @@
     <string name="receiver_instructions_step1">在具有PRO的设备上，打开AAAD并前往转移许可证</string>
     <string name="receiver_instructions_step2">在该设备上点击扫描二维码按钮</string>
     <string name="receiver_instructions_step3">扫描此二维码以完成转移</string>
-    <string name="transfer_license_icon">许可证转移图标</string>
     <string name="sender_title">转移PRO许可证</string>
     <string name="sender_subtitle">将您的许可证转移到新设备</string>
     <string name="sender_warning">⚠️ 警告：转移许可证将从此设备删除PRO状态并在新设备上激活。此操作无法撤消。</string>
@@ -163,17 +140,13 @@
     <string name="sender_step_4">点击下方按钮并扫描该二维码</string>
     <string name="scan_qr_code">扫描二维码</string>
     <string name="camera_permission_required">扫描二维码需要相机权限</string>
-    <string name="error_checking_license">检查许可证状态失败。请重试。</string>
     <string name="error_generating_qr">生成二维码失败</string>
-    <string name="license_received_success">许可证接收成功！</string>
     <string name="scan_error_title">扫描错误</string>
     <string name="scan_error_message">扫描二维码失败。请重试。</string>
     <string name="confirm_transfer_title">确认转移</string>
     <string name="confirm_transfer_message">您确定要将PRO许可证转移到新设备吗？这将从此设备删除PRO。</string>
     <string name="confirm_transfer_yes">转移许可证</string>
     <string name="confirm_transfer_no">取消</string>
-    <string name="license_transferred_success">许可证转移成功！</string>
-    <string name="error_transferring_license">转移许可证失败。请重试。</string>
     <string name="support_title">需要帮助？</string>
     <string name="support_icon">帮助图标</string>
     <string name="support_subtitle">我们随时为您提供帮助！</string>
@@ -289,24 +262,12 @@
     <string name="hero_subtitle">为您的 Android Auto 体验安装自定义应用</string>
     <string name="refresh_apps">刷新应用</string>
     <string name="privacy">隐私政策</string>
-    <string name="purchase_pro">购买 PRO</string>
     <string name="support_no_email_app">未安装电子邮件应用。请安装电子邮件应用（Gmail、Outlook 等）或直接从其他设备发送电子邮件至 help.aaad@gmail.com。</string>
     <string name="support_attachment_not_supported">不支持附件，发送不带日志的电子邮件</string>
     <string name="support_attachment_failed_fallback">无法附加日志，发送不带附件的电子邮件</string>
     <string name="support_email_body_greeting">您好 AAAD 支持团队，</string>
     <string name="installation_timeout_message_secure">安装验证超时。出于安全原因，您的下载已计入您的月度限额。</string>
     <string name="download_was_counted">下载已计入您的月度限额</string>
-    <string name="pro_version_title">PRO 版本</string>
-    <string name="pro_version_icon">PRO 版本徽章</string>
-    <string name="pro_thank_you_title">谢谢！</string>
-    <string name="pro_thank_you_message">感谢您通过购买 PRO 支持 AAAD！您的贡献有助于维持这个项目，并使我们能够继续为您提供最好的 Android Auto 应用。</string>
-    <string name="pro_since">自 %s 起成为 PRO 会员</string>
-    <string name="pro_since_legacy">PRO 会员</string>
-    <string name="pro_benefits_title">您的 PRO 权益</string>
-    <string name="pro_benefit_unlimited">无限应用下载</string>
-    <string name="pro_benefit_no_cooldown">下载之间无等待时间</string>
-    <string name="pro_benefit_support">支持持续开发</string>
-    <string name="pro_closing_message">我们真诚感谢您的信任和支持。尽情享受对所有 AAAD 应用的无限访问！</string>
     <string name="update_available_badge">更新</string>
     <string name="verifying_authorization">正在验证下载授权…</string>
     <string name="please_sign_in">请登录以下载应用</string>

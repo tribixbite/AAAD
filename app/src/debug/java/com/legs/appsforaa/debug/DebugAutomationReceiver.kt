@@ -9,6 +9,7 @@ import com.legs.appsforaa.data.InstalledAppScanner
 import com.legs.appsforaa.data.ScanScope
 import com.legs.appsforaa.data.SelfUpdateChecker
 import com.legs.appsforaa.utils.InstallManager
+import com.legs.appsforaa.utils.LogFile
 import com.legs.appsforaa.utils.Logger
 import com.legs.appsforaa.utils.ShizukuInstaller
 import kotlinx.coroutines.CoroutineScope
@@ -65,6 +66,9 @@ class DebugAutomationReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         val appContext = context.applicationContext
+        // A broadcast can start the process with no Activity involved; without this the whole
+        // harness path would write nothing to the file.
+        LogFile.install(appContext)
         // goAsync keeps the process alive past onReceive; without it the coroutine is killed
         // the moment this method returns.
         val pending = goAsync()

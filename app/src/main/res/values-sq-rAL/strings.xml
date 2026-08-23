@@ -1,22 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="title_activity_about_payment">Version PRO</string>
-    <string name="switch_to_pro_statement">Versioni falas i AAAD ju lejon të keni një shkarkim falas çdo muaj. Nëse dëshironi të shkarkoni më shumë, kaloni në PRO.</string>
-    <string name="congratsPro">Urime, keni versionin PRO!</string>    <string name="About">Mbi</string>
-    <string name="have_promo_code">Kam kod promovimi</string>
-    <string name="promo_code">Fut kodin promovues</string>
-    <string name="input_promo_code_here">Fusni kodin këtu</string>    <string name="about_to_download">You are about to download %1$s. Do you wish to continue?</string>
-    <string name="warning_payment">Mbasi të kryeni pagesën ju lutemi të shtypni\"Rikthim tek shitësi\"që pagesa të jetē e vlefshme.</string>
+<resources>    <string name="About">Mbi</string>    <string name="about_to_download">You are about to download %1$s. Do you wish to continue?</string>
     <string name="attention">KUJDES</string>
-    <string name="next_download_available">Shkarkimi i ardhshëm i disponueshëm: %1$s</string>
     <string name="connect_error">Gabim_lidhja</string>
-    <plurals name="remaining_downloads">
-        <item quantity="one">You have 1 download remaining</item>
-        <item quantity="other">I mbetur_shkarkime[një][tjetër]</item>
-    </plurals>
     <string name="about_part_one">"<![CDATA[AAAD (Android Auto Apps Downloader) ēshtē bërë dhe mirëmbajtur nga Shmykelsa.<br><br>Aplikacione e mëposhtme janë bërë nga mjeshtrat:<br>]]>"</string>
-    <string name="pro_unlocked">Urime, versioni PRO u shkyç</string>
-    <string name="cancelled_payment">Blerja u anulua</string>
     <string name="please_enter_code">Ju lutemi fusni kodin tuaj promocional</string>
     <string name="connection_error">Gabim lidhjeje, nuk u verifikua dot</string>
     <string name="not_valid_code">Kod Jo i vlefshëm</string>    <string name="downloading_progress">Shkarkim…</string>
@@ -32,22 +18,15 @@
     <string name="screen2auto_download">Shkarko Screen2Auto</string>    <string name="aawidgets_description">Lindur me një detyrë të vetme. Sillni një miniaplikacion në Android Auto!</string>
     <string name="performance_monitor_description">Monitoroni performancën e sistemit në Android Auto</string>
     <string name="promotion">Ju keni të drejtë për 15% zbritje</string>    <string name="loading">Po ngarkohet…</string>
-    <string name="go_pro">BËHU PRO</string>
     <string name="i_m_good">Jam mirë</string>
-    <string name="nav2contacts_description">Navigoni shpejt te kontaktet tuaja</string>    <string name="back_button_payment_close">Anulo pagesën dhe mbyll</string>
+    <string name="nav2contacts_description">Navigoni shpejt te kontaktet tuaja</string>
     <string name="help">Ndihmë</string>
-    <string name="help_dialog">Dëshironi të dërgoni një email për ndihmë tani?</string>    <string name="i_want_to_transfer_license_here">Dua të transferoj licencën këtu</string>
-    <string name="i_want_to_transfer_license_from_here">Dua të transferoj licencën time nga kjo pajisje</string>
-    <string name="license_transfer_help">Skanoni kodin QR në një pajisje tjetër për të transferuar licencën</string>
-    <string name="transfer_license">Transferim licence</string>
+    <string name="help_dialog">Dëshironi të dërgoni një email për ndihmë tani?</string>
     <string name="debug_mode_activate">Aktivizo korrigjimin e gabimeve</string>
     <string name="debug_mode_performance_warning">Modaliteti i korrigjimit të gabimeve mund të ndikojë në performancë</string>
     <string name="debug_mode_deactivated">Modaliteti i korrigjimit të gabimeve u çaktivizua</string>
     <string name="confirm">Konfirmim</string>
-    <string name="license_here_confirm">Dëshironi të transferoni licencën tuaj në këtë pajisje?</string>
-    <string name="qr_tutorial">Hapni AAAD në pajisjen tuaj tjetër dhe skanoni këtë kod QR</string>
-    <string name="license_done">Licenca u transferua me sukses!</string>
-    <string name="no_license_found">Nuk u gjet licencë e vlefshme</string>    <string name="qr_code_permission">Leja e kamerës është e nevojshme për të skanuar një kod QR</string>
+    <string name="qr_tutorial">Hapni AAAD në pajisjen tuaj tjetër dhe skanoni këtë kod QR</string>    <string name="qr_code_permission">Leja e kamerës është e nevojshme për të skanuar një kod QR</string>
     <string name="success_transfer">Transferimi u krye me sukses</string>
     <string name="email_dialog" comment="&#10;Dialog window">Dritare Dialogu</string>
     <string name="input_email">Fusni adresën tuaj të emailit</string>
@@ -132,8 +111,6 @@
 
 
     <!-- License Transfer - New Modern UI -->
-    <string name="transfer_license_title">Transfero Licencën</string>
-    <string name="checking_license_status">Duke kontrolluar statusin e licencës…</string>
     <string name="qr_code_icon">Ikona e kodit QR</string>
     <string name="receiver_title">Merr Licencën PRO</string>
     <string name="receiver_subtitle">Shfaq këtë kod QR për të transferuar një licencë në këtë pajisje</string>
@@ -142,7 +119,6 @@
     <string name="receiver_instructions_step1">Në pajisjen me PRO, hap AAAD dhe shko te Transfero Licencën</string>
     <string name="receiver_instructions_step2">Prek butonin Skano Kodin QR në atë pajisje</string>
     <string name="receiver_instructions_step3">Skano këtë kod QR për të përfunduar transferimin</string>
-    <string name="transfer_license_icon">Ikona e transferimit të licencës</string>
     <string name="sender_title">Transfero Licencën PRO</string>
     <string name="sender_subtitle">Transfero licencën tënde në një pajisje të re</string>
     <string name="sender_warning">⚠️ Paralajmërim: Transferimi i licencës do të heqë statusin PRO nga kjo pajisje dhe do ta aktivizojë atë në pajisjen e re. Ky veprim nuk mund të zhbëhet.</string>
@@ -153,17 +129,13 @@
     <string name="sender_step_4">Prek butonin më poshtë dhe skano atë kod QR</string>
     <string name="scan_qr_code">Skano Kodin QR</string>
     <string name="camera_permission_required">Kërkohet leje për kamër ën për të skanuar kodet QR</string>
-    <string name="error_checking_license">Dështoi kontrolli i statusit të licencës. Provo përsëri.</string>
     <string name="error_generating_qr">Dështoi gjenerimi i kodit QR</string>
-    <string name="license_received_success">Licenca u mor me sukses!</string>
     <string name="scan_error_title">Gabim Skanimi</string>
     <string name="scan_error_message">Dështoi skanimi i kodit QR. Provo përsëri.</string>
     <string name="confirm_transfer_title">Konfirmo Transferimin</string>
     <string name="confirm_transfer_message">Jeni të sigurt që doni të transferoni licencën PRO në pajisjen e re? Kjo do të heqë PRO nga kjo pajisje.</string>
     <string name="confirm_transfer_yes">Transfero Licencën</string>
     <string name="confirm_transfer_no">Anulo</string>
-    <string name="license_transferred_success">Licenca u transferua me sukses!</string>
-    <string name="error_transferring_license">Dështoi transferimi i licencës. Provo përsëri.</string>
     <string name="support_title">Keni Nevojë për Ndihmë?</string>
     <string name="support_icon">Ikona e ndihmës</string>
     <string name="support_subtitle">Ne jemi këtu për t\'ju ndihmuar!</string>
@@ -285,18 +257,6 @@
     <string name="progress_checking_updates">Po kontrollohen përditësimet…</string>
 
     <!-- Pro Version -->
-    <string name="purchase_pro">Blej Pro</string>
-    <string name="pro_version_title">Versioni PRO</string>
-    <string name="pro_version_icon">Distintivi i versionit PRO</string>
-    <string name="pro_thank_you_title">Faleminderit!</string>
-    <string name="pro_thank_you_message">Faleminderit që mbështetni AAAD me blerjen tuaj PRO! Kontributi juaj ndihmon ta mbajmë këtë projekt gjallë dhe na lejon të vazhdojmë t\'ju sillnim aplikacionet më të mira Android Auto.</string>
-    <string name="pro_since">Anëtar PRO që nga %s</string>
-    <string name="pro_since_legacy">Anëtar PRO</string>
-    <string name="pro_benefits_title">Përfitimet tuaja PRO</string>
-    <string name="pro_benefit_unlimited">Shkarkime të pakufizuara aplikacionesh</string>
-    <string name="pro_benefit_no_cooldown">Asnjë periudhë pritjeje midis shkarkimeve</string>
-    <string name="pro_benefit_support">Mbështetni zhvillimin e vazhdueshëm</string>
-    <string name="pro_closing_message">Ne vërtet çmojmë besimin dhe mbështetjen tuaj. Shijoni aksesin tuaj të pakufizuar në të gjitha aplikacionet AAAD!</string>
 
     <!-- Support -->
     <string name="support_no_email_app">Asnjë aplikacion emaili i instaluar. Ju lutemi instaloni një aplikacion emaili (Gmail, Outlook, etj.) ose dërgoni email drejtpërdrejt në help.aaad@gmail.com nga një pajisje tjetër.</string>

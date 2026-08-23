@@ -7,6 +7,7 @@
  *   bun run src/cli.ts convert --packages com.foo,com.bar [--serial ...]
  *   bun run src/cli.ts convert --unattributed aa   # every AA-capable app lacking attribution
  *   bun run src/cli.ts carify --packages com.foo   # side-by-side Android-Auto-visible clone
+ *   bun run src/cli.ts logs [--level W]            # the app's own log, pulled off the device
  *
  * Results are appended to `runs/<timestamp>/results.jsonl` — one JSON object per (device, app)
  * so runs diff cleanly and the dash can read them without parsing prose.
@@ -14,7 +15,7 @@
 
 import { mkdir } from "node:fs/promises";
 import { describeDevice, resolveSerial, type DeviceInfo } from "./adb.ts";
-import { install, installerOf, isPlayAttributed, status, APP_ID } from "./app.ts";
+import { install, installerOf, isPlayAttributed, pullAppLog, status, APP_ID } from "./app.ts";
 import { allIds, packageNameFor } from "./catalog.ts";
 import { capture, launch } from "./capture.ts";
 import * as baseline from "./baseline.ts";
@@ -32,6 +33,8 @@ interface Options {
   unattributed?: string;
   /** Package-name suffix for a carify clone. */
   suffix?: string;
+  /** Minimum log level for `logs`. */
+  level?: string;
 }
 
 function parseArgs(argv: string[]): { command: string; options: Options } {
@@ -48,6 +51,7 @@ function parseArgs(argv: string[]): { command: string; options: Options } {
     if (key === "--packages") options.packages = value.split(",").map((s) => s.trim()).filter(Boolean);
     if (key === "--unattributed") options.unattributed = value;
     if (key === "--suffix") options.suffix = value;
+    if (key === "--level") options.level = value;
   }
   return { command, options };
 }
@@ -285,6 +289,23 @@ async function carifyCommand(options: Options): Promise<void> {
   }
 }
 
+/** Prints the app's own log. `--level W` keeps warnings and errors only. */
+async function logsCommand(options: Options): Promise<void> {
+  const device = await requireDevice(options);
+  const entries = await pullAppLog(device.serial);
+  if (entries.length === 0) {
+    console.log("No log yet — launch the app once, or check the package name.");
+    return;
+  }
+  const wanted = options.level;
+  const order = ["V", "D", "I", "W", "E"];
+  const floor = wanted ? order.indexOf(wanted.toUpperCase()) : 0;
+  for (const entry of entries) {
+    if (floor > 0 && order.indexOf(String(entry.level)) < floor) continue;
+    console.log(`${entry.ts} ${entry.level} ${entry.tag}: ${entry.msg}${entry.error ? ` | ${entry.error}` : ""}`);
+  }
+}
+
 const { command, options } = parseArgs(Bun.argv.slice(2));
 switch (command) {
   case "devices":
@@ -299,12 +320,15 @@ switch (command) {
   case "carify":
     await carifyCommand(options);
     break;
+  case "logs":
+    await logsCommand(options);
+    break;
   case "matrix":
     await cmdMatrix(options);
     break;
   default:
     console.error(
-      `Unknown command: ${command}. Try devices | status | matrix | convert | carify.`,
+      `Unknown command: ${command}. Try devices | status | matrix | convert | carify | logs.`,
     );
     process.exit(1);
 }

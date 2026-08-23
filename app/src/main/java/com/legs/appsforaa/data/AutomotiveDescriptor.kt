@@ -25,10 +25,14 @@ import org.xmlpull.v1.XmlPullParser
  * | Nav2Contacts | `template` | runs as a templated app |
  * | AABrowser | `media` only | "can't use while driving" |
  *
- * Either `projection` (full-screen, unofficial SDK) or `template` (Car App Library) gives an app a
- * usable car surface. An app declaring neither is a media source: Android Auto lists it and then
- * refuses to open its UI while driving — and **no installer, permission or setting on the phone
- * can change that**, because it is a statement the app makes about itself in its own APK.
+ * Either `projection` (a full-screen Activity — an ordinary one is enough, confirmed on a head
+ * unit) or `template` (Car App Library) gives an app a usable car surface. An app declaring
+ * neither is a media source: Android Auto lists it and then refuses to open its UI while driving.
+ *
+ * No installer, permission or setting can change that, because it is a statement the app makes
+ * about itself in its own APK — but **rewriting the APK can**, which is what
+ * `harness/tools/carify.sh` does: a renamed, re-signed copy that declares `projection` and
+ * installs alongside the original.
  */
 object AutomotiveDescriptor {
 

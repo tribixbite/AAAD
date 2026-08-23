@@ -1,23 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">AAAD</string>
-    <string name="title_activity_about_payment">PRO Version</string>
-    <string name="switch_to_pro_statement">The free version of AAAD allows you to have one free download each month. If you want to enjoy unlimited free downloads, you can switch to PRO version and you will enjoy full functionalities and app updates!</string>
-    <string name="congratsPro">Congratulations, you have PRO version!</string>    <string name="About">About</string>
-    <string name="have_promo_code">I have a promo code</string>
-    <string name="promo_code">Enter promo code</string>
-    <string name="input_promo_code_here">Input promo code here</string>    <string name="about_to_download">You are about to download %1$s. Do you wish to continue?</string>
-    <string name="warning_payment">Payment processing is securely handled by Stripe Inc. AAAD does not collect or store your payment information. At the end of the payment, please manually press \"Return to merchant\" for the transaction to be validated.</string>
+    <string name="app_name" translatable="false">AAAD</string>    <string name="About">About</string>    <string name="about_to_download">You are about to download %1$s. Do you wish to continue?</string>
     <string name="attention">ATTENTION</string>
-    <string name="next_download_available">Next download will be available on: %1$s</string>
     <string name="connect_error">CONNECTION ERROR</string>
-    <plurals name="remaining_downloads">
-        <item quantity="one">You have 1 download remaining</item>
-        <item quantity="other">You have no download remaining</item>
-    </plurals>
     <string name="about_part_one">"<![CDATA[AAAD (Android Auto Apps Downloader) is developed and mantained by Shmykelsa.<br><br>The available apps are made possible by the following developers:<br>]]>"</string>
-    <string name="pro_unlocked">Congratulations, PRO version unlocked</string>
-    <string name="cancelled_payment">Purchase cancelled</string>
     <string name="please_enter_code">Please enter a code</string>
     <string name="connection_error">Connection error, could not verify</string>
     <string name="not_valid_code">Not a valid code</string>    <string name="downloading_progress">Downloading…</string>
@@ -199,28 +185,17 @@
     <string name="privacy">Privacy Policy</string>
     <string name="privacy_policy">This app respects your privacy. We do not collect, store, or share any personal information without your consent. For more information, please contact us.</string>
     <string name="loading">Loading…</string>
-    <string name="go_pro">GO PRO</string>
-    <string name="purchase_pro">Purchase Pro</string>
     <string name="i_m_good">I\'m good</string>
     <string name="nav2contacts_description">With the new navigation apps coming into Android Auto, many of them lack of Google Assistant\'s support to navigate to addresses of contacts saved in the phone book. Nav2Contacts come to rescue! First, select the navigation app you want to use, then search the contact you want to navigate to and start the navigation right away!</string>    <string name="about_part_three" translatable="false"><![CDATA[Annexhack - Screen2Auto, AAStream<br>Andrey Pavlenko - Fermata Auto<br>Slashmax - AAMirror<br>Kiran Kumar, Eselter, Kristakos, Paesani2006 - Carstream<br> ns1306291 - Widgets For Android Auto<br>chillout - Performance Monitor for VAG<br>Martoreto - AAPassenger<br>FrankieNL - Nav2Contacts<br><br>]]></string>
-    <string name="back_button_payment_close">PLEASE remember to press the blue button \"Return to merchant website\" after payment is complete</string>
     <string name="help">Help</string>
-    <string name="help_dialog">Do you want to send an e-mail for help right now?</string>    <string name="i_want_to_transfer_license_here">I want to transfer license here</string>
-    <string name="i_want_to_transfer_license_from_here">I want to transfer license from here</string>
-    <string name="license_transfer_help">If you want to transfer the license from one phone to the other, you are in the right place. Please select what you want to do</string>
-    <string name="transfer_license">Transfer License</string>
+    <string name="help_dialog">Do you want to send an e-mail for help right now?</string>
     <string name="debug_mode_activate">Activate debug</string>
     <string name="debug_mode_performance_warning">Debug mode might impact on performance</string>
     <string name="debug_mode_deactivated">Debug mode deactivated</string>
     <string name="confirm">Confirmation</string>
-    <string name="license_here_confirm">Are you sure that you want to transfer the license to this device?</string>
     <string name="qr_tutorial">Great, now open the device that you want to transfer the license from and select \"I want to transfer the license from here\", then scan this QR code</string>
-    <string name="license_done">License transferred</string>
-    <string name="no_license_found">You don\'t have an active license on this device</string>
 
     <!-- License Transfer - New Modern UI -->
-    <string name="transfer_license_title">Transfer License</string>
-    <string name="checking_license_status">Checking license status…</string>
     <string name="qr_code_icon">QR code icon</string>
     <string name="receiver_title">Receive PRO License</string>
     <string name="receiver_subtitle">Show this QR code to transfer a license to this device</string>
@@ -229,7 +204,6 @@
     <string name="receiver_instructions_step1">On the device with PRO, open AAAD and go to Transfer License</string>
     <string name="receiver_instructions_step2">Tap the Scan QR Code button on that device</string>
     <string name="receiver_instructions_step3">Scan this QR code to complete the transfer</string>
-    <string name="transfer_license_icon">Transfer license icon</string>
     <string name="sender_title">Transfer PRO License</string>
     <string name="sender_subtitle">Transfer your license to a new device</string>
     <string name="sender_warning">⚠️ Warning: Transferring your license will remove PRO status from this device and activate it on the new device. This action cannot be undone.</string>
@@ -240,17 +214,13 @@
     <string name="sender_step_4">Tap the button below and scan that QR code</string>
     <string name="scan_qr_code">Scan QR Code</string>
     <string name="camera_permission_required">Camera permission is required to scan QR codes</string>
-    <string name="error_checking_license">Failed to check license status. Please try again.</string>
     <string name="error_generating_qr">Failed to generate QR code</string>
-    <string name="license_received_success">License received successfully!</string>
     <string name="scan_error_title">Scan Error</string>
     <string name="scan_error_message">Failed to scan QR code. Please try again.</string>
     <string name="confirm_transfer_title">Confirm Transfer</string>
     <string name="confirm_transfer_message">Are you sure you want to transfer your PRO license to the new device? This will remove PRO from this device.</string>
     <string name="confirm_transfer_yes">Transfer License</string>
     <string name="confirm_transfer_no">Cancel</string>
-    <string name="license_transferred_success">License transferred successfully!</string>
-    <string name="error_transferring_license">Failed to transfer license. Please try again.</string>
 
     <!-- Support Activity -->
     <string name="support_title">Need Help?</string>
@@ -287,18 +257,7 @@
     <string name="download_was_counted">Download was counted towards your monthly limit</string>
 
     <!-- Pro Version Activity -->
-    <string name="pro_version_title">PRO Version</string>
-    <string name="pro_version_icon">PRO version badge</string>
     <string name="benefit_icon">Benefit checkmark</string>
-    <string name="pro_thank_you_title">Thank You!</string>
-    <string name="pro_thank_you_message">Thank you for supporting AAAD with your PRO purchase! Your contribution helps keep this project alive and allows us to continue bringing you the best Android Auto apps.</string>
-    <string name="pro_since">PRO member since %s</string>
-    <string name="pro_since_legacy">PRO member</string>
-    <string name="pro_benefits_title">Your PRO Benefits</string>
-    <string name="pro_benefit_unlimited">Unlimited app downloads</string>
-    <string name="pro_benefit_no_cooldown">No cooldown period between downloads</string>
-    <string name="pro_benefit_support">Support ongoing development</string>
-    <string name="pro_closing_message">We truly appreciate your trust and support. Enjoy your unlimited access to all AAAD apps!</string>
 
     <!-- Section Names (for large screens) -->
     <string name="aaad_update_section">AAAD Update Available</string>
@@ -345,11 +304,14 @@
         <item quantity="one">%d app installed</item>
         <item quantity="other">%d apps installed</item>
     </plurals>
-    <string name="convert_no_projection">This app declares media support only, so Android Auto will list it but refuse to open it while driving. Only its developer can change that — converting it will not help.</string>
+    <!-- Corrected once a head unit proved an ordinary Activity does project: this is fixable,
+         just not by converting. Saying "only its developer can fix it" was wrong and left the
+         user with nowhere to go. -->
+    <string name="convert_no_projection">This app declares media support only, so Android Auto lists it but refuses to open it while driving. Converting will not change that — it needs a rewritten copy. Use the carify tool on your computer.</string>
     <string name="convert_scope_aa">Android Auto apps</string>
     <string name="convert_scope_all">All apps</string>
     <string name="convert_search_hint">Search installed apps</string>
-    <string name="convert_no_aa_metadata">Converting fixes the installer, but this app declares no Android Auto support, so Android Auto still will not list it.</string>
+    <string name="convert_no_aa_metadata">Converting fixes the installer, but this app declares no Android Auto support, so Android Auto still will not list it. A rewritten copy can add that — see the carify tool.</string>
     <string name="convert_filtered">%1$d of %2$d apps</string>
 
     <!-- Android Auto car screen (templated Car App Library surface) -->

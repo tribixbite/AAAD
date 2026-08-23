@@ -1,24 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="title_activity_about_payment">PRO Verzia palermo</string>
-    <string name="switch_to_pro_statement">Bezplatná verzia AAAD umožňuje jedno bezplatné stiahnutie každý mesiac. Ak chcete stiahnuť viac, prejdite na PRO.</string>
-    <string name="congratsPro">Blahoželáme, máte PRO verziu!</string>    <string name="About">1</string>
-    <string name="have_promo_code">Mám promo kód</string>
-    <string name="promo_code">Zadajte promo kód</string>
-    <string name="input_promo_code_here">Zadajte kód tu</string>    <string name="about_to_download">Chystáte sa stiahnuť %1%1AS$s. Chcete pokračovať?</string>
-    <string name="warning_payment">Na konci platby prosím manuálne stlačte tlačidlo „Späť k obchodníkovi“, aby sa transakcia prijala.</string>
+<resources>    <string name="About">1</string>    <string name="about_to_download">Chystáte sa stiahnuť %1%1AS$s. Chcete pokračovať?</string>
     <string name="attention">UPOZORNENIE</string>
-    <string name="next_download_available">Ďalšie stiahnutie dostupné: %1$s</string>
     <string name="connect_error">CHYBA PRIPOJENIA</string>
-    <plurals name="remaining_downloads">
-        <item quantity="one">Zostáva vám 1 stiahnutie</item>
-        <item quantity="few">Nezostáva vám žiadne stiahnutie</item>
-        <item quantity="many">Nezostáva vám žiadne stiahnutie</item>
-        <item quantity="other">Nezostáva vám žiadne sťahovanie</item>
-    </plurals>
     <string name="about_part_one">"<![CDATA[AAAD (Android Auto Apps Downloader) je vyvíjaný a udržiavaný od Shmykelsa.<br><br>Dostupné aplikácie umožňujú nasledujúci vývojári:<br>]]>"</string>
-    <string name="pro_unlocked">Blahoželáme, PRO verzia odomknutá</string>
-    <string name="cancelled_payment">Nákup zrušený</string>
     <string name="please_enter_code">Zadajte prosím svoj propagačný kód</string>
     <string name="connection_error">Chyba pripojenia, nemožno overiť</string>
     <string name="not_valid_code">Nie je platný kód</string>    <string name="downloading_progress">Sťahujem…</string>
@@ -33,22 +17,15 @@
     <string name="screen2auto_download">Stiahnuť Screen2Auto</string>    <string name="aawidgets_description">Stvorený na jedinú úlohu. Priniesť widget do Android Auto!</string>
     <string name="performance_monitor_description">Monitorujte výkon systému v Android Auto</string>
     <string name="promotion">Máte nárok na 15% zľavu</string>    <string name="loading">Načítavam…</string>
-    <string name="go_pro">ZÍSKAŤ PRO</string>
     <string name="i_m_good">Som v poriadku</string>
-    <string name="nav2contacts_description">Rýchlo prejdite na kontakty</string>    <string name="back_button_payment_close">Zrušiť platbu a zavrieť</string>
+    <string name="nav2contacts_description">Rýchlo prejdite na kontakty</string>
     <string name="help">Pomoc</string>
-    <string name="help_dialog">Chcete poslať e-mail pre pomoc teraz?</string>    <string name="i_want_to_transfer_license_here">Chcem preniesť licenciu sem</string>
-    <string name="i_want_to_transfer_license_from_here">Chcem preniesť licenciu z tohto zariadenia</string>
-    <string name="license_transfer_help">Naskenujte QR kód na inom zariadení pre prenos licencie</string>
-    <string name="transfer_license">Preniesť licenciu</string>
+    <string name="help_dialog">Chcete poslať e-mail pre pomoc teraz?</string>
     <string name="debug_mode_activate">Aktivovať ladenie</string>
     <string name="debug_mode_performance_warning">Režim ladenia môže ovplyvniť výkon</string>
     <string name="debug_mode_deactivated">Režim ladenia deaktivovaný</string>
     <string name="confirm">Potvrdenie</string>
-    <string name="license_here_confirm">Chcete preniesť licenciu na toto zariadenie?</string>
-    <string name="qr_tutorial">Otvorte AAAD na druhom zariadení a naskenujte tento QR kód</string>
-    <string name="license_done">Licencia úspešne prenesená!</string>
-    <string name="no_license_found">Nebola nájdená platná licencia</string>    <string name="qr_code_permission">Pre skenovanie QR kódu je potrebné udeliť oprávnenie pre prístup k fotoaparátu</string>
+    <string name="qr_tutorial">Otvorte AAAD na druhom zariadení a naskenujte tento QR kód</string>    <string name="qr_code_permission">Pre skenovanie QR kódu je potrebné udeliť oprávnenie pre prístup k fotoaparátu</string>
     <string name="success_transfer">Prenos úspešný</string>
     <string name="email_dialog" comment="&#10;Dialog window">Tento e-mail bude použitý v prípade potreby na účel kontroly Vášho nákupu</string>
     <string name="input_email">Zadajte svoj e-mail</string>
@@ -145,8 +122,6 @@
 
 
     <!-- License Transfer - New Modern UI -->
-    <string name="transfer_license_title">Preniesť licenciu</string>
-    <string name="checking_license_status">Kontrola stavu licencie…</string>
     <string name="qr_code_icon">Ikona QR kódu</string>
     <string name="receiver_title">Prijať PRO licenciu</string>
     <string name="receiver_subtitle">Zobrazte tento QR kód na prenos licencie na toto zariadenie</string>
@@ -155,7 +130,6 @@
     <string name="receiver_instructions_step1">Na zariadení s PRO otvorte AAAD a prejdite do Preniesť licenciu</string>
     <string name="receiver_instructions_step2">Klepnite na tlačidlo Naskenovať QR kód na tomto zariadení</string>
     <string name="receiver_instructions_step3">Naskenujte tento QR kód na dokončenie prenosu</string>
-    <string name="transfer_license_icon">Ikona prenosu licencie</string>
     <string name="sender_title">Preniesť PRO licenciu</string>
     <string name="sender_subtitle">Preneste svoju licenciu na nové zariadenie</string>
     <string name="sender_warning">⚠️ Upozornenie: Prenosom licencie odstránite PRO stav z tohto zariadenia a aktivujete ho na novom zariadení. Túto akciu nemožno vrátiť späť.</string>
@@ -166,17 +140,13 @@
     <string name="sender_step_4">Klepnite na tlačidlo nižšie a naskenujte tento QR kód</string>
     <string name="scan_qr_code">Naskenovať QR kód</string>
     <string name="camera_permission_required">Na skenovanie QR kódov je potrebné povolenie kamery</string>
-    <string name="error_checking_license">Nepodarilo sa skontrolovať stav licencie. Skúste to znova.</string>
     <string name="error_generating_qr">Nepodarilo sa vygenerovať QR kód</string>
-    <string name="license_received_success">Licencia úspešne prijatá!</string>
     <string name="scan_error_title">Chyba skenovania</string>
     <string name="scan_error_message">Nepodarilo sa naskenovať QR kód. Skúste to znova.</string>
     <string name="confirm_transfer_title">Potvrdiť prenos</string>
     <string name="confirm_transfer_message">Naozaj chcete preniesť svoju PRO licenciu na nové zariadenie? Tým odstránite PRO z tohto zariadenia.</string>
     <string name="confirm_transfer_yes">Preniesť licenciu</string>
     <string name="confirm_transfer_no">Zrušiť</string>
-    <string name="license_transferred_success">Licencia úspešne prenesená!</string>
-    <string name="error_transferring_license">Nepodarilo sa preniesť licenciu. Skúste to znova.</string>
     <string name="support_title">Potrebujete pomoc?</string>
     <string name="support_icon">Ikona pomoci</string>
     <string name="support_subtitle">Sme tu, aby sme vám pomohli!</string>
@@ -295,18 +265,6 @@
     <string name="progress_checking_updates">Kontrolujú sa aktualizácie…</string>
 
     <!-- Pro Version -->
-    <string name="purchase_pro">Kúpiť Pro</string>
-    <string name="pro_version_title">PRO verzia</string>
-    <string name="pro_version_icon">Odznak PRO verzie</string>
-    <string name="pro_thank_you_title">Ďakujeme!</string>
-    <string name="pro_thank_you_message">Ďakujeme, že podporujete AAAD nákupom PRO! Váš príspevok pomáha udržať tento projekt nažive a umožňuje nám naďalej vám prinášať najlepšie aplikácie pre Android Auto.</string>
-    <string name="pro_since">PRO člen od %s</string>
-    <string name="pro_since_legacy">PRO člen</string>
-    <string name="pro_benefits_title">Vaše PRO výhody</string>
-    <string name="pro_benefit_unlimited">Neobmedzené sťahovanie aplikácií</string>
-    <string name="pro_benefit_no_cooldown">Žiadna čakacia doba medzi sťahovaniami</string>
-    <string name="pro_benefit_support">Podpora prebiehajúceho vývoja</string>
-    <string name="pro_closing_message">Naozaj si vážime vašu dôveru a podporu. Užívajte si neobmedzený prístup k všetkým aplikáciám AAAD!</string>
 
     <!-- Support -->
     <string name="support_no_email_app">Nie je nainštalovaná žiadna e-mailová aplikácia. Nainštalujte si e-mailovú aplikáciu (Gmail, Outlook atď.) alebo pošlite e-mail priamo na help.aaad@gmail.com z iného zariadenia.</string>

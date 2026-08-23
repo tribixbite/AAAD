@@ -1,22 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="title_activity_about_payment">Versione PRO</string>
-    <string name="switch_to_pro_statement">La versione gratuita di AAAD ti consente di effettuare un download gratuito ogni mese. Se desideri scaricare di più, passa a PRO.</string>
-    <string name="congratsPro">Congratulazioni, hai la versione PRO!</string>    <string name="About">Info</string>
-    <string name="have_promo_code">Ho un codice promozionale</string>
-    <string name="promo_code">Inserisci codice promozionale</string>
-    <string name="input_promo_code_here">Inserisci il codice qui</string>    <string name="about_to_download">Stai per scaricare %1$s. Vuoi continuare? </string>
-    <string name="warning_payment">L\'elaborazione dei pagamenti è gestita in modo sicuro da Stripe Inc. AAAD non raccoglie né memorizza le tue informazioni di pagamento. Al termine del pagamento, ti preghiamo di premere manualmente su \"Torna al venditore\", per convalidare la transazione.</string>
+<resources>    <string name="About">Info</string>    <string name="about_to_download">Stai per scaricare %1$s. Vuoi continuare? </string>
     <string name="attention">ATTENZIONE</string>
-    <string name="next_download_available">Prossimo download disponibile il: %1$s</string>
     <string name="connect_error">ERRORE DI CONNESSIONE</string>
-    <plurals name="remaining_downloads">
-        <item quantity="one">Hai ancora un download a disposizione </item>
-        <item quantity="other">Non hai più download a disposizione </item>
-    </plurals>
     <string name="about_part_one">"<![CDATA[AAAD (Android Auto Apps Downloader) è sviluppato e mantenuto da Shmykelsa.<br><br>Le app a disposizione sono rese possibili dai seguenti sviluppatori:<br>]]> b"</string>
-    <string name="pro_unlocked">Congratulazioni, versione PRO sbloccata</string>
-    <string name="cancelled_payment">Acquisto annullato</string>
     <string name="please_enter_code">Inserisci il tuo codice promozionale</string>
     <string name="connection_error">Errore di connessione, impossibile verificare</string>
     <string name="not_valid_code">Codice non valido</string>    <string name="downloading_progress">Download in corso…</string>
@@ -32,22 +18,15 @@
     <string name="performance_monitor_description">Monitora le prestazioni del sistema su Android Auto</string>
     <string name="aatorque_description">AATorque porta l\'app di diagnostica veicolare OBD-II Torque Pro su Android Auto. Monitora le prestazioni del tuo veicolo, visualizza i dati di diagnostica e accedi alle informazioni del veicolo in tempo reale direttamente dal display della tua auto.</string>
     <string name="promotion">Hai diritto a uno sconto del 15%</string>    <string name="loading">Caricamento…</string>
-    <string name="go_pro">PASSA A PRO</string>
     <string name="i_m_good">Va bene così</string>
-    <string name="nav2contacts_description">Naviga rapidamente ai tuoi contatti</string>    <string name="back_button_payment_close">Annulla pagamento e chiudi</string>
+    <string name="nav2contacts_description">Naviga rapidamente ai tuoi contatti</string>
     <string name="help">Aiuto</string>
-    <string name="help_dialog">Vuoi inviare una e-mail per ricevere aiuto?</string>    <string name="i_want_to_transfer_license_here">Desidero trasferire la licenza qui</string>
-    <string name="i_want_to_transfer_license_from_here">Voglio trasferire la mia licenza da questo dispositivo</string>
-    <string name="license_transfer_help">Scansiona il codice QR su un altro dispositivo per trasferire la tua licenza</string>
-    <string name="transfer_license">Trasferisci Licenza</string>
+    <string name="help_dialog">Vuoi inviare una e-mail per ricevere aiuto?</string>
     <string name="debug_mode_activate">Attiva debug</string>
     <string name="debug_mode_performance_warning">La modalità debug potrebbe influire sulle prestazioni</string>
     <string name="debug_mode_deactivated">Modalità debug disattivata</string>
     <string name="confirm">Conferma</string>
-    <string name="license_here_confirm">Vuoi trasferire la tua licenza su questo dispositivo?</string>
-    <string name="qr_tutorial">Apri AAAD sul tuo altro dispositivo e scansiona questo codice QR</string>
-    <string name="license_done">Licenza trasferita con successo!</string>
-    <string name="no_license_found">Nessuna licenza valida trovata</string>    <string name="qr_code_permission">Per scansionare un codice QR è necessario concedere l\'accesso alla fotocamera </string>
+    <string name="qr_tutorial">Apri AAAD sul tuo altro dispositivo e scansiona questo codice QR</string>    <string name="qr_code_permission">Per scansionare un codice QR è necessario concedere l\'accesso alla fotocamera </string>
     <string name="success_transfer">Trasferimento riuscito</string>
     <string name="email_dialog" comment="&#10;Dialog window">Se necessario, l\'email sarà utilizzata per verificare il tuo acquisto</string>
     <string name="input_email">Inserisci la tua email</string>
@@ -144,8 +123,6 @@
 
 
     <!-- License Transfer - New Modern UI -->
-    <string name="transfer_license_title">Trasferisci Licenza</string>
-    <string name="checking_license_status">Controllo stato licenza…</string>
     <string name="qr_code_icon">Icona codice QR</string>
     <string name="receiver_title">Ricevi Licenza PRO</string>
     <string name="receiver_subtitle">Mostra questo codice QR per trasferire una licenza a questo dispositivo</string>
@@ -154,7 +131,6 @@
     <string name="receiver_instructions_step1">Sul dispositivo con PRO, apri AAAD e vai su Trasferisci Licenza</string>
     <string name="receiver_instructions_step2">Tocca il pulsante Scansiona Codice QR su quel dispositivo</string>
     <string name="receiver_instructions_step3">Scansiona questo codice QR per completare il trasferimento</string>
-    <string name="transfer_license_icon">Icona trasferimento licenza</string>
     <string name="sender_title">Trasferisci Licenza PRO</string>
     <string name="sender_subtitle">Trasferisci la tua licenza a un nuovo dispositivo</string>
     <string name="sender_warning">⚠️ Attenzione: Trasferire la licenza rimuoverà lo stato PRO da questo dispositivo e lo attiverà sul nuovo dispositivo. Questa azione non può essere annullata.</string>
@@ -165,17 +141,13 @@
     <string name="sender_step_4">Tocca il pulsante qui sotto e scansiona quel codice QR</string>
     <string name="scan_qr_code">Scansiona Codice QR</string>
     <string name="camera_permission_required">Autorizzazione fotocamera necessaria per scansionare codici QR</string>
-    <string name="error_checking_license">Impossibile verificare lo stato della licenza. Riprova.</string>
     <string name="error_generating_qr">Impossibile generare il codice QR</string>
-    <string name="license_received_success">Licenza ricevuta con successo!</string>
     <string name="scan_error_title">Errore di Scansione</string>
     <string name="scan_error_message">Impossibile scansionare il codice QR. Riprova.</string>
     <string name="confirm_transfer_title">Conferma Trasferimento</string>
     <string name="confirm_transfer_message">Sei sicuro di voler trasferire la tua licenza PRO al nuovo dispositivo? Questo rimuoverà il PRO da questo dispositivo.</string>
     <string name="confirm_transfer_yes">Trasferisci Licenza</string>
     <string name="confirm_transfer_no">Annulla</string>
-    <string name="license_transferred_success">Licenza trasferita con successo!</string>
-    <string name="error_transferring_license">Impossibile trasferire la licenza. Riprova.</string>
     <string name="support_title">Serve Aiuto?</string>
     <string name="support_icon">Icona aiuto</string>
     <string name="support_subtitle">Siamo qui per aiutarti!</string>
@@ -299,23 +271,11 @@
     <string name="hero_subtitle">Installa app personalizzate per la tua esperienza Android Auto</string>
     <string name="refresh_apps">Aggiorna app</string>
     <string name="privacy">Informativa sulla privacy</string>
-    <string name="purchase_pro">Acquista PRO</string>
     <string name="support_no_email_app">Nessuna app email installata. Installa un\'app email (Gmail, Outlook, ecc.) o invia un\'email a help.aaad@gmail.com direttamente da un altro dispositivo.</string>
     <string name="support_attachment_not_supported">Allegato non supportato, invio email senza log</string>
     <string name="support_attachment_failed_fallback">Impossibile allegare i log, invio email senza allegato</string>
     <string name="installation_timeout_message_secure">Verifica dell\'installazione scaduta. Il download è stato conteggiato nel tuo limite mensile per motivi di sicurezza.</string>
     <string name="download_was_counted">Il download è stato conteggiato nel tuo limite mensile</string>
-    <string name="pro_version_title">Versione PRO</string>
-    <string name="pro_version_icon">Badge versione PRO</string>
-    <string name="pro_thank_you_title">Grazie!</string>
-    <string name="pro_thank_you_message">Grazie per aver supportato AAAD con il tuo acquisto PRO! Il tuo contributo aiuta a mantenere vivo questo progetto e ci permette di continuare a offrirti le migliori app per Android Auto.</string>
-    <string name="pro_since">Membro PRO dal %s</string>
-    <string name="pro_since_legacy">Membro PRO</string>
-    <string name="pro_benefits_title">I tuoi vantaggi PRO</string>
-    <string name="pro_benefit_unlimited">Download illimitati di app</string>
-    <string name="pro_benefit_no_cooldown">Nessun periodo di attesa tra i download</string>
-    <string name="pro_benefit_support">Supporto allo sviluppo continuo</string>
-    <string name="pro_closing_message">Apprezziamo davvero la tua fiducia e il tuo supporto. Goditi il tuo accesso illimitato a tutte le app AAAD!</string>
     <string name="update_available_badge">AGGIORNAMENTO</string>
     <string name="verifying_authorization">Verifica autorizzazione download…</string>
     <string name="please_sign_in">Effettua l\'accesso per scaricare le app</string>

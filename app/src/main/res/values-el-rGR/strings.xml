@@ -1,22 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="title_activity_about_payment">Πλήρης Έκδοση</string>
-    <string name="switch_to_pro_statement">Η δωρεάν έκδοση του AAAD σας επιτρέπει να έχετε μία δωρεάν λήψη κάθε μήνα. Αν θέλετε να κατεβάσετε περισσότερα, αναβαθμίστε στο PRO.</string>
-    <string name="congratsPro">Συγχαρητήρια, έχετε την έκδοση PRO!</string>    <string name="About">Σχετικά</string>
-    <string name="have_promo_code">Έχω κωδικό προσφοράς</string>
-    <string name="promo_code">Εισαγάγετε κωδικό προσφοράς</string>
-    <string name="input_promo_code_here">Εισαγάγετε τον κωδικό εδώ</string>    <string name="about_to_download">Πρόκειται να κατεβάσετε %1$s. Θέλετε να συνεχίσετε;</string>
-    <string name="warning_payment">Μόλις ολοκληρώσετε την πληρωμή, παρακαλώ πατήστε χειροκίνητα \"Επιστροφή στον έμπορο\" για την επικύρωση της συναλλαγής.</string>
+<resources>    <string name="About">Σχετικά</string>    <string name="about_to_download">Πρόκειται να κατεβάσετε %1$s. Θέλετε να συνεχίσετε;</string>
     <string name="attention">ΠΡΟΣΟΧΗ</string>
-    <string name="next_download_available">Επόμενη λήψη διαθέσιμη: %1$s</string>
     <string name="connect_error">ΣΦΑΛΜΑ ΣΥΝΔΕΣΗΣ</string>
-    <plurals name="remaining_downloads">
-        <item quantity="one">Σας απομείνει ακόμα μια λήψη </item>
-        <item quantity="other">Δεν σας απομένει καμία λήψη</item>
-    </plurals>
     <string name="about_part_one">"<![CDATA[AAAD (Android Auto Εφαρμογές Downloader) έχει αναπτυχθεί και διατηρείται από τον Shmykelsa.<br><br>Οι διαθέσιμες εφαρμογές καθίστανται δυνατές από τους ακόλουθους προγραμματιστές:<br>]]>"</string>
-    <string name="pro_unlocked">Συγχαρητήρια, έκδοση PRO ξεκλειδώθηκε</string>
-    <string name="cancelled_payment">Η αγορά ακυρώθηκε</string>
     <string name="please_enter_code">Εισαγάγετε τον κωδικό προσφοράς σας</string>
     <string name="connection_error">Σφάλμα σύνδεσης, δεν ήταν δυνατή η επαλήθευση</string>
     <string name="not_valid_code">Μη έγκυρος κωδικός</string>    <string name="downloading_progress">Λήψη…</string>
@@ -32,22 +18,15 @@
     <string name="screen2auto_download">Λήψη Screen2Auto</string>    <string name="aawidgets_description">Δημιουργήθηκε με μόνο μια εργασία. Φορτώσετε ένα widget για Android Auto!</string>
     <string name="performance_monitor_description">Παρακολουθήστε την απόδοση του συστήματος στο Android Auto</string>
     <string name="promotion">Δικαιούστε έκπτωση 15%</string>    <string name="loading">Φόρτωση…</string>
-    <string name="go_pro">ΑΠΟΚΤΗΣΤΕ PRO</string>
     <string name="i_m_good">Είμαι καλά</string>
-    <string name="nav2contacts_description">Πλοηγηθείτε γρήγορα στις επαφές σας</string>    <string name="back_button_payment_close">Ακύρωση πληρωμής και κλείσιμο</string>
+    <string name="nav2contacts_description">Πλοηγηθείτε γρήγορα στις επαφές σας</string>
     <string name="help">Βοήθεια</string>
-    <string name="help_dialog">Θέλετε να στείλετε ένα e-mail για βοήθεια αυτή τη στιγμή?</string>    <string name="i_want_to_transfer_license_here">Θέλω να μεταφέρω την άδεια εδώ</string>
-    <string name="i_want_to_transfer_license_from_here">Θέλω να μεταφέρω την άδειά μου από αυτή τη συσκευή</string>
-    <string name="license_transfer_help">Σαρώστε τον κωδικό QR σε άλλη συσκευή για μεταφορά της άδειας</string>
-    <string name="transfer_license">Μεταφορά Αδείας</string>
+    <string name="help_dialog">Θέλετε να στείλετε ένα e-mail για βοήθεια αυτή τη στιγμή?</string>
     <string name="debug_mode_activate">Ενεργοποίηση αποσφαλμάτωσης</string>
     <string name="debug_mode_performance_warning">Η λειτουργία αποσφαλμάτωσης μπορεί να επηρεάσει την απόδοση</string>
     <string name="debug_mode_deactivated">Απενεργοποιήθηκε η λειτουργία αποσφαλμάτωσης</string>
     <string name="confirm">Επιβεβαίωση</string>
-    <string name="license_here_confirm">Θέλετε να μεταφέρετε την άδειά σας σε αυτή τη συσκευή;</string>
-    <string name="qr_tutorial">Ανοίξτε το AAAD στην άλλη συσκευή σας και σαρώστε αυτόν τον κωδικό QR</string>
-    <string name="license_done">Η άδεια μεταφέρθηκε επιτυχώς!</string>
-    <string name="no_license_found">Δεν βρέθηκε έγκυρη άδεια</string>    <string name="qr_code_permission">Η άδεια της κάμερας είναι απαραίτητη για τη σάρωση κωδικού QR</string>
+    <string name="qr_tutorial">Ανοίξτε το AAAD στην άλλη συσκευή σας και σαρώστε αυτόν τον κωδικό QR</string>    <string name="qr_code_permission">Η άδεια της κάμερας είναι απαραίτητη για τη σάρωση κωδικού QR</string>
     <string name="success_transfer">Επιτυχής μεταφορά</string>
     <string name="email_dialog" comment="&#10;Dialog window">Το e-mail θα χρησιμοποιηθεί για να επαληθεύσει την αγορά σας, αν χρειαστεί</string>
     <string name="input_email">Εισαγάγετε το email σας</string>
@@ -155,8 +134,6 @@
 
 
     <!-- License Transfer - New Modern UI -->
-    <string name="transfer_license_title">Μεταφορά Άδειας</string>
-    <string name="checking_license_status">Έλεγχος κατάστασης άδειας…</string>
     <string name="qr_code_icon">Εικονίδιο κώδικα QR</string>
     <string name="receiver_title">Λήψη Άδειας PRO</string>
     <string name="receiver_subtitle">Εμφανίστε αυτόν τον κωδικό QR για να μεταφέρετε μια άδεια σε αυτήν τη συσκευή</string>
@@ -165,7 +142,6 @@
     <string name="receiver_instructions_step1">Στη συσκευή με PRO, ανοίξτε το AAAD και μεταβείτε στο Μεταφορά Άδειας</string>
     <string name="receiver_instructions_step2">Πατήστε το κουμπί Σάρωση Κωδικού QR σε αυτήν τη συσκευή</string>
     <string name="receiver_instructions_step3">Σαρώστε αυτόν τον κωδικό QR για να ολοκληρώσετε τη μεταφορά</string>
-    <string name="transfer_license_icon">Εικονίδιο μεταφοράς άδειας</string>
     <string name="sender_title">Μεταφορά Άδειας PRO</string>
     <string name="sender_subtitle">Μεταφέρετε την άδειά σας σε μια νέα συσκευή</string>
     <string name="sender_warning">⚠️ Προειδοποίηση: Η μεταφορά της άδειάς σας θα αφαιρέσει την κατάσταση PRO από αυτήν τη συσκευή και θα την ενεργοποιήσει στη νέα συσκευή. Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.</string>
@@ -176,17 +152,13 @@
     <string name="sender_step_4">Πατήστε το κουμπί παρακάτω και σαρώστε αυτόν τον κωδικό QR</string>
     <string name="scan_qr_code">Σάρωση Κωδικού QR</string>
     <string name="camera_permission_required">Απαιτείται άδεια κάμερας για σάρωση κωδικών QR</string>
-    <string name="error_checking_license">Αποτυχία ελέγχου κατάστασης άδειας. Δοκιμάστε ξανά.</string>
     <string name="error_generating_qr">Αποτυχία δημιουργίας κωδικού QR</string>
-    <string name="license_received_success">Η άδεια ελήφθη επιτυχώς!</string>
     <string name="scan_error_title">Σφάλμα Σάρωσης</string>
     <string name="scan_error_message">Αποτυχία σάρωσης κωδικού QR. Δοκιμάστε ξανά.</string>
     <string name="confirm_transfer_title">Επιβεβαίωση Μεταφοράς</string>
     <string name="confirm_transfer_message">Είστε βέβαιοι ότι θέλετε να μεταφέρετε την άδεια PRO στη νέα συσκευή; Αυτό θα αφαιρέσει το PRO από αυτήν τη συσκευή.</string>
     <string name="confirm_transfer_yes">Μεταφορά Άδειας</string>
     <string name="confirm_transfer_no">Ακύρωση</string>
-    <string name="license_transferred_success">Η άδεια μεταφέρθηκε επιτυχώς!</string>
-    <string name="error_transferring_license">Αποτυχία μεταφοράς άδειας. Δοκιμάστε ξανά.</string>
     <string name="support_title">Χρειάζεστε Βοήθεια;</string>
     <string name="support_icon">Εικονίδιο βοήθειας</string>
     <string name="support_subtitle">Είμαστε εδώ για να σας βοηθήσουμε!</string>
@@ -296,18 +268,6 @@
     <string name="progress_checking_updates">Έλεγχος για ενημερώσεις…</string>
 
     <!-- Pro Version -->
-    <string name="purchase_pro">Αγορά Pro</string>
-    <string name="pro_version_title">Έκδοση PRO</string>
-    <string name="pro_version_icon">Σήμα έκδοσης PRO</string>
-    <string name="pro_thank_you_title">Ευχαριστούμε!</string>
-    <string name="pro_thank_you_message">Σας ευχαριστούμε που υποστηρίζετε το AAAD με την αγορά PRO! Η συνεισφορά σας βοηθά να κρατήσουμε αυτό το έργο ζωντανό και μας επιτρέπει να συνεχίσουμε να σας φέρνουμε τις καλύτερες εφαρμογές Android Auto.</string>
-    <string name="pro_since">Μέλος PRO από %s</string>
-    <string name="pro_since_legacy">Μέλος PRO</string>
-    <string name="pro_benefits_title">Τα οφέλη PRO σας</string>
-    <string name="pro_benefit_unlimited">Απεριόριστες λήψεις εφαρμογών</string>
-    <string name="pro_benefit_no_cooldown">Χωρίς περίοδο αναμονής μεταξύ λήψεων</string>
-    <string name="pro_benefit_support">Υποστήριξη συνεχούς ανάπτυξης</string>
-    <string name="pro_closing_message">Εκτιμούμε πραγματικά την εμπιστοσύνη και την υποστήριξή σας. Απολαύστε την απεριόριστη πρόσβασή σας σε όλες τις εφαρμογές AAAD!</string>
 
     <!-- Support -->
     <string name="support_no_email_app">Δεν έχει εγκατασταθεί εφαρμογή email. Εγκαταστήστε μια εφαρμογή email (Gmail, Outlook κ.λπ.) ή στείλτε email στο help.aaad@gmail.com απευθείας από άλλη συσκευή.</string>

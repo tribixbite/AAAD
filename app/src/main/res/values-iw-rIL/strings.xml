@@ -1,24 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="title_activity_about_payment">גרסת פרו</string>
-    <string name="switch_to_pro_statement">הגרסה החינמית של AAAD מאפשרת לך הורדה חינמית אחת בכל חודש. אם אתה רוצה להוריד יותר, שדרג ל-PRO.</string>
-    <string name="congratsPro">מזל טוב, יש לך גרסת PRO!</string>    <string name="About">אודות</string>
-    <string name="have_promo_code">יש לי קוד קידום</string>
-    <string name="promo_code">הזן קוד קידום</string>
-    <string name="input_promo_code_here">הזן קוד כאן</string>    <string name="about_to_download">אתה מתחיל להוריד %1$s. האם להמשיך?</string>
-    <string name="warning_payment">לאחר סיום התשלום בבקשה לחץ חזור לחנות כדי השתשלום יושלם.</string>
+<resources>    <string name="About">אודות</string>    <string name="about_to_download">אתה מתחיל להוריד %1$s. האם להמשיך?</string>
     <string name="attention">שים לב</string>
-    <string name="next_download_available">ההורדה הבאה זמינה ב: %1$s</string>
     <string name="connect_error">שגיאת חיבור</string>
-    <plurals name="remaining_downloads">
-        <item quantity="one">נותרה לך הורדה אחת</item>
-        <item quantity="two">נותרו לך שתי הורדות</item>
-        <item quantity="many">לא נותרו לך עוד הודעות</item>
-        <item quantity="other">לא נותרו לך עוד הורדות</item>
-    </plurals>
     <string name="about_part_one">"<![CDATA[ AAAD (אנדרואיד אוטו מנהל הורדות) מפותח ומתוחזק ע"י Shmykelsa. <br><br> התוכנות הזמינות בזכות המפתחים הבאים:<br>]]>"</string>
-    <string name="pro_unlocked">מזל טוב, גרסת PRO נפתחה</string>
-    <string name="cancelled_payment">הרכישה בוטלה</string>
     <string name="please_enter_code">נא להזין את קוד הקידום שלך</string>
     <string name="connection_error">שגיאת חיבור, לא ניתן לאמת</string>
     <string name="not_valid_code">קוד שגוי</string>    <string name="downloading_progress">בהורדה…</string>
@@ -33,22 +17,15 @@
     <string name="screen2auto_download">הורד את Screen2Auto</string>    <string name="aawidgets_description">נולד עם משימה אחת בלבד. להוסיף וויגטים לאנדרואיד אוטו!</string>
     <string name="performance_monitor_description">ניטור ביצועי המערכת ב-Android Auto</string>
     <string name="promotion">אתה זכאי להנחה של 15%</string>    <string name="loading">טוען…</string>
-    <string name="go_pro">קבל PRO</string>
     <string name="i_m_good">אני בסדר</string>
-    <string name="nav2contacts_description">ניווט מהיר לאנשי הקשר שלך</string>    <string name="back_button_payment_close">ביטול תשלום וסגירה</string>
+    <string name="nav2contacts_description">ניווט מהיר לאנשי הקשר שלך</string>
     <string name="help">עזרה</string>
-    <string name="help_dialog">לשלוח דוא״ל לקבלת עזרה כרגע?</string>    <string name="i_want_to_transfer_license_here"> ארצה להעביר לכאן רישיון</string>
-    <string name="i_want_to_transfer_license_from_here">אני רוצה להעביר את הרישיון שלי ממכשיר זה</string>
-    <string name="license_transfer_help">סרוק את קוד ה-QR במכשיר אחר כדי להעביר את הרישיון</string>
-    <string name="transfer_license"> העבר רישיון</string>
+    <string name="help_dialog">לשלוח דוא״ל לקבלת עזרה כרגע?</string>
     <string name="debug_mode_activate">הפעל ניפוי באגים</string>
     <string name="debug_mode_performance_warning">מצב ניפוי באגים עשוי להשפיע על הביצועים</string>
     <string name="debug_mode_deactivated">מצב ניפוי באגים הושבת</string>
     <string name="confirm">אישור</string>
-    <string name="license_here_confirm">האם ברצונך להעביר את הרישיון למכשיר זה?</string>
-    <string name="qr_tutorial">פתח את AAAD במכשיר האחר שלך וסרוק את קוד ה-QR הזה</string>
-    <string name="license_done">הרישיון הועבר בהצלחה!</string>
-    <string name="no_license_found">לא נמצא רישיון תקף</string>    <string name="qr_code_permission">נדרש הרשאות מצלמה כדי לסרוק קוד </string>
+    <string name="qr_tutorial">פתח את AAAD במכשיר האחר שלך וסרוק את קוד ה-QR הזה</string>    <string name="qr_code_permission">נדרש הרשאות מצלמה כדי לסרוק קוד </string>
     <string name="success_transfer">העברה הצליחה</string>
     <string name="email_dialog" comment="&#10;Dialog window"> כתובת הדוא״ל תשתמש כדי לאמת את הרכישה שלך, במידת הצורך </string>
     <string name="input_email">הזן את כתובת האימייל שלך</string>
@@ -145,8 +122,6 @@
 
 
     <!-- License Transfer - New Modern UI -->
-    <string name="transfer_license_title">העברת רישיון</string>
-    <string name="checking_license_status">בודק סטטוס רישיון…</string>
     <string name="qr_code_icon">סמל קוד QR</string>
     <string name="receiver_title">קבלת רישיון PRO</string>
     <string name="receiver_subtitle">הצג קוד QR זה כדי להעביר רישיון למכשיר זה</string>
@@ -155,7 +130,6 @@
     <string name="receiver_instructions_step1">במכשיר עם PRO, פתח את AAAD ועבור להעברת רישיון</string>
     <string name="receiver_instructions_step2">הקש על כפתור סרוק קוד QR באותו מכשיר</string>
     <string name="receiver_instructions_step3">סרוק קוד QR זה כדי להשלים את ההעברה</string>
-    <string name="transfer_license_icon">סמל העברת רישיון</string>
     <string name="sender_title">העברת רישיון PRO</string>
     <string name="sender_subtitle">העבר את הרישיון שלך למכשיר חדש</string>
     <string name="sender_warning">⚠️ אזהרה: העברת הרישיון תסיר את סטטוס PRO ממכשיר זה ותפעיל אותו במכשיר החדש. לא ניתן לבטל פעולה זו.</string>
@@ -166,17 +140,13 @@
     <string name="sender_step_4">הקש על הכפתור למטה וסרוק את קוד ה-QR ההוא</string>
     <string name="scan_qr_code">סרוק קוד QR</string>
     <string name="camera_permission_required">נדרשת הרשאת מצלמה לסריקת קודי QR</string>
-    <string name="error_checking_license">בדיקת סטטוס הרישיון נכשלה. נסה שוב.</string>
     <string name="error_generating_qr">יצירת קוד QR נכשלה</string>
-    <string name="license_received_success">הרישיון התקבל בהצלחה!</string>
     <string name="scan_error_title">שגיאת סריקה</string>
     <string name="scan_error_message">סריקת קוד QR נכשלה. נסה שוב.</string>
     <string name="confirm_transfer_title">אישור העברה</string>
     <string name="confirm_transfer_message">האם אתה בטוח שברצונך להעביר את רישיון ה-PRO שלך למכשיר החדש? זה יסיר את ה-PRO ממכשיר זה.</string>
     <string name="confirm_transfer_yes">העבר רישיון</string>
     <string name="confirm_transfer_no">ביטול</string>
-    <string name="license_transferred_success">הרישיון הועבר בהצלחה!</string>
-    <string name="error_transferring_license">העברת הרישיון נכשלה. נסה שוב.</string>
     <string name="support_title">צריך עזרה?</string>
     <string name="support_icon">סמל עזרה</string>
     <string name="support_subtitle">אנחנו כאן לעזור לך!</string>
@@ -295,18 +265,6 @@
     <string name="progress_checking_updates">בודק עדכונים…</string>
 
     <!-- Pro Version -->
-    <string name="purchase_pro">רכוש Pro</string>
-    <string name="pro_version_title">גרסת PRO</string>
-    <string name="pro_version_icon">תג גרסת PRO</string>
-    <string name="pro_thank_you_title">תודה!</string>
-    <string name="pro_thank_you_message">תודה שתומך ב-AAAD עם רכישת PRO! תרומתך עוזרת לשמור על הפרויקט הזה חי ומאפשרת לנו להמשיך להביא לך את אפליקציות Android Auto הטובות ביותר.</string>
-    <string name="pro_since">חבר PRO מאז %s</string>
-    <string name="pro_since_legacy">חבר PRO</string>
-    <string name="pro_benefits_title">היתרונות שלך ב-PRO</string>
-    <string name="pro_benefit_unlimited">הורדות אפליקציות ללא הגבלה</string>
-    <string name="pro_benefit_no_cooldown">ללא זמן המתנה בין הורדות</string>
-    <string name="pro_benefit_support">תמיכה בפיתוח מתמשך</string>
-    <string name="pro_closing_message">אנחנו באמת מעריכים את האמון והתמיכה שלך. תהנה מהגישה הבלתי מוגבלת שלך לכל אפליקציות AAAD!</string>
 
     <!-- Support -->
     <string name="support_no_email_app">אין אפליקציית אימייל מותקנת. אנא התקן אפליקציית אימייל (Gmail, Outlook וכו\') או שלח אימייל ישירות ל-help.aaad@gmail.com ממכשיר אחר.</string>

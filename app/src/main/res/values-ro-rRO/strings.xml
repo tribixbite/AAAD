@@ -1,23 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="title_activity_about_payment">Versiunea Pro</string>
-    <string name="switch_to_pro_statement">Versiunea gratuită a AAAD vă permite o descărcare gratuită în fiecare lună. Dacă doriți să descărcați mai mult, actualizați la PRO.</string>
-    <string name="congratsPro">Felicitări, aveți versiunea PRO!</string>    <string name="About">Despre</string>
-    <string name="have_promo_code">Am un cod promoțional</string>
-    <string name="promo_code">Introduceți codul promoțional</string>
-    <string name="input_promo_code_here">Introduceți codul aici</string>    <string name="about_to_download">Sunteți pe cale să descărcați %1$s. Doriți să continuați?</string>
-    <string name="warning_payment">La sfârșitul plății te rugăm să apeși manual \"Revino la comerciant\" pentru ca tranzacția să fie validată.</string>
+<resources>    <string name="About">Despre</string>    <string name="about_to_download">Sunteți pe cale să descărcați %1$s. Doriți să continuați?</string>
     <string name="attention">ATENȚIE</string>
-    <string name="next_download_available">Următoarea descărcare disponibilă: %1$s</string>
     <string name="connect_error">EROARE DE CONEXIUNE</string>
-    <plurals name="remaining_downloads">
-        <item quantity="one">You have 1 download remaining</item>
-        <item quantity="few">You have 1 download remaining</item>
-        <item quantity="other">Nu ai nici o descărcare rămasă</item>
-    </plurals>
     <string name="about_part_one">"<![CDATA[AAAD (Android Auto Apps Downloader) este dezvoltat și întreținut de Shmykelsa. <br> <br> Aplicațiile disponibile sunt posibile datorită următorilor dezvoltatori: <br>]]>"</string>
-    <string name="pro_unlocked">Felicitări, versiune PRO deblocată</string>
-    <string name="cancelled_payment">Achiziție anulată</string>
     <string name="please_enter_code">Introduceți codul promoțional</string>
     <string name="connection_error">Eroare de conexiune, nu s-a putut verifica</string>
     <string name="not_valid_code">Codul nu este valid</string>    <string name="downloading_progress">Descărcare…</string>
@@ -34,22 +19,15 @@
     <string name="screen2auto_download">Descarcă Screen2Auto</string>    <string name="aawidgets_description">Născut cu o singură sarcină. Aduce un widget pe Android Auto!</string>
     <string name="performance_monitor_description">Monitorizează performanța sistemului pe Android Auto</string>
     <string name="promotion">Sunteți eligibil pentru o reducere de 15%</string>    <string name="loading">Se încarcă…</string>
-    <string name="go_pro">DEVINO PRO</string>
     <string name="i_m_good">Sunt bine</string>
-    <string name="nav2contacts_description">Navighează rapid la contacte</string>    <string name="back_button_payment_close">Anulează plata și închide</string>
+    <string name="nav2contacts_description">Navighează rapid la contacte</string>
     <string name="help">Ajutor</string>
-    <string name="help_dialog">Doriți să trimiteți un e-mail pentru ajutor chiar acum?</string>    <string name="i_want_to_transfer_license_here">Vreau să transfer licența aici</string>
-    <string name="i_want_to_transfer_license_from_here">Vreau să transfer licența de pe acest dispozitiv</string>
-    <string name="license_transfer_help">Scanează codul QR pe un alt dispozitiv pentru a transfera licența</string>
-    <string name="transfer_license">Transferă licența</string>
+    <string name="help_dialog">Doriți să trimiteți un e-mail pentru ajutor chiar acum?</string>
     <string name="debug_mode_activate">Activează depanarea</string>
     <string name="debug_mode_performance_warning">Modul de depanare poate afecta performanța</string>
     <string name="debug_mode_deactivated">Modul de depanare dezactivat</string>
     <string name="confirm">Confirmare</string>
-    <string name="license_here_confirm">Vrei să transferi licența pe acest dispozitiv?</string>
-    <string name="qr_tutorial">Deschide AAAD pe celălalt dispozitiv și scanează acest cod QR</string>
-    <string name="license_done">Licență transferată cu succes!</string>
-    <string name="no_license_found">Nu s-a găsit licență validă</string>    <string name="qr_code_permission">Permisiunea camerei este necesară pentru a scana un cod QR</string>
+    <string name="qr_tutorial">Deschide AAAD pe celălalt dispozitiv și scanează acest cod QR</string>    <string name="qr_code_permission">Permisiunea camerei este necesară pentru a scana un cod QR</string>
     <string name="success_transfer">Transfer reușit</string>
     <string name="email_dialog" comment="&#10;Dialog window">Grecusorin70@gmail. com</string>
     <string name="input_email">Introduceți adresa de e-mail</string>
@@ -146,8 +124,6 @@
 
 
     <!-- License Transfer - New Modern UI -->
-    <string name="transfer_license_title">Transferă licența</string>
-    <string name="checking_license_status">Se verifică starea licenței…</string>
     <string name="qr_code_icon">Pictogramă cod QR</string>
     <string name="receiver_title">Primește licență PRO</string>
     <string name="receiver_subtitle">Afișează acest cod QR pentru a transfera o licență pe acest dispozitiv</string>
@@ -156,7 +132,6 @@
     <string name="receiver_instructions_step1">Pe dispozitivul cu PRO, deschide AAAD și accesează Transferă licența</string>
     <string name="receiver_instructions_step2">Apasă butonul Scanează cod QR pe acel dispozitiv</string>
     <string name="receiver_instructions_step3">Scanează acest cod QR pentru a finaliza transferul</string>
-    <string name="transfer_license_icon">Pictogramă transfer licență</string>
     <string name="sender_title">Transferă licența PRO</string>
     <string name="sender_subtitle">Transferă licența ta pe un dispozitiv nou</string>
     <string name="sender_warning">⚠️ Avertisment: Transferarea licenței va elimina statutul PRO de pe acest dispozitiv și îl va activa pe dispozitivul nou. Această acțiune nu poate fi anulată.</string>
@@ -167,17 +142,13 @@
     <string name="sender_step_4">Apasă butonul de mai jos și scanează acel cod QR</string>
     <string name="scan_qr_code">Scanează cod QR</string>
     <string name="camera_permission_required">Permisiunea camerei necesară pentru scanarea codurilor QR</string>
-    <string name="error_checking_license">Nu s-a putut verifica starea licenței. Încercați din nou.</string>
     <string name="error_generating_qr">Nu s-a putut genera codul QR</string>
-    <string name="license_received_success">Licență primită cu succes!</string>
     <string name="scan_error_title">Eroare de scanare</string>
     <string name="scan_error_message">Nu s-a putut scana codul QR. Încercați din nou.</string>
     <string name="confirm_transfer_title">Confirmă transferul</string>
     <string name="confirm_transfer_message">Sigur doriți să transferați licența PRO pe dispozitivul nou? Aceasta va elimina PRO de pe acest dispozitiv.</string>
     <string name="confirm_transfer_yes">Transferă licența</string>
     <string name="confirm_transfer_no">Anulează</string>
-    <string name="license_transferred_success">Licență transferată cu succes!</string>
-    <string name="error_transferring_license">Nu s-a putut transfera licența. Încercați din nou.</string>
     <string name="support_title">Ai nevoie de ajutor?</string>
     <string name="support_icon">Pictogramă ajutor</string>
     <string name="support_subtitle">Suntem aici să te ajutăm!</string>
@@ -294,21 +265,9 @@
     <string name="hero_subtitle">Instalați aplicații personalizate pentru experiența Android Auto</string>
     <string name="refresh_apps">Reîmprospătare aplicații</string>
     <string name="privacy">Politica de confidențialitate</string>
-    <string name="purchase_pro">Cumpără Pro</string>
     <string name="aatorque_description">AATorque aduce aplicația de diagnosticare OBD-II Torque Pro la Android Auto. Monitorizați performanța mașinii, vizualizați datele de diagnosticare și accesați informații despre vehicul în timp real direct de pe afișajul mașinii.</string>
     <string name="installation_timeout_message_secure">Verificarea instalării a expirat. Descărcarea dvs. a fost contorizată în limita lunară din motive de securitate.</string>
     <string name="download_was_counted">Descărcarea a fost contorizată în limita lunară</string>
-    <string name="pro_version_title">Versiune PRO</string>
-    <string name="pro_version_icon">Insignă versiune PRO</string>
-    <string name="pro_thank_you_title">Mulțumim!</string>
-    <string name="pro_thank_you_message">Mulțumim pentru sprijinirea AAAD cu achiziția PRO! Contribuția dvs. ajută la menținerea în viață a acestui proiect și ne permite să vă aducem cele mai bune aplicații Android Auto.</string>
-    <string name="pro_since">Membru PRO din %s</string>
-    <string name="pro_since_legacy">Membru PRO</string>
-    <string name="pro_benefits_title">Beneficiile tale PRO</string>
-    <string name="pro_benefit_unlimited">Descărcări nelimitate de aplicații</string>
-    <string name="pro_benefit_no_cooldown">Fără perioadă de așteptare între descărcări</string>
-    <string name="pro_benefit_support">Sprijin pentru dezvoltare continuă</string>
-    <string name="pro_closing_message">Apreciem cu adevărat încrederea și sprijinul dvs. Bucurați-vă de acces nelimitat la toate aplicațiile AAAD!</string>
     <string name="verifying_authorization">Se verifică autorizarea descărcării…</string>
     <string name="please_sign_in">Conectați-vă pentru a descărca aplicații</string>
     <string name="network_error">Eroare de rețea. Verificați conexiunea și încercați din nou.</string>

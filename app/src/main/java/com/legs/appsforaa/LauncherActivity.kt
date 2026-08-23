@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.legs.appsforaa.data.OnboardingStore
+import com.legs.appsforaa.utils.LogFile
 
 /**
  * The `MAIN`/`LAUNCHER` entry point.
@@ -18,6 +19,10 @@ class LauncherActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Earliest point every cold start passes through, so the file sink is live before the
+        // first catalog load logs anything worth reading.
+        LogFile.install(applicationContext)
 
         val firstRun = !OnboardingStore(applicationContext).completed
         val destination = if (firstRun) OnboardingActivity::class.java

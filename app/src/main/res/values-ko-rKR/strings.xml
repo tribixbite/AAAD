@@ -1,21 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="title_activity_about_payment">PRO Version</string>
-    <string name="switch_to_pro_statement">AAAD 무료 버전은 매월 한 번 무료로 다운로드할 수 있습니다. 더 많이 다운로드하려면 PRO로 업그레이드하세요.</string>
-    <string name="congratsPro">축하합니다, PRO 버전을 보유하고 있습니다!</string>    <string name="About">앱에 대하여</string>
-    <string name="have_promo_code">프로모션 코드가 있습니다</string>
-    <string name="promo_code">프로모션 코드 입력</string>
-    <string name="input_promo_code_here">여기에 코드 입력</string>    <string name="about_to_download">다운로드에 %1$s가 걸립니다. 계속 진행하시겠습니까?</string>
-    <string name="warning_payment">지불이 완료되면 \"판매자에게 돌아가기\"를 수동으로 눌러 거래의 유효성을 확인하십시오.</string>
+<resources>    <string name="About">앱에 대하여</string>    <string name="about_to_download">다운로드에 %1$s가 걸립니다. 계속 진행하시겠습니까?</string>
     <string name="attention">주의</string>
-    <string name="next_download_available">다음 다운로드 가능 시간: %1$s</string>
     <string name="connect_error">연결 에러</string>
-    <plurals name="remaining_downloads">
-        <item quantity="other">You have 1 download remaining</item>
-    </plurals>
     <string name="about_part_one">"<![CDATA[AAAD (Android Auto Apps Downloader) is developed and mantained by Shmykelsa.<br><br>The available apps are made possible by the following developers:<br>]]>"</string>
-    <string name="pro_unlocked">축하합니다, PRO 버전이 잠금 해제되었습니다</string>
-    <string name="cancelled_payment">구매 취소됨</string>
     <string name="please_enter_code">프로모션 코드를 입력하세요</string>
     <string name="connection_error">연결 오류, 확인할 수 없습니다</string>
     <string name="not_valid_code">유효한 코드가 아닙니다</string>    <string name="downloading_progress">다운로드 중…</string>
@@ -30,22 +17,15 @@
     <string name="screen2auto_download">Screen2Auto 다운로드</string>    <string name="aawidgets_description">단일 업무로 탄생. 안드로이드 오토로 위젯을 가져오십시오!</string>
     <string name="performance_monitor_description">Android Auto에서 시스템 성능 모니터링</string>
     <string name="promotion">15% 할인 혜택을 받으실 수 있습니다</string>    <string name="loading">로딩 중…</string>
-    <string name="go_pro">PRO 구매</string>
     <string name="i_m_good">괜찮습니다</string>
-    <string name="nav2contacts_description">연락처로 빠르게 이동</string>    <string name="back_button_payment_close">결제 취소 및 닫기</string>
+    <string name="nav2contacts_description">연락처로 빠르게 이동</string>
     <string name="help">도움말</string>
-    <string name="help_dialog">지금 바로 이메일을 보내 도움을 요청하시겠습니까?</string>    <string name="i_want_to_transfer_license_here">여기에서 면허를 양도하고 싶습니다.</string>
-    <string name="i_want_to_transfer_license_from_here">이 기기에서 내 라이선스를 전송하고 싶습니다</string>
-    <string name="license_transfer_help">다른 기기에서 QR 코드를 스캔하여 라이선스 전송</string>
-    <string name="transfer_license">라이센스 양도</string>
+    <string name="help_dialog">지금 바로 이메일을 보내 도움을 요청하시겠습니까?</string>
     <string name="debug_mode_activate">디버그 활성화</string>
     <string name="debug_mode_performance_warning">디버그 모드는 성능에 영향을 줄 수 있습니다</string>
     <string name="debug_mode_deactivated">디버그 모드 비활성화됨</string>
     <string name="confirm">확인</string>
-    <string name="license_here_confirm">이 기기로 라이선스를 전송하시겠습니까?</string>
-    <string name="qr_tutorial">다른 기기에서 AAAD를 열고 이 QR 코드를 스캔하세요</string>
-    <string name="license_done">라이선스 전송 완료!</string>
-    <string name="no_license_found">유효한 라이선스를 찾을 수 없습니다</string>    <string name="qr_code_permission">QR 코드를 스캔하려면 카메라 권한이 필요합니다.</string>
+    <string name="qr_tutorial">다른 기기에서 AAAD를 열고 이 QR 코드를 스캔하세요</string>    <string name="qr_code_permission">QR 코드를 스캔하려면 카메라 권한이 필요합니다.</string>
     <string name="success_transfer">전송 성공</string>
     <string name="email_dialog" comment="&#10;Dialog window">이메일은 필요한 경우 구매를 확인하는 데 사용됩니다.</string>
     <string name="input_email">이메일 주소 입력</string>
@@ -142,8 +122,6 @@
 
 
     <!-- License Transfer - New Modern UI -->
-    <string name="transfer_license_title">라이선스 전송</string>
-    <string name="checking_license_status">라이선스 상태 확인 중…</string>
     <string name="qr_code_icon">QR 코드 아이콘</string>
     <string name="receiver_title">PRO 라이선스 받기</string>
     <string name="receiver_subtitle">이 QR 코드를 표시하여 이 기기로 라이선스 전송</string>
@@ -152,7 +130,6 @@
     <string name="receiver_instructions_step1">PRO가 있는 기기에서 AAAD를 열고 라이선스 전송으로 이동</string>
     <string name="receiver_instructions_step2">해당 기기에서 QR 코드 스캔 버튼 탭</string>
     <string name="receiver_instructions_step3">이 QR 코드를 스캔하여 전송 완료</string>
-    <string name="transfer_license_icon">라이선스 전송 아이콘</string>
     <string name="sender_title">PRO 라이선스 전송</string>
     <string name="sender_subtitle">새 기기로 라이선스 전송</string>
     <string name="sender_warning">⚠️ 경고: 라이선스를 전송하면 이 기기에서 PRO 상태가 제거되고 새 기기에서 활성화됩니다. 이 작업은 취소할 수 없습니다.</string>
@@ -163,17 +140,13 @@
     <string name="sender_step_4">아래 버튼을 탭하고 해당 QR 코드 스캔</string>
     <string name="scan_qr_code">QR 코드 스캔</string>
     <string name="camera_permission_required">QR 코드 스캔을 위해 카메라 권한이 필요합니다</string>
-    <string name="error_checking_license">라이선스 상태 확인에 실패했습니다. 다시 시도하세요.</string>
     <string name="error_generating_qr">QR 코드 생성에 실패했습니다</string>
-    <string name="license_received_success">라이선스를 성공적으로 받았습니다!</string>
     <string name="scan_error_title">스캔 오류</string>
     <string name="scan_error_message">QR 코드 스캔에 실패했습니다. 다시 시도하세요.</string>
     <string name="confirm_transfer_title">전송 확인</string>
     <string name="confirm_transfer_message">PRO 라이선스를 새 기기로 전송하시겠습니까? 이 기기에서 PRO가 제거됩니다.</string>
     <string name="confirm_transfer_yes">라이선스 전송</string>
     <string name="confirm_transfer_no">취소</string>
-    <string name="license_transferred_success">라이선스가 성공적으로 전송되었습니다!</string>
-    <string name="error_transferring_license">라이선스 전송에 실패했습니다. 다시 시도하세요.</string>
     <string name="support_title">도움이 필요하신가요?</string>
     <string name="support_icon">도움말 아이콘</string>
     <string name="support_subtitle">저희가 도와드리겠습니다!</string>
@@ -289,24 +262,12 @@
     <string name="hero_subtitle">Android Auto 환경용 맞춤 앱 설치</string>
     <string name="refresh_apps">앱 새로고침</string>
     <string name="privacy">개인정보 보호정책</string>
-    <string name="purchase_pro">PRO 구매</string>
     <string name="support_no_email_app">이메일 앱이 설치되지 않았습니다. 이메일 앱(Gmail, Outlook 등)을 설치하거나 다른 기기에서 직접 help.aaad@gmail.com으로 이메일을 보내주세요.</string>
     <string name="support_attachment_not_supported">첨부 파일이 지원되지 않음, 로그 없이 이메일 전송</string>
     <string name="support_attachment_failed_fallback">로그를 첨부할 수 없음, 첨부 파일 없이 이메일 전송</string>
     <string name="support_email_body_greeting">안녕하세요 AAAD 지원팀,</string>
     <string name="installation_timeout_message_secure">설치 확인 시간이 초과되었습니다. 보안상의 이유로 다운로드가 월 한도에 포함되었습니다.</string>
     <string name="download_was_counted">다운로드가 월 한도에 포함되었습니다</string>
-    <string name="pro_version_title">PRO 버전</string>
-    <string name="pro_version_icon">PRO 버전 배지</string>
-    <string name="pro_thank_you_title">감사합니다!</string>
-    <string name="pro_thank_you_message">PRO 구매로 AAAD를 지원해 주셔서 감사합니다! 귀하의 기여는 이 프로젝트를 유지하는 데 도움이 되며 계속해서 최고의 Android Auto 앱을 제공할 수 있게 합니다.</string>
-    <string name="pro_since">%s부터 PRO 회원</string>
-    <string name="pro_since_legacy">PRO 회원</string>
-    <string name="pro_benefits_title">PRO 혜택</string>
-    <string name="pro_benefit_unlimited">무제한 앱 다운로드</string>
-    <string name="pro_benefit_no_cooldown">다운로드 간 대기 시간 없음</string>
-    <string name="pro_benefit_support">지속적인 개발 지원</string>
-    <string name="pro_closing_message">귀하의 신뢰와 지원에 진심으로 감사드립니다. 모든 AAAD 앱에 대한 무제한 액세스를 즐기세요!</string>
     <string name="verifying_authorization">다운로드 권한 확인 중…</string>
     <string name="please_sign_in">앱을 다운로드하려면 로그인하세요</string>
     <string name="network_error">네트워크 오류. 연결을 확인하고 다시 시도하세요.</string>

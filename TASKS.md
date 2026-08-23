@@ -372,7 +372,21 @@ Design: [docs/agent-dash.md](docs/agent-dash.md).
   `Override ... is unparseable or targets an unsupported schema; ignoring it` and fell back to 7;
   deleting the file restored the shipped catalog. Adding `Origin.DEVICE_OVERRIDE` also made the
   compiler flag the non-exhaustive `when` in `MainActivityNew`, which is the enum earning its keep.
-- [ ] **T-43** Structured logging to a file the harness can `adb pull`.
+- [x] **T-43** Structured logging to a file the harness can `adb pull`. `utils/LogFile` mirrors
+  every `Logger` call to `aaad-log.jsonl` in the app's external files directory — the same place
+  the catalog override lives, so `adb pull` reaches it with no permission at all.
+
+  It exists because logcat is a **device-wide ring buffer**: a slow install or a chatty system
+  service can evict this app's lines before anything reads them, and a run that lost its verdict
+  that way is indistinguishable from a run that failed. JSONL because it is appended from many
+  threads and read after the fact — a torn final line costs one record instead of the file.
+
+  Writing is single-writer with a queue rather than a lock, so logging never becomes something the
+  install path waits on, and lines logged before the sink is installed are kept and flushed. Both
+  entry points install it: `LauncherActivity` for cold starts and `DebugAutomationReceiver` for
+  harness runs, which have no Activity at all.
+
+  `cli.ts logs [--level W]` pulls and prints it. *Verified on device* end to end.
 
 - [x] **T-49** **Convert over adb, with no Shizuku.** `harness/src/attribute.ts` +
   `cli.ts convert` perform the same attributed session the app does — create declaring the Play
@@ -574,8 +588,17 @@ Design: [docs/agent-dash.md](docs/agent-dash.md).
   **`requestAuthorizedDownload`**, the client reads an **`authorized`** field, and `users` /
   `lastdownload` remain the RTDB keys. The `"date"` extra's unit is still unconfirmed and not
   worth pursuing — it is a cosmetic countdown and the fork has no gate.
-- [ ] **T-18** Prune the now-unreferenced PRO/payment strings across `res/values*`. Deliberately
-  deferred: it churns 30 locale files for no functional gain.
+- [x] **T-18** Pruned the unreferenced PRO/payment strings: **1326 entries across 34 locale
+  files**, 39 per locale.
+
+  The reason it was deferred — churn for no functional gain — was right, but it also hid a real
+  trap that had to be handled to do it safely. 242 strings look unreferenced to a naive search, and
+  deleting them would have broken the catalog: `CatalogRepository.descriptionResIdOf` resolves each
+  entry's `descriptionRes` **by name** with `getIdentifier`, so every catalog description is
+  referenced only from `catalog.json` and appears nowhere as `R.string.*`. The prune therefore
+  excludes anything named in the catalog or ending `_description`, and matches payment terms on
+  word boundaries — a substring match flags `downloading_progress` because it contains "pro".
+  Build and unit tests green, and the app verified running on device afterwards.
 - [x] **T-19** Vendor BottomDialogs and drop the JitPack dependency. It has now broken the build
   twice:
   1. `master-SNAPSHOT` is an unpinnable moving snapshot — JitPack read timeout under load. Pinning
