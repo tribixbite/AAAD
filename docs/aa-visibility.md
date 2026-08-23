@@ -319,32 +319,38 @@ Two corollaries matter for this fork:
 it is committed), so the condition is reported rather than discovered in traffic. Diagnostics marks
 such apps `D`, and the convert screen says so on the row.
 
-### An ordinary Activity can never be projected [V]
+### An ordinary Activity CAN be projected [V]
 
-Read out of CarStream's own APK, which is the working reference:
+**Confirmed on a real head unit:** a rewritten clone of an ordinary phone app — no car SDK, no
+`CATEGORY_PROJECTION` service, no `CarActivity` — launches **full screen on the car display** when
+its APK declares:
 
-- Its projected entry point is a `<service>` filtering on
-  `com.google.android.gms.car.category.CATEGORY_PROJECTION`, and that service
-  `extends com.google.android.apps.auto.sdk.CarActivityService`, overriding exactly one method:
-  `getCarActivity()`, which returns a `Class`.
-- That returned `CarActivity` **is not an `android.app.Activity`**. CarStream's extends
-  `com.google.android.gms.car.e`. It is an SDK-hosted UI object with its own lifecycle.
-- CarStream bundles the SDK to make this work: 65 classes of `com.google.android.apps.auto.sdk`
-  plus 43 of `com.google.android.gms.car`.
+```xml
+<!-- automotive_app_desc.xml -->
+<automotiveApp><uses name="projection"/></automotiveApp>
+```
+plus `distractionOptimized=true` on the application and the launcher activity, and
+`android.intent.category.CAR_LAUNCHER` on the launcher intent-filter.
 
-So there is no path where Android Auto takes an app's existing Activity and draws it on the head
-unit. A projected app's car UI is written *as* a CarActivity, separately from its phone UI.
+That is the whole requirement. Android Auto projects the app's existing Activity.
 
-The consequence for APK rewriting (T-45): adding `<uses name="projection"/>` to an app that has no
-CATEGORY_PROJECTION service produces the **worst** available outcome — Android Auto lists the app
-and then has nothing to bind to. `harness/tools/patch_manifest.py` therefore chooses the descriptor
-from what the APK already contains and warns when nothing backs it.
+This corrects an earlier claim in this document that said the opposite, and the way it was wrong is
+worth keeping. CarStream *does* implement the unofficial SDK: its projected entry point is a
+service filtering on `CATEGORY_PROJECTION` extending
+`com.google.android.apps.auto.sdk.CarActivityService`, whose `getCarActivity()` returns a
+`CarActivity` that is **not** an `android.app.Activity` (it extends `com.google.android.gms.car.e`),
+and it bundles 108 SDK classes to provide all that. All of that is true and verified.
 
-Making an *arbitrary* app appear usefully in the car means mirroring it: a generic CarActivity that
-hosts a `VirtualDisplay`, launches the app's real Activity onto it, and forwards touches back. The
-forwarding is the hard part — `INJECT_EVENTS` is signature-level, so a normal app cannot do it, but
-the shell uid can, which is why Shizuku is the plausible route. That is Screen2Auto's job
-description, and it is tracked as T-51 rather than pretended at here.
+The error was concluding from it that the SDK is *required*. What was verified was what one app
+chooses to do; what was asserted was what Android Auto demands. Reading an implementation tells you
+a sufficient path, never a necessary one — the SDK is how you get a **custom** car UI, not how you
+get on the display. Tagging that inference `[V]` is precisely the failure this document's
+convention exists to prevent.
+
+So the practical rule is much simpler than it looked: **any app can be made to appear and run full
+screen in Android Auto by declaring `projection`, `distractionOptimized` and `CAR_LAUNCHER`** —
+which is what `harness/tools/carify.sh` does. AABrowser's failure was never exotic; its APK just
+declares `media` and nothing else.
 
 ### Two SDKs, and only one of them is obtainable
 

@@ -2,7 +2,8 @@
 #
 # Builds a side-by-side, Android-Auto-visible clone of an installed app.
 #
-#   ./carify.sh <serial> <package> [suffix]
+#   ./carify.sh <serial> <package> [suffix]     # clone an app installed on a device
+#   ./carify.sh --apk <file.apk> [suffix]       # clone a downloaded APK, no device needed
 #
 # The clone is a DIFFERENT package (<package><suffix>), so it installs alongside the original and
 # never touches it. That is the whole design: the original keeps its signature, its data, and its
@@ -17,21 +18,31 @@
 #   * resizeableActivity=true and no screenOrientation lock, so a phone Activity has a chance of
 #     rendering usefully on a landscape head unit
 #
-# WHAT THIS CANNOT DO: it declares a car surface; it does not implement one. The descriptor is
-# chosen from what the APK already contains — `projection` if the app has a CATEGORY_PROJECTION
-# service, `template` if it has an androidx CarAppService — and when neither exists the script
-# says so, because Android Auto will then list the clone with nothing to bind to. Android Auto
-# never projects an ordinary Activity: a projected app's UI is an SDK CarActivity, which is not an
-# android.app.Activity at all. Making an arbitrary app projectable means mirroring it onto the car
-# display (what Screen2Auto does). See TASKS.md T-51.
+# This WORKS for ordinary apps: confirmed on a real head unit, a clone of a plain phone app — no
+# car SDK, no CATEGORY_PROJECTION service — launches full screen on the car display. Android Auto
+# projects the app's existing Activity. The unofficial SDK that CarStream bundles is how an app
+# builds a *custom* car UI, not how it gets onto the display.
+#
+# The one judgement call: an app that already ships an androidx CarAppService is declared
+# `template` instead, so it presents its real templated surface rather than a projected window.
 #
 # Requires: java, APKEditor.jar, zipalign, apksigner, keytool, adb.
 set -euo pipefail
 
-SERIAL="${1:?usage: carify.sh <serial> <package> [suffix]}"
-PACKAGE="${2:?usage: carify.sh <serial> <package> [suffix]}"
-SUFFIX="${3:-.aaad}"
-NEW_PACKAGE="${PACKAGE}${SUFFIX}"
+# Two input modes. The APK-file mode exists because the transformation needs no device at all —
+# only the install does — and a publisher's download is often the thing you want to fix before it
+# has ever been installed.
+APK_INPUT=""
+if [ "${1:-}" = "--apk" ]; then
+  APK_INPUT="${2:?usage: carify.sh --apk <file.apk> [suffix]}"
+  SUFFIX="${3:-.aaad}"
+  SERIAL=""
+  [ -f "$APK_INPUT" ] || { echo "no such APK: $APK_INPUT"; exit 1; }
+else
+  SERIAL="${1:?usage: carify.sh <serial> <package> [suffix] | --apk <file.apk> [suffix]}"
+  PACKAGE="${2:?usage: carify.sh <serial> <package> [suffix] | --apk <file.apk> [suffix]}"
+  SUFFIX="${3:-.aaad}"
+fi
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APKEDITOR="${APKEDITOR:-$HOME/git/termux-tools/edge-fix/tools/APKEditor.jar}"
@@ -45,28 +56,39 @@ trap 'rm -rf "$WORK"' EXIT
 
 say() { printf '\n== %s\n' "$*"; }
 
-say "Pulling $PACKAGE from $SERIAL"
-mapfile -t PATHS < <(adb -s "$SERIAL" shell "pm path $PACKAGE" | sed 's/^package://' | tr -d '\r' | grep -v '^$')
-[ "${#PATHS[@]}" -gt 0 ] || { echo "not installed: $PACKAGE"; exit 1; }
-
-if [ "${#PATHS[@]}" -eq 1 ]; then
-  adb -s "$SERIAL" pull "${PATHS[0]}" "$WORK/original.apk" >/dev/null
+if [ -n "$APK_INPUT" ]; then
+  say "Using $APK_INPUT"
+  cp "$APK_INPUT" "$WORK/original.apk"
 else
+  say "Pulling $PACKAGE from $SERIAL"
+  mapfile -t PATHS < <(adb -s "$SERIAL" shell "pm path $PACKAGE" | sed 's/^package://' | tr -d '\r' | grep -v '^$')
+  [ "${#PATHS[@]}" -gt 0 ] || { echo "not installed: $PACKAGE"; exit 1; }
+
+  if [ "${#PATHS[@]}" -eq 1 ]; then
+    adb -s "$SERIAL" pull "${PATHS[0]}" "$WORK/original.apk" >/dev/null
+  else
   # A split app is MERGED into a single APK rather than cloned split-by-split. Re-staging N
   # re-signed splits through one install session would work, but the clone would then inherit the
   # original's split layout for no benefit — and every config split it lacks (a density, an ABI,
   # a language) becomes a missing-resource crash at runtime. Merging collapses that whole class of
   # failure: one APK, every resource present, installs like any other.
-  echo "  ${#PATHS[@]} APKs (split app) — merging"
-  mkdir -p "$WORK/splits"
-  for path in "${PATHS[@]}"; do
-    adb -s "$SERIAL" pull "$path" "$WORK/splits/$(basename "$path")" >/dev/null
-  done
-  java -jar "$APKEDITOR" m -i "$WORK/splits" -o "$WORK/original.apk" >/dev/null
+    echo "  ${#PATHS[@]} APKs (split app) — merging"
+    mkdir -p "$WORK/splits"
+    for path in "${PATHS[@]}"; do
+      adb -s "$SERIAL" pull "$path" "$WORK/splits/$(basename "$path")" >/dev/null
+    done
+    java -jar "$APKEDITOR" m -i "$WORK/splits" -o "$WORK/original.apk" >/dev/null
+  fi
 fi
 
 say "Decoding"
 java -jar "$APKEDITOR" d -i "$WORK/original.apk" -o "$WORK/decoded" -t xml >/dev/null
+
+# The package name is read from the APK rather than trusted from the caller, so --apk mode needs
+# no second argument and device mode cannot be given a name that disagrees with the file.
+PACKAGE="$(sed -n 's/.*package="\([^"]*\)".*/\1/p' "$WORK/decoded/AndroidManifest.xml" | head -1)"
+NEW_PACKAGE="${PACKAGE}${SUFFIX}"
+echo "  $PACKAGE -> $NEW_PACKAGE"
 
 say "Patching the manifest"
 PATCH_OUT="$(python3 "$HERE/patch_manifest.py" "$WORK/decoded/AndroidManifest.xml" \
@@ -134,6 +156,17 @@ zipalign -p -f 4 "$WORK/unsigned.apk" "$WORK/aligned.apk"
 apksigner sign --ks "$KEYSTORE" --ks-pass "pass:$KEYSTORE_PASS" --key-pass "pass:$KEYSTORE_PASS" \
   --out "$WORK/clone.apk" "$WORK/aligned.apk"
 
+if [ -z "$SERIAL" ]; then
+  OUT="${CARIFY_OUT:-$(dirname "$APK_INPUT")/$(basename "${APK_INPUT%.apk}")-car.apk}"
+  cp "$WORK/clone.apk" "$OUT"
+  say "Wrote $OUT"
+  echo "  install it with Play Store attribution, or Android Auto will not list it:"
+  echo "    bun run src/cli.ts convert --packages $NEW_PACKAGE   # after installing"
+  echo
+  echo "  Declared <uses name=\"$CAR_USES\"/>."
+  exit 0
+fi
+
 say "Installing $NEW_PACKAGE with Play Store attribution"
 SDK="$(adb -s "$SERIAL" shell getprop ro.build.version.sdk | tr -d '\r')"
 BYPASS=""; [ "$SDK" -ge 34 ] && BYPASS="--bypass-low-target-sdk-block"
@@ -148,13 +181,6 @@ adb -s "$SERIAL" shell rm -f /data/local/tmp/carify.apk
 say "Result"
 adb -s "$SERIAL" shell "pm list packages -i $PACKAGE" | grep -E "package:($PACKAGE|$NEW_PACKAGE) " || true
 
-if [ "$CAR_BACKED" != "yes" ]; then
-  cat <<'WARN'
-
-  NOTE: nothing in this APK implements a car surface, so Android Auto will list the clone and
-  then have nothing to bind to. Android Auto never projects an ordinary Activity: a projected
-  app's UI is a CarActivity from the unofficial SDK, which does not extend android.app.Activity
-  (CarStream's extends com.google.android.gms.car.e). Making an arbitrary app projectable means
-  mirroring it onto the car display, which is what Screen2Auto does. See TASKS.md T-51.
-WARN
-fi
+echo
+echo "  Declared <uses name=\"$CAR_USES\"/>. Connect the phone to the head unit and the clone"
+echo "  should appear in Android Auto's launcher and open full screen."

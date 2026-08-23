@@ -529,26 +529,30 @@ Design: [docs/agent-dash.md](docs/agent-dash.md).
   *Verified:* Bambu Handy, 5 APKs and 250 MB, merged, cloned, installed alongside the original and
   launched clean.
 
-  **The descriptor is now chosen from what the APK can actually back**, not assumed:
-  `projection` when the app has its own `CATEGORY_PROJECTION` service, `template` when it has an
-  androidx `CarAppService`, and otherwise `projection` **with a loud warning** — because declaring
-  a surface nothing implements gets the clone listed with nothing to bind to, which is worse than
-  not declaring it. Verified both ways: CarStream detects as backed, Calculator as not.
+  **It works on a real head unit.** A clone of an ordinary phone app — no car SDK, no
+  `CATEGORY_PROJECTION` service — appears in Android Auto and launches **full screen on the car
+  display**. `projection` + `distractionOptimized` + `CAR_LAUNCHER` is the entire requirement.
+  `template` is chosen instead only when the app already ships an androidx `CarAppService`, so it
+  presents its real templated surface rather than a projected window.
 
-- [ ] **T-51** **Generic projection by mirroring — the only route left for an ordinary app.**
-  Established from CarStream's APK that Android Auto never projects an `android.app.Activity`: a
-  projected app's UI is an SDK `CarActivity`, which extends `com.google.android.gms.car.e`, and the
-  app bundles 108 SDK classes to provide it. Evidence in
-  [docs/aa-visibility.md](docs/aa-visibility.md#an-ordinary-activity-can-never-be-projected-v).
+  Also takes a downloaded APK: `carify.sh --apk foo.apk` needs no device at all, since only the
+  install does. The package name is read from the APK rather than passed in.
 
-  So making an arbitrary app usable in the car means writing a generic CarActivity that hosts a
-  `VirtualDisplay`, launches the app's real Activity onto it, and forwards touch back. Input is the
-  blocker: `INJECT_EVENTS` is signature-level and a normal app cannot hold it, but the **shell uid
-  can** — which is exactly what Shizuku provides, and Shizuku is already a dependency here.
+- [x] **T-51** **Not needed — an ordinary Activity projects fine.** Closed by a head-unit test
+  rather than built. The reasoning that opened it was wrong in an instructive way: reading
+  CarStream's APK established that it implements the unofficial SDK, and that was written up as
+  though the SDK were *required*. Verifying what one app does is not verifying what Android Auto
+  demands — an implementation shows a sufficient path, never a necessary one. The claim was tagged
+  `[V]` in `docs/aa-visibility.md`, which is exactly the failure that convention exists to prevent;
+  the section now records the correction.
 
-  This is Screen2Auto's job description and a project in its own right, so it is not started.
-  Before building it, **test the cheap thing**: drive with a clone installed and see what Android
-  Auto does with a `projection` descriptor and no service. If it renders anything, this is moot.
+- [x] **T-52** **Fix AABrowser** — the complaint that started this whole thread. Its APK declares
+  `<uses name="media"/>` and nothing else, so Android Auto lists it and refuses to open it while
+  driving. `carify.sh --apk` rewrote it into `com.kododake.aabrowser.aaad` declaring `projection`,
+  with `distractionOptimized` and `CAR_LAUNCHER`, installable alongside the publisher's build.
+  No device was involved in the transformation.
+
+
 - [x] **T-40** Update checker — the thing upstream's README has promised for years.
   `data/UpdateChecker` resolves the latest published version of each **installed** catalog app and
   `CatalogRepository` turns that into `InstallState.UpdateAvailable`, which the adapter already

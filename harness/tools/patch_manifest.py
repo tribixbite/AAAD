@@ -88,15 +88,13 @@ def set_meta(parent, name, *, value=None, resource=None):
 
 # 5. What car surface can this app actually back?
 #
-#    Declaring a capability the app cannot implement produces the worst outcome available: Android
-#    Auto lists the app and then has nothing to bind to. So the descriptor is chosen from what the
-#    APK already contains, and the caller is told when nothing backs it.
+#    `projection` is the default and it WORKS for an ordinary app: confirmed on a real head unit,
+#    a clone with no car SDK and no CATEGORY_PROJECTION service launches full screen on the car
+#    display. Android Auto projects the app's existing Activity; the unofficial SDK is how an app
+#    gets a *custom* car UI, not how it gets onto the display.
 #
-#    - `projection` needs a service filtering on CATEGORY_PROJECTION, implementing the unofficial
-#      SDK. Its CarActivity is NOT an android.app.Activity (CarStream's extends
-#      com.google.android.gms.car.e), so an ordinary Activity can never be projected by
-#      declaration alone.
-#    - `template` needs an androidx.car.app CarAppService.
+#    `template` is chosen only when the app already ships an androidx CarAppService, because such
+#    an app has a real templated surface and should present that rather than a projected window.
 has_projection_service = False
 has_car_app_service = False
 for service in app.findall("service"):
@@ -108,23 +106,19 @@ for service in app.findall("service"):
         if CAR_APP_SERVICE_ACTION in acts:
             has_car_app_service = True
 
-if has_projection_service:
-    car_uses, backing = "projection", "the app's own CATEGORY_PROJECTION service"
-elif has_car_app_service:
+if has_car_app_service and not has_projection_service:
     car_uses, backing = "template", "the app's own androidx CarAppService"
+elif has_projection_service:
+    car_uses, backing = "projection", "the app's own CATEGORY_PROJECTION service"
 else:
-    car_uses, backing = "projection", None
+    car_uses, backing = "projection", "Android Auto projecting the launcher Activity"
 
 set_meta(app, "com.google.android.gms.car.application", resource="@xml/automotive_app_desc")
 set_meta(app, "distractionOptimized", value="true")
 changes.append(f"car descriptor declares <uses name=\"{car_uses}\"/>")
-if backing:
-    changes.append(f"  backed by {backing}")
-else:
-    changes.append("  WARNING: nothing in this APK implements a car surface. Android Auto will")
-    changes.append("  list the clone and have nothing to bind to. See TASKS.md T-51.")
+changes.append(f"  backed by {backing}")
 print(f"CAR_USES={car_uses}")
-print(f"CAR_BACKED={'yes' if backing else 'no'}")
+print(f"CAR_BACKED=yes")
 
 # 6. Make the UI as adaptable as the manifest can: a phone Activity on a head unit is a fixed
 #    portrait box unless it is told otherwise. This cannot fix a layout that hardcodes phone
