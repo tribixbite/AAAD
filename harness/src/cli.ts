@@ -6,6 +6,7 @@
  *   bun run src/cli.ts matrix [--host 192.168.1.243] [--apps id,id]
  *   bun run src/cli.ts convert --packages com.foo,com.bar [--serial ...]
  *   bun run src/cli.ts convert --unattributed aa   # every AA-capable app lacking attribution
+ *   bun run src/cli.ts carify --packages com.foo   # side-by-side Android-Auto-visible clone
  *
  * Results are appended to `runs/<timestamp>/results.jsonl` — one JSON object per (device, app)
  * so runs diff cleanly and the dash can read them without parsing prose.
@@ -29,6 +30,8 @@ interface Options {
   packages?: string[];
   /** `aa` converts every catalog app on the device that is not Play-attributed. */
   unattributed?: string;
+  /** Package-name suffix for a carify clone. */
+  suffix?: string;
 }
 
 function parseArgs(argv: string[]): { command: string; options: Options } {
@@ -44,6 +47,7 @@ function parseArgs(argv: string[]): { command: string; options: Options } {
     if (key === "--accept") options.accept = value !== "false";
     if (key === "--packages") options.packages = value.split(",").map((s) => s.trim()).filter(Boolean);
     if (key === "--unattributed") options.unattributed = value;
+    if (key === "--suffix") options.suffix = value;
   }
   return { command, options };
 }
@@ -249,6 +253,38 @@ async function convertCommand(options: Options): Promise<void> {
   if (failed > 0) process.exitCode = 1;
 }
 
+/**
+ * Builds a side-by-side Android-Auto-visible clone of each package.
+ *
+ * Thin wrapper over `tools/carify.sh`, which owns the pipeline because it is a chain of external
+ * tools — APKEditor, zipalign, apksigner, adb — and shelling out to them from TypeScript would
+ * add a layer without adding anything. Read that script for what the clone actually gains, and
+ * for what it explicitly cannot promise.
+ */
+async function carifyCommand(options: Options): Promise<void> {
+  const device = await requireDevice(options);
+  const packages = options.packages ?? [];
+  if (packages.length === 0) {
+    console.error("Pass --packages com.example.one,com.example.two");
+    process.exitCode = 1;
+    return;
+  }
+
+  const script = new URL("../tools/carify.sh", import.meta.url).pathname;
+  for (const packageName of packages) {
+    console.log(`\n=== ${packageName} -> ${packageName}${options.suffix ?? ".aaad"}`);
+    const proc = Bun.spawn(
+      ["bash", script, device.serial, packageName, options.suffix ?? ".aaad"],
+      { stdout: "inherit", stderr: "inherit" },
+    );
+    const code = await proc.exited;
+    if (code !== 0) {
+      console.error(`  carify failed for ${packageName} (exit ${code})`);
+      process.exitCode = 1;
+    }
+  }
+}
+
 const { command, options } = parseArgs(Bun.argv.slice(2));
 switch (command) {
   case "devices":
@@ -260,10 +296,15 @@ switch (command) {
   case "convert":
     await convertCommand(options);
     break;
+  case "carify":
+    await carifyCommand(options);
+    break;
   case "matrix":
     await cmdMatrix(options);
     break;
   default:
-    console.error(`Unknown command: ${command}. Try devices | status | matrix | convert.`);
+    console.error(
+      `Unknown command: ${command}. Try devices | status | matrix | convert | carify.`,
+    );
     process.exit(1);
 }

@@ -490,13 +490,43 @@ Design: [docs/agent-dash.md](docs/agent-dash.md).
      say no for templated apps; AABrowser ships one anyway. No `<uses>` value was invented for
      AAAD rather than guess one — see the note in `AndroidManifest.xml`.
 
-- [ ] **T-45** **Decision: should AAAD rewrite a publisher's APK to add `<uses name="projection"/>`?**
-  It is the only way to fix an app like AABrowser from this side. Upstream v2.8.5 already does
-  on-device manifest and `resources.arsc` rewriting with in-process signing
-  ([docs/upstream-2.8.5-diff.md](docs/upstream-2.8.5-diff.md)), so the machinery is proven.
-  The cost is real: the APK must be re-signed with a local key, so its signature no longer matches
-  the publisher's and their own updates can never install over it again. That is a change of
-  ownership over someone else's app, not a tweak — **needs an explicit call before any work.**
+- [x] **T-45** **Carify: a side-by-side, Android-Auto-visible clone of any installed app.**
+  `harness/tools/carify.sh` + `patch_manifest.py`, exposed as `cli.ts carify --packages …`.
+
+  The clone is a **different package** (`<pkg>.aaad`), which is what makes re-signing acceptable:
+  the original keeps its signature, its data and its publisher updates, and only the clone carries
+  a local key. Re-signing is unavoidable — both the manifest and the resource table change — so the
+  rewritten app must never *be* the user's copy.
+
+  The clone gains a `com.google.android.gms.car.application` descriptor declaring
+  `<uses name="projection"/>`, `distractionOptimized=true` on the application and the launcher
+  activity, `android.intent.category.CAR_LAUNCHER`, `resizeableActivity=true`, and no
+  `screenOrientation` lock — an orientation lock being the usual reason a phone Activity renders as
+  a letterboxed sliver on a landscape head unit.
+
+  **Class names are deliberately not renamed.** The DEX is untouched, so every component
+  `android:name` still refers to the original package's classes; only *identifiers* move —
+  the manifest package, declared permissions, provider authorities, task affinity — because those
+  are exactly what collide with the original install. Confirmed by the running clone:
+  `com.sec.android.app.popupcalculator.aaad/com.sec.android.app.popupcalculator.Calculator`.
+
+  Built on **APKEditor**, not apktool: apktool's rebuild goes through `aapt2 compile`, which
+  rejects the `$`-prefixed AnimatedVectorDrawable entries Samsung's Calculator contains
+  (`resource 'drawable/$avd_show_password__2' has invalid entry name`). APKEditor edits the binary
+  resource table directly. Its one requirement is that a new file needs a `<public>` entry or the
+  build fails with "Local resource not defined" — the script derives a free id from the app's own
+  `xml` type rather than hardcoding one.
+
+  *Verified on two apps, end to end:* Samsung Calculator and Service Browser both installed
+  alongside their untouched originals, both Play-attributed, both **launch without crashing**
+  (the DEX round-trip was the risk), and AAAD's own scanner counted them —
+  `aaCapableInstalled` 35 → 36 → 37.
+
+  *Still open:* whether Android Auto **renders** them. A real projected app implements the
+  unofficial car SDK; this declares `projection` on an ordinary Activity, which is unproven. AA may
+  list the clone and still fail to draw it. Needs a head unit — that is the T-44 test drive.
+  Split apps are refused rather than half-cloned; every split would have to be re-signed with the
+  same key and installed as one session.
 - [x] **T-40** Update checker — the thing upstream's README has promised for years.
   `data/UpdateChecker` resolves the latest published version of each **installed** catalog app and
   `CatalogRepository` turns that into `InstallState.UpdateAvailable`, which the adapter already
