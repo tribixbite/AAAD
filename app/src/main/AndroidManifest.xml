@@ -220,10 +220,16 @@
           com.google.android.gms.car.category.CATEGORY_PROJECTION and draw a full-screen Activity
           on the head unit; that SDK is not on Maven, so this fork cannot depend on it.
 
-          The category is a compromise. Android Auto accepts NAVIGATION, POI, IOT, WEATHER, MEDIA,
-          MESSAGING and CALLING — an app manager is none of those. IOT is the least wrong, and it
-          is entirely possible Android Auto declines to surface this at all. See TASKS.md T-44:
-          nothing here has been verified against a head unit.
+          MEASURED (T-44): Android Auto does NOT surface this. The service resolves at system
+          level under its category and the app is Play-attributed, and it is still absent from
+          Android Auto's launcher list — checked with harness/tools/aa-launcher-list.sh under both
+          IOT and POI. Third-party templated apps are surfaced only in the categories Android Auto
+          approves, which in practice are navigation, audio and messaging; an app manager is none
+          of them and cannot honestly claim to be one.
+
+          The declaration is kept because it costs nothing and is correct if that policy changes,
+          and because the screens are useful on a head unit that does surface it. IOT is the least
+          wrong of the available categories.
         -->
         <service
             android:name="com.legs.appsforaa.car.AaadCarAppService"

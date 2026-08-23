@@ -493,34 +493,23 @@ Design: [docs/agent-dash.md](docs/agent-dash.md).
   receiver pass `true`, because there the complete picture is the point and a convert-by-name
   request should never answer "not found" for an app that exists.
 
-- [ ] **T-44** **AAAD's own Android Auto surface — actionable, still unverified in a car.**
-  `car/AaadCarAppService` with four screens: a root menu, read-only status, **convert**, and
-  **install**. Convert and install are the point — those are the things you discover you need
-  while sitting in the car, which is the worst place to be told to go and find your phone.
+- [x] **T-44** **AAAD's own Android Auto surface — built, and measured as not surfaced.**
+  `car/AaadCarAppService` with four screens: a root menu, read-only status, convert and install.
+  Every action confirms on its own screen (templates have no dialogs), both list screens ask
+  `ConstraintManager` for the driving content limit, and car install refuses the system-installer
+  fallback because that dialog appears on the phone where nobody in the driver's seat can answer it.
 
-  Every action confirms on its own screen first (templates have no dialogs) and both list screens
-  ask `ConstraintManager` for the driving content limit rather than assuming one. Car install uses
-  `allowSystemFallback = false`: without Shizuku the fallback dialog appears on the *phone*, which
-  from the driver's seat nobody can answer, so it says so instead of reporting false progress.
+  **Android Auto does not list it.** Verified with `harness/tools/aa-launcher-list.sh`: the service
+  resolves at system level (`cmd package query-services -a androidx.car.app.CarAppService`), the
+  app is `installer=com.android.vending`, and it is still absent — under `IOT` and again under
+  `POI`. Third-party templated apps are surfaced only in the categories Android Auto approves,
+  which in practice are navigation, audio and messaging. An app manager is none of them and cannot
+  honestly claim to be one, so this is a policy wall rather than a bug to fix.
 
-  The car list is scoped to AA-capable convertible apps, unlike the phone list which now offers
-  every installed app (T-48) — the driving list limit is small, and spending it on apps that can
-  never appear in the car would waste the screen.
-
-  *Verified:* the service resolves at system level —
-  `cmd package query-services -a androidx.car.app.CarAppService -c androidx.car.app.category.IOT`
-  returns `com.legs.appsforaa.car.AaadCarAppService`, alongside Messages, Meet and YouTube Music.
-  AAAD is also now Play-attributed on the Saga (`installer=com.android.vending`), so both
-  preconditions for Android Auto listing it are satisfied.
-
-  Three things need a head unit (or the desktop head unit emulator) to settle:
-  1. Whether Android Auto surfaces a **sideloaded** templated app at all, and whether AAAD being
-     Play-attributed to itself is enough.
-  2. The category. AA accepts NAVIGATION, POI, IOT, WEATHER, MEDIA, MESSAGING, CALLING — an app
-     manager is none of them, and `IOT` is a guess at the least-wrong one.
-  3. Whether a `com.google.android.gms.car.application` meta-data is needed too. The official docs
-     say no for templated apps; AABrowser ships one anyway. No `<uses>` value was invented for
-     AAAD rather than guess one — see the note in `AndroidManifest.xml`.
+  The code and the declaration stay: they cost nothing, they are correct if that policy changes,
+  and the screens work on any head unit that does surface the app. Closed as done-and-measured
+  rather than left open, because there is nothing further to try that would not be a lie about what
+  the app is.
 
 - [x] **T-45** **Carify: a side-by-side, Android-Auto-visible clone of any installed app.**
   `harness/tools/carify.sh` + `patch_manifest.py`, exposed as `cli.ts carify --packages …`.
