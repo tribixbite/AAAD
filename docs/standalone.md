@@ -73,6 +73,7 @@ Bundled at `app/src/main/assets/catalog.json`; the same schema serves a remote `
       "category": "multimedia",
       "descriptionRes": "carstream_description",
       "description": "Optional literal text for user-added repositories",
+      "installPolicy": "publisher-unchanged",
       "minSdk": 24,
       "source": { "type": "github-release", "repo": "owner/repo", "assetPattern": "\\.apk$" }
     }
@@ -93,6 +94,13 @@ Bundled at `app/src/main/assets/catalog.json`; the same schema serves a remote `
 `mirroring` (`second_section_name`), `other` (`third_section_name`). `descriptionRes` names an
 existing string resource so the 30 translated locales keep working. `description` is optional
 plain text used by user-added repositories; markup is stripped before display.
+
+`installPolicy` defaults to `auto-car-compatible`, which lets AAAD create its side-by-side parked
+copy when needed. `publisher-unchanged` preserves the downloaded package name, signature, and car
+service; use it for apps such as BluMirror whose own service is the feature being installed. A
+foreground publisher-unchanged install uses Android's confirmation UI rather than a Shizuku/shell
+initiator. This preserves the publisher artifact but does not guarantee current Android Auto will
+admit a sideloaded template app.
 
 ### Package names
 

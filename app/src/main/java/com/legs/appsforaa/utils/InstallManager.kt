@@ -3,6 +3,7 @@ package com.legs.appsforaa.utils
 import android.content.Context
 import com.legs.appsforaa.data.AppEntry
 import com.legs.appsforaa.data.AutomotiveDescriptor
+import com.legs.appsforaa.data.InstallPolicy
 import com.legs.appsforaa.data.ReleaseResolver
 import java.io.File
 
@@ -95,6 +96,18 @@ class InstallManager(
         }
 
         return try {
+            // A publisher-unchanged app depends on its own package/signature and may rely on
+            // Android Auto's user-enabled Unknown sources route. For a foreground install, use
+            // Android's visible installer instead of a shell/Shizuku initiator. Automation still
+            // uses Shizuku because no person is present to confirm the dialog.
+            if (
+                entry.installPolicy == InstallPolicy.PUBLISHER_UNCHANGED &&
+                allowSystemFallback
+            ) {
+                onProgress(Progress.Installing)
+                return systemInstall(apk)
+            }
+
             val capabilities = AutomotiveDescriptor.forApkFile(
                 context.packageManager,
                 apk.absolutePath,
@@ -106,7 +119,8 @@ class InstallManager(
             // because the APK declares one. Preserve known legacy projection apps and publisher
             // parked apps; turn every other GitHub/catalog APK into an honest parked copy.
             val canInstallUnchanged =
-                capabilities?.projects == true || capabilities?.parkedOnly == true
+                entry.installPolicy == InstallPolicy.PUBLISHER_UNCHANGED ||
+                    capabilities?.projects == true || capabilities?.parkedOnly == true
             if (!canInstallUnchanged) {
                 if (!shizukuReady && !allowSystemFallback) {
                     Logger.i(

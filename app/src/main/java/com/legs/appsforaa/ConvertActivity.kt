@@ -20,7 +20,6 @@ import com.legs.appsforaa.receivers.PackageInstallReceiver
 import com.legs.appsforaa.utils.Logger
 import com.legs.appsforaa.utils.CarifyRepackager
 import com.legs.appsforaa.utils.ShizukuInstaller
-import com.legs.appsforaa.utils.SystemInstaller
 import com.legs.appsforaa.utils.applyBottomInsetPadding
 import com.legs.appsforaa.utils.applyTopInsetPadding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -30,14 +29,13 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import java.io.File
 
 /**
  * Makes installed apps usable from Android Auto.
  *
- * Existing legacy projection apps can be re-staged unchanged. Phone-only and untrusted templated
- * apps get a separately signed, side-by-side parked copy. Shizuku provides unattended
- * installation when available; Android's standard installer is the confirmation-based fallback.
+ * Phone-only and untrusted templated apps get a separately signed, side-by-side parked copy.
+ * Shizuku provides unattended installation when available; Android's standard installer is the
+ * confirmation-based fallback. A local reinstall is never presented as trusted registration.
  *
  * Full rationale: `docs/aa-visibility.md`.
  */
@@ -189,42 +187,22 @@ class ConvertActivity : AppCompatActivity() {
      */
     private fun confirmConversion(app: InstalledApp) {
         val action = app.conversionAction ?: return
-        val makesCarCopy = action == ConversionAction.CAR_COPY
-        val message = if (makesCarCopy) {
-            getString(
-                R.string.convert_carify_confirm_message,
-                app.label,
-                getString(R.string.convert_system_installer_note),
-            )
-        } else {
-            buildList {
-                add(
-                    getString(
-                        if (app.isSplit) R.string.convert_confirm_message_split
-                        else R.string.convert_confirm_message,
-                        app.label,
-                    )
-                )
-                add(getString(R.string.convert_confirm_stopped, app.label))
-                add(getString(R.string.convert_system_installer_note))
-            }.joinToString("\n\n")
-        }
+        val message = getString(
+            R.string.convert_carify_confirm_message,
+            app.label,
+            getString(R.string.convert_system_installer_note),
+        )
 
         MaterialAlertDialogBuilder(this)
             .setTitle(
                 getString(
-                    if (makesCarCopy) R.string.convert_carify_confirm_title
-                    else R.string.convert_confirm_title,
+                    R.string.convert_carify_confirm_title,
                     app.label,
                 )
             )
             .setMessage(message)
             .setPositiveButton(
-                if (makesCarCopy) {
-                    R.string.action_create_car_compatible_copy
-                } else {
-                    R.string.action_register_car_version
-                }
+                R.string.action_create_car_compatible_copy
             ) { _, _ -> enqueueConversion(app, action) }
             .setNegativeButton(R.string.action_cancel, null)
             .show()
@@ -334,67 +312,6 @@ class ConvertActivity : AppCompatActivity() {
                     is CarifyRepackager.Result.Failure -> ConversionOutcome.Failure(
                         getString(R.string.convert_carify_failed, result.message)
                     )
-                }
-            }
-            ConversionAction.RESTAGE -> {
-                if (useShizuku) {
-                    postProgress(
-                        app.packageName,
-                        18,
-                        getString(R.string.convert_stage_staging),
-                    )
-                    when (
-                        val result = ShizukuInstaller.convertInstalled(
-                            app.packageName,
-                            app.apkPaths,
-                        ) { completed, total ->
-                            val percent = 18 + (completed * 68 / total.coerceAtLeast(1))
-                            postProgress(
-                                app.packageName,
-                                percent,
-                                getString(R.string.convert_stage_staging),
-                            )
-                        }
-                    ) {
-                        is ShizukuInstaller.Result.Success -> ConversionOutcome.Success(
-                            getString(R.string.convert_done, app.label)
-                        )
-                        is ShizukuInstaller.Result.Failure -> ConversionOutcome.Failure(
-                            getString(R.string.convert_failed, result.message)
-                        )
-                    }
-                } else {
-                    val files = app.apkPaths.map(::File)
-                    when (
-                        val result = SystemInstaller.installAndAwait(
-                            applicationContext,
-                            files,
-                            onProgress = { completed, total ->
-                                val percent = 18 + (completed * 68 / total.coerceAtLeast(1))
-                                postProgress(
-                                    app.packageName,
-                                    percent,
-                                    getString(R.string.convert_stage_staging),
-                                )
-                            },
-                            onAwaitingConfirmation = {
-                                postProgress(
-                                    app.packageName,
-                                    92,
-                                    getString(
-                                        R.string.convert_stage_waiting_for_confirmation
-                                    ),
-                                )
-                            },
-                        )
-                    ) {
-                        SystemInstaller.AwaitedResult.Installed -> ConversionOutcome.Success(
-                            getString(R.string.convert_done_standard_installer, app.label)
-                        )
-                        is SystemInstaller.AwaitedResult.Failure -> ConversionOutcome.Failure(
-                            getString(R.string.convert_failed, result.message)
-                        )
-                    }
                 }
             }
         }

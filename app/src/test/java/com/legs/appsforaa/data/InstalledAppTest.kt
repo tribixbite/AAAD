@@ -57,13 +57,13 @@ class InstalledAppTest {
     }
 
     @Test
-    fun `sideloaded legacy projection app keeps lightweight restage`() {
+    fun `sideloaded legacy projection app is not falsely offered registration`() {
         val installed = app(
             ConversionState.CONVERTIBLE,
             setOf(AutomotiveDescriptor.USES_PROJECTION),
         )
 
-        assertEquals(ConversionAction.RESTAGE, installed.conversionAction)
+        assertNull(installed.conversionAction)
         assertTrue(installed.hasCarVersion)
     }
 

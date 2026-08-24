@@ -239,46 +239,22 @@ can be catalogued from publisher sources and flagged as AA-visibility-unverified
 
 ## Converting an app that is already installed
 
-The Convert screen has two operations because attribution and car capability are separate:
+The Convert screen creates a side-by-side Car copy for an APK without a usable car surface. This
+applies even when the original came from Play, and to built-in apps. Rewriting invalidates the
+publisher signature, so replacing the original is impossible and unsafe; the clone has a new
+package, AAAD's persistent signing key, and fresh data.
 
-- A publisher APK that already has a usable `projection` or `template` surface but lacks Play
-  attribution is re-staged unchanged. Its signature and data survive.
-- Any APK without a usable car surface gets a side-by-side Car copy with the injected T-54 template
-  bridge. This applies even when the original came from Play, and to built-in apps. Rewriting
-  invalidates the publisher signature, so replacing the original is impossible and unsafe; the
-  clone has a new package, AAAD's persistent signing key, and fresh data.
+A publisher APK that already has a usable `projection` or `template` surface is reported as such,
+but AAAD does **not** offer to "register" it. Current Android Auto inspects the initiating package,
+not only the mutable installer label. A local `PackageInstaller`, adb, or Shizuku reinstall cannot
+become a genuine Play/trusted-store install, so presenting that operation as a repair was false.
+Reinstalling AAAD over itself also kills the Activity that owns the operation.
 
-For the first operation, the corollary of "attribution can only be declared at session creation"
-is that a sideloaded AA-capable app is invisible in the car and **cannot have its attribution
-edited in place**.
-
-The fix is to reinstall the app's *own* APKs through an attributed session. Nothing is
-re-downloaded, patched, or re-signed:
-
-1. Enumerate installed apps declaring `com.google.android.gms.car.application`
-   (`data/InstalledAppScanner`, needs `QUERY_ALL_PACKAGES`).
-2. Read each one's installer with `PackageManager.getInstallSourceInfo`. Anything other than
-   `com.android.vending` is convertible.
-3. Collect `applicationInfo.sourceDir` **and `splitSourceDirs`**. Split apps are the trap here:
-   a session containing only the base of a split app fails to commit, or commits an app missing
-   its resources.
-4. Stage all of them into one attributed session and commit
-   (`ShizukuInstaller.convertInstalled`). The shell uid can already read `/data/app`, so the paths
-   are handed to `pm install-write` directly rather than streamed — and with a path, `install-write`
-   sizes the file itself, so no `-S` is needed.
-
-Because the APKs and therefore the signature are unchanged, this is an update over the top:
-**app data and settings survive**.
-
-Without Shizuku, conversion falls back to the platform `PackageInstaller`. It cannot provide Play
-attribution — an app may only attribute an install to itself — so visibility then depends on the
-user enabling **Unknown sources** in Android Auto's developer settings. The UI explains that before
-starting and again after a successful platform install. This makes Shizuku optional without
-pretending the two install routes have identical visibility semantics.
-
-The Car-copy operation also uses that attributed session after decoding, manifest/resource
-patching, bridge injection, zip alignment, and APK Signature Scheme v2/v3 signing on-device. It
-never uploads the APK and never stops or writes into the original package.
+The Car-copy operation decodes and merges the base plus every split APK, patches the
+manifest/resources, injects the bridge, aligns, and signs on-device. Shizuku makes its installation
+unattended when available; otherwise Android's confirmation UI is used. Neither route is described
+as trusted-store provenance. The operation never uploads the APK and never stops or writes into the
+original package.
 
 Scale of the problem on one real device: 556 apps from Play, and ~136 sideloaded — 36 via
 Obtainium, 26 F-Droid, 26 packageinstaller, 19 Chrome, 16 AppManager, 13 with no installer at all.

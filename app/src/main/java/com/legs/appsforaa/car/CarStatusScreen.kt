@@ -93,8 +93,10 @@ class CarStatusScreen(carContext: CarContext) : Screen(carContext), DefaultLifec
      * Android Auto and still refuse to open, or open fine but never be listed.
      */
     private fun describe(app: InstalledApp): CharSequence = when {
-        app.state == ConversionState.CONVERTIBLE ->
-            carContext.getString(R.string.car_not_registered)
+        app.carCapabilities?.parkedOnly == true ->
+            carContext.getString(R.string.car_parked, app.versionName)
+        app.hasCarVersion && app.state == ConversionState.CONVERTIBLE ->
+            carContext.getString(R.string.car_custom_source, app.versionName)
         app.blockedWhileDriving ->
             carContext.getString(R.string.car_no_projection)
         else ->

@@ -23,6 +23,21 @@ enum class AppCategory(val jsonValue: String) {
     }
 }
 
+/** How AAAD handles a publisher APK after downloading it. */
+enum class InstallPolicy(val jsonValue: String) {
+    /** Infer whether the app needs AAAD's side-by-side parked compatibility bridge. */
+    AUTO_CAR_COMPATIBLE("auto-car-compatible"),
+
+    /** Preserve the publisher's package name, signature, and declared car service unchanged. */
+    PUBLISHER_UNCHANGED("publisher-unchanged");
+
+    companion object {
+        fun fromJson(value: String?): InstallPolicy =
+            entries.firstOrNull { it.jsonValue.equals(value, ignoreCase = true) }
+                ?: AUTO_CAR_COMPATIBLE
+    }
+}
+
 /** Where an entry's APK comes from. */
 sealed interface AppSource {
 
@@ -65,6 +80,7 @@ data class AppEntry(
     val descriptionRes: String,
     val description: String = "",
     val source: AppSource,
+    val installPolicy: InstallPolicy = InstallPolicy.AUTO_CAR_COMPATIBLE,
 ) {
     companion object {
         fun fromJson(json: JSONObject): AppEntry? {
@@ -82,6 +98,7 @@ data class AppEntry(
                 descriptionRes = json.optString("descriptionRes"),
                 description = json.optString("description"),
                 source = source,
+                installPolicy = InstallPolicy.fromJson(json.optString("installPolicy")),
             )
         }
     }

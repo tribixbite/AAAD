@@ -161,13 +161,6 @@ class DebugAutomationReceiver : BroadcastReceiver() {
                 is CarifyRepackager.Result.Failure ->
                     Logger.e(TAG, "RESULT=FAILED ${result.message}")
             }
-            ConversionAction.RESTAGE ->
-                when (val result = ShizukuInstaller.convertInstalled(packageName, app.apkPaths)) {
-                    is ShizukuInstaller.Result.Success ->
-                        Logger.i(TAG, "RESULT=CONVERTED $packageName")
-                    is ShizukuInstaller.Result.Failure ->
-                        Logger.e(TAG, "RESULT=FAILED ${result.message}")
-                }
             null -> Logger.i(TAG, "RESULT=ALREADY_CONVERTED $packageName")
         }
     }

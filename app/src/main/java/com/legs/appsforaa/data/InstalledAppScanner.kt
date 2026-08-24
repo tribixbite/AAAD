@@ -45,9 +45,6 @@ enum class ConversionState {
 
 /** What the Convert button must do for this package. */
 enum class ConversionAction {
-    /** Keep the publisher APK/signature and only repair its Play Store install attribution. */
-    RESTAGE,
-
     /** Rewrite and sign a side-by-side copy with AAAD's car-compatible template bridge. */
     CAR_COPY,
 }
@@ -55,9 +52,8 @@ enum class ConversionAction {
 /**
  * An installed app that can be offered by the Convert screen.
  *
- * [apkPaths] is the base APK followed by any split APKs. Conversion has to re-stage **all** of
- * them: committing a session containing only the base of a split app fails, or worse produces an
- * app missing its resources.
+ * [apkPaths] is the base APK followed by any split APKs. Compatible-copy conversion has to read
+ * **all** of them: using only the base of a split app loses code or resources.
  */
 data class InstalledApp(
     val packageName: String,
@@ -84,9 +80,9 @@ data class InstalledApp(
     /**
      * Whether the app declares the Android Auto metadata key at all.
      *
-     * Decisive for which conversion path is needed. Apps with their own usable car surface only
-     * need their install attribution repaired. Everything else needs a rewritten side-by-side
-     * copy carrying AAAD's template bridge.
+     * Decisive for which conversion path is needed. Apps with their own usable car surface cannot
+     * gain trusted-store provenance through a local reinstall. Everything else can receive a
+     * rewritten side-by-side copy carrying AAAD's template bridge.
      */
     val declaresAndroidAuto: Boolean get() = carCapabilities != null
 
@@ -111,7 +107,6 @@ data class InstalledApp(
             carCapabilities.templated && state == ConversionState.CONVERTIBLE ->
                 ConversionAction.CAR_COPY
             !carCapabilities.hasCarUi -> ConversionAction.CAR_COPY
-            state == ConversionState.CONVERTIBLE -> ConversionAction.RESTAGE
             else -> null
         }
 }
@@ -121,8 +116,8 @@ data class InstalledApp(
  *
  * This is the discovery half of "conversion": an app sideloaded from anywhere — F-Droid, a
  * browser download, another installer, or an earlier AAAD build's fallback path — declares AA
- * support but may be invisible in the car. Legacy projection apps can be re-staged unchanged;
- * untrusted templates and phone-only apps need a separate parked copy.
+ * support but may be invisible in the car. A local reinstall cannot create trusted-store
+ * provenance; untrusted templates and phone-only apps instead need a separate parked copy.
  */
 class InstalledAppScanner(private val context: Context) {
 

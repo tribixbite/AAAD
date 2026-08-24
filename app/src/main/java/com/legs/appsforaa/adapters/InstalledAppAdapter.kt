@@ -91,7 +91,7 @@ class InstalledAppAdapter(
                 app.hasCarVersion && app.state == ConversionState.TRUSTED_INSTALL ->
                     context.getString(R.string.convert_state_car_ready, app.versionName)
                 app.hasCarVersion ->
-                    context.getString(R.string.convert_state_car_needs_registration, app.versionName)
+                    context.getString(R.string.convert_state_car_custom_source, app.versionName)
                 app.conversionAction == ConversionAction.CAR_COPY ->
                     context.getString(R.string.convert_state_needs_car_copy, app.versionName)
                 app.state == ConversionState.TRUSTED_INSTALL ->
@@ -164,13 +164,7 @@ class InstalledAppAdapter(
                 else -> {
                     binding.appAction.visibility = if (action != null) View.VISIBLE else View.GONE
                     binding.appAction.isEnabled = action != null
-                    binding.appAction.setText(
-                        if (action == ConversionAction.CAR_COPY) {
-                            R.string.action_create_car_compatible_copy
-                        } else {
-                            R.string.action_register_car_version
-                        }
-                    )
+                    binding.appAction.setText(R.string.action_create_car_compatible_copy)
                     binding.appAction.setOnClickListener { onConvert(app) }
                 }
             }

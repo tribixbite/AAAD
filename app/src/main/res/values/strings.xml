@@ -11,6 +11,7 @@
     <string name="aapassenger_description">This app was made for allowing passengers to manage some functionalities in Android Auto. Requires the passenger to download AAPassenger. Working state is currently unknown.</string>
     <string name="aabrowser_description">A new web browser designed for Android Auto with Material 3 design, fullscreen video playback, and optimized automotive interface.</string>
     <string name="s2a_description">The most complete and full-featured mirroring app for Android Auto. Includes many features like a customizable launcher, split screen, custom screen sizes and much more!</string>
+    <string name="blumirror_description">Experimental, view-only phone screen mirroring. Approve screen sharing on your phone for each session; control stays on the phone. AAAD preserves BluMirror’s publisher signature and uses Android’s installer. Android Auto 17.3 may still omit it even with Unknown sources enabled.</string>
     <string name="aamirror_description">The first and long-lasting screen mirror app for Android Auto. The ancestor of a family, AAMirror simply mirrors the screen of your phone to the car.</string>
     <string name="aa_stream_description">Another alternative to AAMirror with some extra functionalities. Recently revived and fixed for newer Android versions by Annexhack.</string>
     <string name="carstream_description">Formerly known as "YouTube Auto", CarStream was one of the first apps made with the custom apps SDK. It was born with the main purpose of delivering YouTube to Android Auto and then it became a web browser with many capabilities.
@@ -286,7 +287,7 @@
 
     <!-- Converting already-installed apps for Android Auto discovery -->
     <string name="convert_title">Car compatibility</string>
-    <string name="convert_subtitle">Choose an installed app to register its car version or create a parked car-compatible copy.</string>
+    <string name="convert_subtitle">Choose an installed app to create a separate parked car-compatible copy.</string>
     <string name="convert_copy_help_title">About compatible copies</string>
     <string name="convert_copy_help_content_description">About car-compatible copies</string>
     <string name="convert_copy_help_message">AAAD creates a separate car-compatible app. Your original app and its data stay unchanged. The copy starts with fresh data and may not support every phone-only feature. Android Auto treats sideloaded copies as parked apps, so they are unavailable while the car is moving.</string>
@@ -299,8 +300,8 @@
     </plurals>
     <string name="convert_installer_none">an unknown source</string>
     <string name="convert_state_ok">%1$s · already visible in Android Auto</string>
-    <string name="convert_state_car_ready">%1$s · car version registered with Android Auto</string>
-    <string name="convert_state_car_needs_registration">%1$s · car version included; registration needed</string>
+    <string name="convert_state_car_ready">%1$s · car version included · trusted install</string>
+    <string name="convert_state_car_custom_source">%1$s · custom car version included; enable Unknown sources if it is missing</string>
     <string name="convert_state_car_parked">%1$s · parked car version included</string>
     <string name="convert_state_car_requires_store">%1$s · driving car version requires a trusted-store install; parked copy available</string>
     <string name="convert_car_version_included">Car version included</string>
@@ -322,7 +323,7 @@
          user with nowhere to go. -->
     <string name="convert_no_projection">This app has no usable car screen. Create a parked car-compatible copy.</string>
     <string name="convert_scope_aa">Android Auto apps</string>
-    <string name="manual_source_message">%1$s is not published as a downloadable release — its developer distributes it from their own site, where you pick a version. That download installs through Android rather than through this app, so it will not be registered with Android Auto until you convert it here afterwards.</string>
+    <string name="manual_source_message">%1$s is distributed from its developer’s website, where you pick a version. Android handles that download and install. If its car version is missing afterwards, enable Unknown sources in Android Auto.</string>
     <string name="manual_source_open">Open download page</string>
     <string name="convert_scope_all">All apps</string>
     <string name="convert_search_hint">Search installed apps</string>
@@ -332,21 +333,15 @@
     <!-- Android Auto car screen (templated Car App Library surface) -->
     <string name="car_title">Android Auto apps</string>
     <string name="car_no_apps">No third-party Android Auto apps installed</string>
-    <string name="car_ok">Registered with Android Auto · %1$s</string>
-    <string name="car_not_registered">Not registered — reinstall it from AAAD on your phone</string>
+    <string name="car_ok">Car version included · trusted install · %1$s</string>
+    <string name="car_custom_source">Custom car version · %1$s</string>
+    <string name="car_parked">Parked car version · %1$s</string>
     <string name="car_no_projection">Listed, but this app cannot open while driving</string>
     <string name="car_menu_status">Installed apps</string>
     <string name="car_menu_status_detail">What Android Auto sees</string>
-    <string name="car_menu_convert">Fix an app</string>
-    <string name="car_menu_convert_detail">Register an installed app with Android Auto</string>
     <string name="car_menu_install">Install an app</string>
     <string name="car_menu_install_detail">Add an app from the catalog</string>
     <string name="car_confirm">Confirm</string>
-    <string name="car_convert_none">Every Android Auto app on this phone is already registered.</string>
-    <string name="car_convert_row">Installed by %1$s</string>
-    <string name="car_convert_confirm_title">Fix %1$s?</string>
-    <string name="car_convert_confirm">%1$s will be reinstalled from its own APK so Android Auto lists it. Your data is kept, but the app is stopped while it reinstalls.</string>
-    <string name="car_convert_done">%1$s is now registered with Android Auto</string>
     <string name="car_install_none">Every app in the catalog is already installed.</string>
     <string name="car_install_row">Not installed</string>
     <string name="car_install_confirm_title">Install %1$s?</string>
@@ -360,7 +355,6 @@
     <string name="action_convert">Convert</string>
     <string name="action_create_car_compatible_copy">Create compatible copy</string>
     <string name="action_got_it">Got it</string>
-    <string name="action_register_car_version">Register car version</string>
     <string name="action_cancel_conversion">Cancel conversion</string>
     <string name="action_remove_from_queue">Remove from queue</string>
     <string name="convert_confirm_title">Convert %1$s?</string>
@@ -403,7 +397,7 @@
     <!-- Replaces onboarding_welcome_description, whose "Swipe through to learn how to use the
          app" was written for upstream's multi-page pager. This screen is a single status list,
          so that wording described a UI that no longer exists. -->
-    <string name="onboarding_welcome_summary">This app installs Android Auto apps and registers them so Android Auto will actually list them. Below is what it needs on this device — anything already set up is marked as such.</string>
+    <string name="onboarding_welcome_summary">This app installs Android Auto apps and creates parked car-compatible copies when needed. Below is what it needs on this device — anything already set up is marked as such.</string>
 
     <!-- Diagnostics -->
     <string name="diagnostics_title">Diagnostics</string>
@@ -467,6 +461,13 @@
     <string name="discover_query_dashboard">car dashboard</string>
     <string name="discover_verified_repo">Verified GitHub repository</string>
     <string name="discover_view_repo">View repo</string>
+    <string name="discover_show_more">Show more</string>
+    <string name="discover_show_less">Show less</string>
+    <string name="discover_show_more_description">Show the full description for %1$s</string>
+    <string name="discover_show_less_description">Collapse the description for %1$s</string>
+    <string name="customize_launcher_open">Customize launcher</string>
+    <string name="customize_launcher_instruction">Android Auto opened. Tap Customize launcher.</string>
+    <string name="customize_launcher_unavailable">Android Auto settings could not be opened.</string>
     <string name="discover_archived_chip">Archived</string>
     <string name="discover_active_chip">Active</string>
     <string name="discover_updated">Updated %1$s</string>

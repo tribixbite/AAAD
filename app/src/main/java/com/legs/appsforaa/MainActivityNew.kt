@@ -20,6 +20,7 @@ import com.legs.appsforaa.data.UpdateChecker
 import com.legs.appsforaa.data.UserCatalogStore
 import com.legs.appsforaa.databinding.ActivityMainNewBinding
 import com.legs.appsforaa.receivers.PackageInstallReceiver
+import com.legs.appsforaa.utils.AndroidAutoLauncher
 import com.legs.appsforaa.utils.InstallManager
 import com.legs.appsforaa.utils.Logger
 import com.legs.appsforaa.utils.ShizukuInstaller
@@ -112,6 +113,21 @@ class MainActivityNew : AppCompatActivity() {
         }
         binding.openDiagnostics.setOnClickListener {
             startActivity(Intent(this, SupportActivity::class.java))
+        }
+        binding.openCustomizeLauncher.setOnClickListener {
+            if (AndroidAutoLauncher.openSettings(this)) {
+                Toast.makeText(
+                    this,
+                    R.string.customize_launcher_instruction,
+                    Toast.LENGTH_LONG,
+                ).show()
+            } else {
+                Toast.makeText(
+                    this,
+                    R.string.customize_launcher_unavailable,
+                    Toast.LENGTH_LONG,
+                ).show()
+            }
         }
 
         loadCatalog(userInitiated = false)

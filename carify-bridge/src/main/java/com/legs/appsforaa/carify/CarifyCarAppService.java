@@ -19,6 +19,7 @@ import android.view.MotionEvent;
 import android.view.Surface;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.car.app.AppManager;
 import androidx.car.app.CarAppService;
 import androidx.car.app.CarContext;
@@ -176,6 +177,7 @@ public final class CarifyCarAppService extends CarAppService {
         @Override public void onVisibleAreaChanged(@NonNull Rect visibleArea) { }
         @Override public void onStableAreaChanged(@NonNull Rect stableArea) { }
 
+        @RequiresApi(Build.VERSION_CODES.O)
         private void launchCloneActivity() {
             PackageManager pm = getCarContext().getPackageManager();
             Intent launcher = pm.getLaunchIntentForPackage(getCarContext().getPackageName());

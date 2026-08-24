@@ -39,13 +39,13 @@ class GitHubSearchTest {
     }
 
     @Test
-    fun `repository descriptions discard page scripts and stay bounded`() {
-        assertEquals(
-            "A useful app",
+    fun `repository descriptions reject embedded programs and oversized payloads`() {
+        assertNull(
             search.sanitizeDescription(
                 "A useful app window.alert = function() { } document.write('<script>')"
-            ),
+            )
         )
-        assertEquals(280, search.sanitizeDescription("x".repeat(400)).length)
+        assertNull(search.sanitizeDescription("x".repeat(501)))
+        assertEquals("A useful app", search.sanitizeDescription("  A useful   app  "))
     }
 }

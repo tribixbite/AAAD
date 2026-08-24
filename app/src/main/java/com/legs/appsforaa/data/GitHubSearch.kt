@@ -43,7 +43,7 @@ class GitHubSearch(
         val REPO_PATTERN = Regex("[A-Za-z0-9._-]{1,100}")
         const val PER_PAGE = 50
         const val TIMEOUT_SECONDS = 20L
-        const val MAX_DESCRIPTION_CHARS = 280
+        const val MAX_DESCRIPTION_CHARS = 500
 
         fun defaultClient(): OkHttpClient = OkHttpClient.Builder()
             .connectTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
@@ -101,7 +101,10 @@ class GitHubSearch(
             response.body?.string().orEmpty()
         }
         val result = parseResult(JSONObject(body))
-            ?: error("GitHub returned incomplete details for $repo")
+            ?: error(
+                "Repository metadata was rejected because it is incomplete, oversized, " +
+                    "or contains embedded code"
+            )
         Logger.d(TAG, "$repo -> verified repository")
         result
     }
@@ -145,7 +148,7 @@ class GitHubSearch(
             fullName = fullName,
             description = sanitizeDescription(
                 if (item.isNull("description")) "" else item.optString("description")
-            ),
+            ) ?: return null,
             stars = item.optInt("stargazers_count"),
             archived = item.optBoolean("archived"),
             htmlUrl = htmlUrl,
@@ -158,25 +161,32 @@ class GitHubSearch(
         java.net.URLEncoder.encode(value, Charsets.UTF_8.name())
 
     /**
-     * Repository descriptions are untrusted metadata. Some repositories abuse the field with a
-     * complete page/script payload; keep the useful lead sentence and bound every result card.
-     * HTML tags/entities are separately reduced to plain text by the adapters.
+     * Repository descriptions are untrusted metadata. GitHub normally keeps this field short,
+     * but its API currently accepts payload-sized values. Reject embedded programs rather than
+     * trimming and accidentally presenting a malicious repository as a plausible app.
+     *
+     * HTML tags/entities are separately reduced to inert plain text by the adapters.
      */
-    internal fun sanitizeDescription(value: String): String {
+    internal fun sanitizeDescription(value: String): String? {
         val normalized = value.replace(Regex("\\s+"), " ").trim()
-        val suspiciousMarkers = listOf(
-            " window.",
-            " document.",
-            " function(",
+        if (normalized.length > MAX_DESCRIPTION_CHARS) return null
+
+        val lower = normalized.lowercase()
+        val codeMarkers = listOf(
+            "import os",
+            "import requests",
+            "discord.ext",
+            "threadpoolexecutor",
+            "document.write(",
+            "window.",
+            "@bot.",
+            "bot.run(",
+            "runtime.exec(",
+            "subprocess.",
             "<script",
             "<style",
-            " localStorage.",
         )
-        val firstMarker = suspiciousMarkers
-            .map { normalized.indexOf(it, ignoreCase = true) }
-            .filter { it >= 0 }
-            .minOrNull()
-            ?: normalized.length
-        return normalized.substring(0, firstMarker).trim().take(MAX_DESCRIPTION_CHARS)
+        if (codeMarkers.any(lower::contains)) return null
+        return normalized
     }
 }

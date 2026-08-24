@@ -12,14 +12,12 @@ import com.legs.appsforaa.R
 /**
  * What AAAD offers on the car screen.
  *
- * Three entries rather than one status list, because the two useful actions — repairing an app
- * Android Auto refuses to list, and installing one that is missing — are exactly the things you
- * discover you need *while sitting in the car*, which is the worst place to be told to go and
- * find your phone.
+ * Status and catalog install remain available here. Registration repair is intentionally absent:
+ * a local reinstall cannot create the trusted-store provenance required by current Android Auto.
  *
- * Everything below is still gated on Shizuku, and every action confirms on its own screen first.
- * Templates cap how much can be shown while moving, and the host enforces that; this code asks for
- * the limit rather than assuming one.
+ * Catalog installation is gated on Shizuku and confirms on its own screen first. Templates cap
+ * how much can be shown while moving, and the host enforces that; this code asks for the limit
+ * rather than assuming one.
  */
 class CarRootScreen(carContext: CarContext) : Screen(carContext) {
 
@@ -31,14 +29,6 @@ class CarRootScreen(carContext: CarContext) : Screen(carContext) {
                     .addText(carContext.getString(R.string.car_menu_status_detail))
                     .setBrowsable(true)
                     .setOnClickListener { screenManager.push(CarStatusScreen(carContext)) }
-                    .build()
-            )
-            .addItem(
-                Row.Builder()
-                    .setTitle(carContext.getString(R.string.car_menu_convert))
-                    .addText(carContext.getString(R.string.car_menu_convert_detail))
-                    .setBrowsable(true)
-                    .setOnClickListener { screenManager.push(CarConvertScreen(carContext)) }
                     .build()
             )
             .addItem(

@@ -106,7 +106,7 @@
             android:layout_gravity="end"
             android:layout_marginTop="12dp"
             android:minHeight="48dp"
-            android:text="@string/action_register_car_version" />
+            android:text="@string/action_create_car_compatible_copy" />
 
     </LinearLayout>
 

@@ -40,12 +40,29 @@ object AndroidAutoLauncher {
      *   something useful instead of appearing to do nothing.
      */
     fun open(context: Context): Boolean {
-        val launch = context.packageManager.getLaunchIntentForPackage(PACKAGE)
-        if (launch != null) {
-            launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            return runCatching { context.startActivity(launch); true }.getOrDefault(false)
+        return openSettings(context)
+    }
+
+    /**
+     * Opens Android Auto's own settings. Current AA does not export its Customize launcher
+     * activity, so callers should tell the user to tap that row after this screen opens.
+     */
+    fun openSettings(context: Context): Boolean {
+        val candidates = listOf(
+            Intent(Intent.ACTION_APPLICATION_PREFERENCES)
+                .setPackage(PACKAGE)
+                .addCategory(Intent.CATEGORY_DEFAULT),
+            Intent("com.google.android.projection.gearhead.SETTINGS").setPackage(PACKAGE),
+        )
+        for (candidate in candidates) {
+            candidate.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            if (candidate.resolveActivity(context.packageManager) != null &&
+                runCatching { context.startActivity(candidate); true }.getOrDefault(false)
+            ) {
+                return true
+            }
         }
-        Logger.w(TAG, "Android Auto has no launch intent; falling back to its app settings")
+        Logger.w(TAG, "Android Auto exposes no public settings entry; using app details")
         return openAppSettings(context)
     }
 

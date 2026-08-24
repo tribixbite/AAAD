@@ -25,6 +25,7 @@ class RepoAdapter(
 ) : ListAdapter<RepoResult, RepoAdapter.ViewHolder>(DIFF) {
 
     private val checkingRepos = mutableSetOf<String>()
+    private val expandedRepos = mutableSetOf<String>()
 
     fun setChecking(fullName: String, checking: Boolean) {
         if (checking) checkingRepos.add(fullName) else checkingRepos.remove(fullName)
@@ -34,6 +35,9 @@ class RepoAdapter(
     }
 
     private companion object {
+        const val COLLAPSED_LINES = 3
+        const val COLLAPSED_DESCRIPTION_CHARS = 140
+
         val DIFF = object : DiffUtil.ItemCallback<RepoResult>() {
             override fun areItemsTheSame(oldItem: RepoResult, newItem: RepoResult): Boolean =
                 oldItem.fullName == newItem.fullName
@@ -50,6 +54,13 @@ class RepoAdapter(
             onAdd,
             onOpen,
             isChecking = { it.fullName in checkingRepos },
+            isExpanded = { it.fullName in expandedRepos },
+            onToggleExpanded = { repo ->
+                if (!expandedRepos.add(repo.fullName)) expandedRepos.remove(repo.fullName)
+                currentList.indexOfFirst { it.fullName == repo.fullName }
+                    .takeIf { it >= 0 }
+                    ?.let(::notifyItemChanged)
+            },
         )
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(getItem(position))
@@ -60,6 +71,8 @@ class RepoAdapter(
         private val onAdd: (RepoResult) -> Unit,
         private val onOpen: (RepoResult) -> Unit,
         private val isChecking: (RepoResult) -> Boolean,
+        private val isExpanded: (RepoResult) -> Boolean,
+        private val onToggleExpanded: (RepoResult) -> Unit,
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(repo: RepoResult) {
@@ -69,9 +82,29 @@ class RepoAdapter(
                 R.string.discover_stars, NumberFormat.getIntegerInstance().format(repo.stars)
             )
 
-            binding.repoDescription.text = repo.description.ifBlank {
+            val description = repo.description.ifBlank {
                 context.getString(R.string.discover_no_description)
             }.toDisplayText()
+            binding.repoDescription.text = description
+            val expandable = repo.description.isNotBlank() &&
+                description.length > COLLAPSED_DESCRIPTION_CHARS
+            val expanded = expandable && isExpanded(repo)
+            binding.repoDescription.maxLines = if (expanded) Int.MAX_VALUE else COLLAPSED_LINES
+            binding.repoExpand.visibility = if (expandable) View.VISIBLE else View.GONE
+            binding.repoExpand.setText(
+                if (expanded) R.string.discover_show_less else R.string.discover_show_more
+            )
+            binding.repoExpand.contentDescription = context.getString(
+                if (expanded) {
+                    R.string.discover_show_less_description
+                } else {
+                    R.string.discover_show_more_description
+                },
+                repo.fullName,
+            )
+            binding.repoExpand.setOnClickListener {
+                onToggleExpanded(repo)
+            }
             binding.repoArchived.visibility = View.VISIBLE
             binding.repoArchived.setText(
                 if (repo.archived) R.string.discover_archived_chip else R.string.discover_active_chip
