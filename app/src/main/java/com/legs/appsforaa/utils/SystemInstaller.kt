@@ -7,9 +7,15 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageInstaller
 import androidx.core.content.ContextCompat
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.coroutines.resume
 
 /**
  * Fallback installer using the platform [PackageInstaller], for devices without Shizuku.
@@ -21,9 +27,8 @@ import java.io.File
  * say so rather than implying the install succeeded in the sense the user cares about. See
  * `docs/aa-visibility.md`.
  *
- * The install is handed off to the system confirmation dialog and **not** awaited: the final
- * outcome arrives through the package-change broadcast that the catalog screen already listens
- * for, which also covers the user taking a while to tap through.
+ * Catalog installs use [install], which hands off to the confirmation dialog without awaiting it.
+ * Conversion uses [installAndAwait] so its queue does not open overlapping confirmation dialogs.
  */
 object SystemInstaller {
 
@@ -35,6 +40,12 @@ object SystemInstaller {
         /** The system dialog has been shown; the outcome will arrive as a package broadcast. */
         data object HandedOffToSystem : Result
         data class Failure(val message: String) : Result
+    }
+
+    /** Terminal result for conversion installs whose queue must wait for the system dialog. */
+    sealed interface AwaitedResult {
+        data object Installed : AwaitedResult
+        data class Failure(val message: String) : AwaitedResult
     }
 
     /**
@@ -74,8 +85,149 @@ object SystemInstaller {
         }
     }
 
-    private fun statusIntentSender(context: Context, sessionId: Int): android.content.IntentSender {
-        val intent = Intent(ACTION_INSTALL_STATUS).setPackage(context.packageName)
+    /**
+     * Stages one base APK or a complete split-APK set, shows Android's confirmation UI, and waits
+     * for its terminal result. Waiting is essential for a conversion queue: starting the next
+     * package while the current confirmation dialog is open would stack installer activities and
+     * make it unclear which app the user is approving.
+     */
+    suspend fun installAndAwait(
+        context: Context,
+        apks: List<File>,
+        onProgress: (completed: Int, total: Int) -> Unit = { _, _ -> },
+        onAwaitingConfirmation: () -> Unit = {},
+    ): AwaitedResult = withContext(Dispatchers.IO) {
+        val invalid = apks.firstOrNull { !it.isFile || it.length() == 0L }
+        if (apks.isEmpty() || invalid != null) {
+            return@withContext AwaitedResult.Failure(
+                invalid?.let { "APK missing or empty: ${it.name}" } ?: "No APK files supplied"
+            )
+        }
+
+        val appContext = context.applicationContext
+        val installer = appContext.packageManager.packageInstaller
+        var sessionId: Int? = null
+        try {
+            val createdSessionId = installer.createSession(
+                PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
+            )
+            sessionId = createdSessionId
+            installer.openSession(createdSessionId).use { session ->
+                onProgress(0, apks.size)
+                apks.forEachIndexed { index, apk ->
+                    currentCoroutineContext().ensureActive()
+                    val name = if (index == 0) "base.apk" else "split_${index}.apk"
+                    session.openWrite(name, 0, apk.length()).use { output ->
+                        apk.inputStream().use { input ->
+                            input.copyTo(output, BUFFER_BYTES)
+                        }
+                        session.fsync(output)
+                    }
+                    onProgress(index + 1, apks.size)
+                }
+            }
+            currentCoroutineContext().ensureActive()
+            awaitCommit(
+                appContext,
+                installer,
+                createdSessionId,
+                onAwaitingConfirmation,
+            )
+        } catch (cancelled: CancellationException) {
+            sessionId?.let { runCatching { installer.abandonSession(it) } }
+            throw cancelled
+        } catch (error: Throwable) {
+            sessionId?.let { runCatching { installer.abandonSession(it) } }
+            Logger.e(TAG, "Awaited system install failed", error)
+            AwaitedResult.Failure(error.message ?: "System installer failed")
+        }
+    }
+
+    private suspend fun awaitCommit(
+        context: Context,
+        installer: PackageInstaller,
+        sessionId: Int,
+        onAwaitingConfirmation: () -> Unit,
+    ): AwaitedResult = suspendCancellableCoroutine { continuation ->
+        val action = "$ACTION_INSTALL_STATUS.${sessionId}"
+        val finished = AtomicBoolean(false)
+        lateinit var statusReceiver: BroadcastReceiver
+
+        fun cleanup() {
+            if (!finished.compareAndSet(false, true)) return
+            runCatching { context.unregisterReceiver(statusReceiver) }
+                .onFailure { Logger.w(TAG, "Awaited status receiver already unregistered", it) }
+        }
+
+        fun finish(result: AwaitedResult) {
+            cleanup()
+            if (continuation.isActive) continuation.resume(result)
+        }
+
+        statusReceiver = object : BroadcastReceiver() {
+            override fun onReceive(ctx: Context?, intent: Intent?) {
+                val status = intent?.getIntExtra(
+                    PackageInstaller.EXTRA_STATUS,
+                    PackageInstaller.STATUS_FAILURE,
+                ) ?: return
+                when (status) {
+                    PackageInstaller.STATUS_PENDING_USER_ACTION -> {
+                        onAwaitingConfirmation()
+                        val confirm = intent.getConfirmationIntent()
+                        if (confirm == null) {
+                            finish(AwaitedResult.Failure("Android did not provide an install dialog"))
+                            return
+                        }
+                        confirm.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        runCatching { context.startActivity(confirm) }
+                            .onFailure {
+                                finish(
+                                    AwaitedResult.Failure(
+                                        it.message ?: "Could not show the install dialog"
+                                    )
+                                )
+                            }
+                    }
+                    PackageInstaller.STATUS_SUCCESS -> {
+                        Logger.i(TAG, "Awaited system install succeeded")
+                        finish(AwaitedResult.Installed)
+                    }
+                    else -> {
+                        val message = intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE)
+                            ?: "Installation was declined or failed"
+                        Logger.w(TAG, "Awaited system install failed ($status): $message")
+                        finish(AwaitedResult.Failure(message))
+                    }
+                }
+            }
+        }
+        ContextCompat.registerReceiver(
+            context,
+            statusReceiver,
+            IntentFilter(action),
+            ContextCompat.RECEIVER_NOT_EXPORTED,
+        )
+        continuation.invokeOnCancellation {
+            cleanup()
+            runCatching { installer.abandonSession(sessionId) }
+        }
+
+        runCatching {
+            installer.openSession(sessionId).use { session ->
+                session.commit(statusIntentSender(context, sessionId, action))
+            }
+            Logger.d(TAG, "Committed awaited system install session $sessionId")
+        }.onFailure { error ->
+            finish(AwaitedResult.Failure(error.message ?: "Could not commit install session"))
+        }
+    }
+
+    private fun statusIntentSender(
+        context: Context,
+        sessionId: Int,
+        action: String = ACTION_INSTALL_STATUS,
+    ): android.content.IntentSender {
+        val intent = Intent(action).setPackage(context.packageName)
         val pending = PendingIntent.getBroadcast(
             context,
             sessionId,

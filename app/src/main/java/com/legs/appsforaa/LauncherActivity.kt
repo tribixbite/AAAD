@@ -3,6 +3,7 @@ package com.legs.appsforaa
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.color.DynamicColors
 import com.legs.appsforaa.data.OnboardingStore
 import com.legs.appsforaa.utils.LogFile
 
@@ -17,8 +18,19 @@ import com.legs.appsforaa.utils.LogFile
  */
 class LauncherActivity : AppCompatActivity() {
 
+    private companion object {
+        var dynamicColorsRegistered = false
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Register once per process so every destination follows the system's Material color
+        // scheme on Android 12+, while the DayNight theme remains the fallback on older devices.
+        if (!dynamicColorsRegistered) {
+            DynamicColors.applyToActivitiesIfAvailable(application)
+            dynamicColorsRegistered = true
+        }
 
         // Earliest point every cold start passes through, so the file sink is live before the
         // first catalog load logs anything worth reading.

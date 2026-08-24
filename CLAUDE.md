@@ -35,8 +35,8 @@ Three goals, in priority order. Task breakdown in [TASKS.md](TASKS.md).
 
 ## Buildability
 
-**The build works.** `./build-on-termux.sh debug --no-install` produces a 14 MB
-`AAAD-2.1-debug.apk` on-device — verified 2026-08-20 (Gradle 8.13 + AGP 8.13.1, package
+**The build works.** `./build-on-termux.sh debug --no-install` produces a 23 MB
+`AAAD-2.1-debug.apk` on-device — verified 2026-08-24 (Gradle 8.13 + AGP 8.13.1, package
 `sksa.aa.customapps.dev`, targetSdk 36, debug-signed). Building needs **no secrets**: no
 `google-services.json`, no Stripe keys, and `local.properties` is optional.
 
@@ -45,8 +45,8 @@ resolves install state, and refreshes on package changes. Three flows work:
 
 - **Install** — resolve a publisher's latest GitHub release, download, install through a
   Play-attributed Shizuku session so Android Auto lists it (T-06).
-- **Convert** — reinstall an already-installed AA-capable app's own APKs with attribution, fixing
-  apps AA ignores. Data survives; there is deliberately no fallback (T-30a).
+- **Convert** — register an app's existing car version, or create a side-by-side car-compatible
+  copy for any installed app. Work is queued, cancellable, and reports stage progress (T-55).
 - **Discover** — search GitHub or paste a repo URL to add apps, Obtainium-style (T-31a).
 
 Everything Shizuku cannot do falls back to the system installer, which **cannot** set attribution;
@@ -98,11 +98,11 @@ CI (`.github/workflows/`) runs on x86_64 Linux where the stock aapt2 works, so n
 
 ```
 build.gradle                 Plugin versions only (AGP 8.13.1, Kotlin 2.2.21)
-settings.gradle              Repos incl. JitPack (BottomDialogs); includes :app
+settings.gradle              Google/Maven Central repositories; includes :app and :carify-bridge
 gradle.properties            On-device memory/worker tuning + reproducibility flags
 build-on-termux.sh           The supported local build path
 local.properties.example     Every key optional; documents the few that exist
-.github/workflows/           build-apk.yml (no secrets) · release.yml (tag → signed)
+.github/workflows/           build-apk.yml (main push → latest dev release) · release.yml (tag → signed)
 app/build.gradle             compileSdk 36, minSdk 24, appId sksa.aa.customapps (.dev on debug)
 app/src/main/
   AndroidManifest.xml        2 activities, 13 permissions, <queries> = the catalog packages
@@ -180,12 +180,33 @@ bun run src/cli.ts logs --level W                   # the app's own JSONL log, p
 tools/carify.sh --apk downloaded.apk                # same clone, from a file, no device needed
 ```
 
-**`carify` repairs an app that is car-capable but mis-declared.** It rewrites the APK under a new
-package name so the clone installs *alongside* the untouched original, declaring `projection` +
-`distractionOptimized` + `CAR_LAUNCHER`. That fixed AABrowser, which ships car-app code but
-declared `media`. It does **not** make an arbitrary phone app appear in the car: measured with
-`tools/aa-launcher-list.sh`, clones of apps with no car implementation are not listed however they
-are declared. Split apps are merged first.
+**`carify` now has two paths.** An APK that already contains a projection or Car App Library
+service keeps that implementation and gets its declaration repaired. An ordinary phone app gets
+a minimized AndroidX runtime and real `CarAppService`: `template`, the permission/receiver/query
+components, `DEFAULT + CAR_LAUNCHER + NAVIGATION + APP_MAPS`, and `appCategory=game`. Split apps
+are merged first.
+
+The phone's **Convert installed apps** screen uses the same distinction. A native AA app that is
+merely unattributed is re-staged unchanged, preserving its signature and data. Any app without a
+usable car surface—including Play-installed and built-in apps—gets a `<package>.aaad` side-by-side
+Car copy. The original is never stopped or modified; the copy is re-signed, starts with fresh data,
+and carries the template bridge above. System apps stay out of the default AA-only list but are
+available under **All apps**. AAAD itself is listed too. Apps with a publisher-supplied car version
+carry an explicit chip; full descriptions wrap; conversions show stage progress and run in a
+cancellable FIFO queue.
+
+Shizuku is optional for this phone UI. When it is ready, installs carry Play Store attribution.
+Without it, AAAD uses Android's standard confirmation installer; the user must allow AAAD to
+install packages and enable **Unknown sources** in Android Auto's developer settings for those
+manually installed car apps to be visible.
+
+The odd game category is measured, not guessed. On the paired S25U, both an otherwise complete
+projection clone and a separate template clone were NOT FOUND before that category was added.
+With the known-visible projection clone disabled, the shell-initiated template+game control was
+independently **FOUND: Calculator (Car)**. That rules out the earlier claim that shell-initiated
+templates are Play-gated; those comparisons were confounded by app category. Package renaming was
+also separately ruled out. This is a local testing/personal-use artifact, not a truthful Play
+declaration. Actual head-unit rendering and input remain a separate acceptance test.
 
 `tools/aa-launcher-list.sh <serial>` prints the apps Android Auto will actually show, read off the
 phone. Use it instead of guessing — or driving.

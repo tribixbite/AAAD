@@ -10,23 +10,21 @@
 # publisher updates, while the clone is the one that has been re-signed and declared to Android
 # Auto. Re-signing is unavoidable — the manifest and resource table both change — and a re-signed
 # app can never receive the publisher's updates, so it must not BE the user's copy.
+#   CARIFY_PACKAGE=maps.example.android ./carify.sh ... # explicit replacement identity
+#
 #
 # What the clone gains (see patch_manifest.py for the manifest surgery):
-#   * com.google.android.gms.car.application -> a descriptor declaring <uses name="projection"/>
+#   * an AndroidX car runtime payload when the APK does not already contain car code
+#   * an AndroidX template descriptor, CarAppService, and runtime components
 #   * distractionOptimized=true on the application and the launcher activity
-#   * android.intent.category.CAR_LAUNCHER on the launcher intent-filter
+#   * DEFAULT + CAR_LAUNCHER + NAVIGATION + APP_MAPS on the launcher intent-filter
+#   * appCategory=game, which the S25U proved is part of gearhead's custom-app discovery filter
 #   * resizeableActivity=true and no screenOrientation lock, so a phone Activity has a chance of
 #     rendering usefully on a landscape head unit
 #
-# WHAT IT FIXES: an app that is car-capable but mis-declared. AABrowser is the case — it ships the
-# androidx car-app library and a car entry point, but its APK declared <uses name="media"/>, so
-# Android Auto listed it and then refused to open it while driving. The clone declares `projection`
-# and is listed.
-#
-# WHAT IT CANNOT DO: make an arbitrary phone app appear in the car. Measured with
-# aa-launcher-list.sh, clones of apps with no car implementation are NOT listed by Android Auto,
-# however they are declared — the descriptor selects among surfaces the app's code already
-# provides, it does not create one. The script says so when nothing backs the declaration.
+# Existing car implementations are preserved. Ordinary phone apps receive a real CarAppService.
+# An isolated S25U control proved that a shell-initiated template is listed when appCategory=game;
+# the earlier template failures were missing that category.
 #
 # Requires: java, APKEditor.jar, zipalign, apksigner, keytool, adb.
 set -euo pipefail
@@ -47,14 +45,41 @@ else
 fi
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT="$(cd "$HERE/../.." && pwd)"
 APKEDITOR="${APKEDITOR:-$HOME/git/termux-tools/edge-fix/tools/APKEditor.jar}"
+BAKSMALI="${BAKSMALI:-$HOME/git/termux-tools/edge-fix/tools/baksmali-3.0.9-fat.jar}"
+BRIDGE_DIR="$ROOT/carify-bridge/build/outputs/apk/release"
 KEYSTORE="${CARIFY_KEYSTORE:-$HOME/.aaad-carify.keystore}"
 KEYSTORE_PASS="${CARIFY_KEYSTORE_PASS:-carify}"
-WORK="${CARIFY_WORK:-${TMPDIR:-$PREFIX/tmp}/carify-$$}"
 
 [ -f "$APKEDITOR" ] || { echo "APKEditor.jar not found at $APKEDITOR (set APKEDITOR=)"; exit 1; }
-mkdir -p "$WORK"
-trap 'rm -rf "$WORK"' EXIT
+[ -f "$BAKSMALI" ] || { echo "baksmali not found at $BAKSMALI (set BAKSMALI=)"; exit 1; }
+
+# A caller-provided work directory is useful for inspecting a failed transformation, so never
+# recursively delete it. Default runs use a unique directory that this script created itself.
+if [ -n "${CARIFY_WORK:-}" ]; then
+  WORK="$CARIFY_WORK"
+  mkdir -p "$WORK"
+  CLEAN_WORK=0
+else
+  WORK="$(mktemp -d "${TMPDIR:-$PREFIX/tmp}/carify.XXXXXX")"
+  CLEAN_WORK=1
+fi
+DEVICE_TMP=""
+INSTALL_SESSION=""
+
+cleanup() {
+  if [ -n "$SERIAL" ] && [ -n "$INSTALL_SESSION" ]; then
+    adb -s "$SERIAL" shell pm install-abandon "$INSTALL_SESSION" >/dev/null 2>&1 || true
+  fi
+  if [ -n "$SERIAL" ] && [ -n "$DEVICE_TMP" ]; then
+    adb -s "$SERIAL" shell rm -f -- "$DEVICE_TMP" >/dev/null 2>&1 || true
+  fi
+  if [ "$CLEAN_WORK" -eq 1 ]; then
+    rm -rf -- "$WORK"
+  fi
+}
+trap cleanup EXIT
 
 say() { printf '\n== %s\n' "$*"; }
 
@@ -89,15 +114,22 @@ java -jar "$APKEDITOR" d -i "$WORK/original.apk" -o "$WORK/decoded" -t xml >/dev
 # The package name is read from the APK rather than trusted from the caller, so --apk mode needs
 # no second argument and device mode cannot be given a name that disagrees with the file.
 PACKAGE="$(sed -n 's/.*package="\([^"]*\)".*/\1/p' "$WORK/decoded/AndroidManifest.xml" | head -1)"
-NEW_PACKAGE="${PACKAGE}${SUFFIX}"
+NEW_PACKAGE="${CARIFY_PACKAGE:-${PACKAGE}${SUFFIX}}"
+case "$NEW_PACKAGE" in
+  ""|.*|*..*|*[^a-zA-Z0-9._]*)
+    echo "invalid clone package: $NEW_PACKAGE"; exit 1 ;;
+esac
+[ "$NEW_PACKAGE" != "$PACKAGE" ] || {
+  echo "clone package must differ from the publisher package"; exit 1;
+}
 echo "  $PACKAGE -> $NEW_PACKAGE"
 
 say "Patching the manifest"
 PATCH_OUT="$(python3 "$HERE/patch_manifest.py" "$WORK/decoded/AndroidManifest.xml" \
-  "$PACKAGE" "$NEW_PACKAGE" " (Car)")"
+  "$PACKAGE" "$NEW_PACKAGE" " (Car)" "${CARIFY_DISCOVERY:-template}")"
 echo "$PATCH_OUT" | grep -v '^CAR_' || true
 CAR_USES="$(echo "$PATCH_OUT" | sed -n 's/^CAR_USES=//p')"
-CAR_BACKED="$(echo "$PATCH_OUT" | sed -n 's/^CAR_BACKED=//p')"
+CAR_NEEDS_BRIDGE="$(echo "$PATCH_OUT" | sed -n 's/^CAR_NEEDS_BRIDGE=//p')"
 
 say "Adding the car descriptor"
 RES_DIR="$(dirname "$(find "$WORK/decoded/resources" -maxdepth 3 -name package.json | head -1)")/res"
@@ -135,6 +167,7 @@ PY
 say "Relabelling so the clone is distinguishable"
 python3 - "$RES_DIR" <<'PY'
 import glob, re, sys
+
 n = 0
 for f in glob.glob(f"{sys.argv[1]}/values*/strings.xml"):
     s = open(f, encoding='utf-8').read()
@@ -143,6 +176,82 @@ for f in glob.glob(f"{sys.argv[1]}/values*/strings.xml"):
         open(f, 'w', encoding='utf-8').write(new); n += c
 print(f"  labels patched: {n}")
 PY
+
+if [ "$CAR_NEEDS_BRIDGE" = "yes" ]; then
+  # Do not place a second Car App runtime behind the same class names. This can happen when an APK
+  # bundles the library but never declares its service; Android's first-definition-wins class
+  # loading would then silently mix versions. Existing declared car services took the no-bridge
+  # branch above, so reaching this check means the APK is incomplete and needs a deliberate merge.
+  EXISTING_CAR_RUNTIME="$(find "$WORK/decoded/smali" -path '*/androidx/car/app/CarAppService.smali' -print -quit)"
+  [ -z "$EXISTING_CAR_RUNTIME" ] || {
+    echo "APK contains an undeclared Car App runtime; refusing to inject a duplicate"; exit 1;
+  }
+
+  say "Building the car bridge"
+  BRIDGE_APK="$(find "$BRIDGE_DIR" -maxdepth 1 -name '*.apk' -type f 2>/dev/null | head -1)"
+  STALE=""
+  if [ -n "$BRIDGE_APK" ]; then
+    STALE="$(find "$ROOT/carify-bridge/src" "$ROOT/carify-bridge/build.gradle" \
+      -type f -newer "$BRIDGE_APK" -print -quit)"
+  fi
+  if [ -z "$BRIDGE_APK" ] || [ -n "$STALE" ]; then
+    "$ROOT/build-on-termux.sh" bridge --no-install
+    BRIDGE_APK="$(find "$BRIDGE_DIR" -maxdepth 1 -name '*.apk' -type f | head -1)"
+  fi
+  [ -f "$BRIDGE_APK" ] || { echo "Carify bridge build produced no APK"; exit 1; }
+  echo "  payload: $BRIDGE_APK"
+
+  say "Injecting the car bridge"
+  mkdir -p "$WORK/bridge-dex"
+  unzip -q "$BRIDGE_APK" 'classes*.dex' -d "$WORK/bridge-dex"
+
+  NEXT_DEX=1
+  for smali_dir in "$WORK/decoded/smali"/classes*; do
+    [ -d "$smali_dir" ] || continue
+    name="$(basename "$smali_dir")"
+    number="${name#classes}"
+    [ -n "$number" ] || number=1
+    [ "$number" -ge "$NEXT_DEX" ] && NEXT_DEX=$((number + 1))
+  done
+  for dex in "$WORK/bridge-dex"/classes*.dex; do
+    destination="$WORK/decoded/smali/classes$NEXT_DEX"
+    java -jar "$BAKSMALI" d "$dex" -o "$destination"
+    echo "  $(basename "$dex") -> smali/$(basename "$destination")"
+    NEXT_DEX=$((NEXT_DEX + 1))
+  done
+
+  # Car App Library's handshake reads its version from the payload APK's resource table. Carify
+  # injects DEX, not that unrelated table, so the compiled 0x7f... id would point at an arbitrary
+  # resource in the cloned app. Replace the one lookup with the version this payload is pinned to.
+  APP_INFO="$(find "$WORK/decoded/smali" -path '*/androidx/car/app/AppInfo.smali' | tail -1)"
+  [ -f "$APP_INFO" ] || { echo "Injected bridge is missing androidx.car.app.AppInfo"; exit 1; }
+  python3 - "$APP_INFO" <<'PY'
+import sys
+
+path = sys.argv[1]
+lines = open(path, encoding="utf-8").read().splitlines()
+start = next(
+    (i for i, line in enumerate(lines)
+     if "Context;->getResources()Landroid/content/res/Resources;" in line),
+    None,
+)
+if start is None:
+    raise SystemExit("Car App AppInfo resource lookup changed; refusing an unsafe payload")
+seen_get_string = False
+end = None
+for i in range(start, len(lines)):
+    if "Resources;->getString(I)Ljava/lang/String;" in lines[i]:
+        seen_get_string = True
+    elif seen_get_string and "move-result-object p0" in lines[i]:
+        end = i
+        break
+if end is None:
+    raise SystemExit("Car App AppInfo version lookup changed; refusing an unsafe payload")
+lines[start:end + 1] = ['    const-string p0, "1.7.0"']
+open(path, "w", encoding="utf-8").write("\n".join(lines) + "\n")
+print("  made Car App library version package-independent")
+PY
+fi
 
 say "Building"
 java -jar "$APKEDITOR" b -i "$WORK/decoded" -o "$WORK/unsigned.apk" >/dev/null
@@ -173,21 +282,20 @@ say "Installing $NEW_PACKAGE with Play Store attribution"
 SDK="$(adb -s "$SERIAL" shell getprop ro.build.version.sdk | tr -d '\r')"
 BYPASS=""; [ "$SDK" -ge 34 ] && BYPASS="--bypass-low-target-sdk-block"
 SIZE="$(stat -c%s "$WORK/clone.apk")"
-adb -s "$SERIAL" push "$WORK/clone.apk" /data/local/tmp/carify.apk >/dev/null
+DEVICE_TMP="/data/local/tmp/aaad-carify-$$.apk"
+adb -s "$SERIAL" push "$WORK/clone.apk" "$DEVICE_TMP" >/dev/null
 SESSION="$(adb -s "$SERIAL" shell "pm install-create -r -i com.android.vending \
   --originating-uri 'https://play.google.com/store' --install-reason 0 $BYPASS" | grep -o '[0-9]\+' | tail -1)"
-adb -s "$SERIAL" shell "pm install-write -S $SIZE $SESSION base.apk /data/local/tmp/carify.apk" >/dev/null
+INSTALL_SESSION="$SESSION"
+adb -s "$SERIAL" shell "pm install-write -S $SIZE $SESSION base.apk $DEVICE_TMP" >/dev/null
 adb -s "$SERIAL" shell "pm install-commit $SESSION"
-adb -s "$SERIAL" shell rm -f /data/local/tmp/carify.apk
+INSTALL_SESSION=""
+adb -s "$SERIAL" shell rm -f -- "$DEVICE_TMP"
+DEVICE_TMP=""
 
 say "Result"
-adb -s "$SERIAL" shell "pm list packages -i $PACKAGE" | grep -E "package:($PACKAGE|$NEW_PACKAGE) " || true
+adb -s "$SERIAL" shell "pm list packages -i" | grep -E "package:($PACKAGE|$NEW_PACKAGE) " || true
 
 echo
 echo "  Declared <uses name=\"$CAR_USES\"/>."
-if [ "$CAR_BACKED" = "yes" ]; then
-  echo "  Check it is listed:  tools/aa-launcher-list.sh $SERIAL"
-else
-  echo "  This APK has no car implementation, so Android Auto is unlikely to list the clone."
-  echo "  Confirm either way with:  tools/aa-launcher-list.sh $SERIAL"
-fi
+echo "  Check the clone's visible label is listed:  tools/aa-launcher-list.sh $SERIAL"

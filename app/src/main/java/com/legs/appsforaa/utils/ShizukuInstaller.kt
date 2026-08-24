@@ -2,7 +2,10 @@ package com.legs.appsforaa.utils
 
 import android.content.pm.PackageManager
 import android.os.Build
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.withContext
@@ -188,20 +191,28 @@ object ShizukuInstaller {
         val sessionId = createSession()
             ?: return@withContext Result.Failure("Could not create an install session")
 
-        val written = writeSession(sessionId, apk)
-        if (!written) {
-            abandonSession(sessionId)
-            return@withContext Result.Failure("Could not stream the APK into the session")
-        }
+        try {
+            val written = writeSession(sessionId, apk)
+            if (!written) {
+                abandonSession(sessionId)
+                return@withContext Result.Failure("Could not stream the APK into the session")
+            }
+            currentCoroutineContext().ensureActive()
 
-        val commit = runShellCommand("pm install-commit $sessionId")
-        if (commit.exitCode != 0 || !commit.output.contains("Success")) {
-            abandonSession(sessionId)
-            return@withContext Result.Failure(commit.errorOrOutput().ifBlank { "Install failed" })
-        }
+            val commit = runShellCommand("pm install-commit $sessionId")
+            if (commit.exitCode != 0 || !commit.output.contains("Success")) {
+                abandonSession(sessionId)
+                return@withContext Result.Failure(
+                    commit.errorOrOutput().ifBlank { "Install failed" }
+                )
+            }
 
-        Logger.i(TAG, "Installed ${apk.name} via session $sessionId")
-        Result.Success(null)
+            Logger.i(TAG, "Installed ${apk.name} via session $sessionId")
+            Result.Success(null)
+        } catch (cancelled: CancellationException) {
+            abandonSession(sessionId)
+            throw cancelled
+        }
     }
 
     /**
@@ -217,6 +228,7 @@ object ShizukuInstaller {
     suspend fun convertInstalled(
         packageName: String,
         apkPaths: List<String>,
+        onProgress: (completed: Int, total: Int) -> Unit = { _, _ -> },
     ): Result = withContext(Dispatchers.IO) {
         if (availability() != Availability.Ready) {
             return@withContext Result.Failure("Shizuku is not ready")
@@ -228,28 +240,40 @@ object ShizukuInstaller {
         val sessionId = createSession()
             ?: return@withContext Result.Failure("Could not create an install session")
 
-        apkPaths.forEachIndexed { index, path ->
-            // Names only have to be unique within the session; base first by convention.
-            val name = if (index == 0) "base.apk" else "split_$index.apk"
-            // No -S here: when install-write is given a path it sizes the file itself. Only the
-            // stdin form needs an explicit byte count.
-            val result = runShellCommand("pm install-write $sessionId $name '$path'")
-            if (result.exitCode != 0) {
+        try {
+            onProgress(0, apkPaths.size)
+            apkPaths.forEachIndexed { index, path ->
+                currentCoroutineContext().ensureActive()
+                // Names only have to be unique within the session; base first by convention.
+                val name = if (index == 0) "base.apk" else "split_$index.apk"
+                // No -S here: when install-write is given a path it sizes the file itself. Only
+                // the stdin form needs an explicit byte count.
+                val result = runShellCommand("pm install-write $sessionId $name '$path'")
+                if (result.exitCode != 0) {
+                    abandonSession(sessionId)
+                    return@withContext Result.Failure(
+                        "Could not stage ${path.substringAfterLast('/')}: " +
+                            result.errorOrOutput()
+                    )
+                }
+                onProgress(index + 1, apkPaths.size)
+            }
+            currentCoroutineContext().ensureActive()
+
+            val commit = runShellCommand("pm install-commit $sessionId")
+            if (commit.exitCode != 0 || !commit.output.contains("Success")) {
                 abandonSession(sessionId)
                 return@withContext Result.Failure(
-                    "Could not stage ${path.substringAfterLast('/')}: ${result.errorOrOutput()}"
+                    commit.errorOrOutput().ifBlank { "Conversion failed" }
                 )
             }
-        }
 
-        val commit = runShellCommand("pm install-commit $sessionId")
-        if (commit.exitCode != 0 || !commit.output.contains("Success")) {
+            Logger.i(TAG, "Converted $packageName (${apkPaths.size} APK(s)) to Play attribution")
+            Result.Success(packageName)
+        } catch (cancelled: CancellationException) {
             abandonSession(sessionId)
-            return@withContext Result.Failure(commit.errorOrOutput().ifBlank { "Conversion failed" })
+            throw cancelled
         }
-
-        Logger.i(TAG, "Converted $packageName (${apkPaths.size} APK(s)) to Play attribution")
-        Result.Success(packageName)
     }
 
     private fun createSession(): Int? {

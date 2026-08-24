@@ -14,7 +14,7 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.legs.appsforaa.R
-import com.legs.appsforaa.data.ConversionState
+import com.legs.appsforaa.data.ConversionAction
 import com.legs.appsforaa.data.InstalledApp
 import com.legs.appsforaa.data.InstalledAppScanner
 import com.legs.appsforaa.data.ScanScope
@@ -50,7 +50,9 @@ class CarConvertScreen(carContext: CarContext) : Screen(carContext), DefaultLife
         lifecycleScope.launch {
             apps = InstalledAppScanner(carContext)
                 .scan(scope = ScanScope.ANDROID_AUTO)
-                .filter { it.state == ConversionState.CONVERTIBLE }
+                // Repacking a whole app is deliberately a phone operation. In the car, retain
+                // only the quick native-AA attribution repair that cannot change its car surface.
+                .filter { it.conversionAction == ConversionAction.RESTAGE }
             invalidate()
         }
     }

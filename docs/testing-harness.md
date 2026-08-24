@@ -1,7 +1,8 @@
 # Android Auto app testing platform — design
 
-Covers [TASKS.md](../TASKS.md) Phase 3. This is a design doc for work not yet started; nothing
-here is implemented.
+Covers [TASKS.md](../TASKS.md) Phase 3. The harness, capture, baselines, dashboard feeds, and
+phone-side launcher probe described here are implemented; the protocol investigation is retained
+as a decision log.
 
 ## The problem
 
@@ -44,6 +45,12 @@ directly consumable by the dash ([docs/agent-dash.md](agent-dash.md)).
 
 ## T-22 research: what upstream's head unit emulator actually buys
 
+> **Resolved 2026-08-23:** a head-unit session is not needed to enumerate the launcher.
+> `tools/aa-launcher-list.sh` reads Android Auto's phone-side *Customize launcher* screen and
+> closed T-22. The research below remains useful for the separate question “does this listed app
+> open, render, and accept input?”, which is the final T-54 Carify bridge test. Statements below
+> that call video decoding the only listing route are historical conclusions superseded by this.
+
 Read out of upstream v2.8.5's `com.legs.appsforaa.androidauto.**` (see
 [upstream-2.8.5-diff.md](upstream-2.8.5-diff.md)). Three findings that change the plan:
 
@@ -68,7 +75,7 @@ hand you an enumerable list; you would still be reading pixels.
 
 **3. What it does buy is a running gearhead.** The reason nothing is observable today is that AA
 runs no services and caches nothing while idle
-([aa-visibility.md](aa-visibility.md#observability-aas-app-list-needs-a-live-projection-session-v)).
+([aa-visibility.md](aa-visibility.md#observability-the-launcher-list-lives-in-android-auto-settings-v)).
 Inside a session that changes, and `dumpsys` against a live gearhead becomes worth trying.
 
 ### The cheap experiment, attempted [V]
@@ -164,21 +171,20 @@ A naive version-request frame (`00 03 00 06 | 00 01 00 01 00 01` — channel 0, 
 then message id 1 with major/minor) drew **no reply**, so the framing has to match the real
 protocol exactly; guessing at it is not going to work.
 
-### The verdict for T-22
+### Historical head-unit-server verdict
 
 **With the head unit server running and a client connected, `dumpsys` still does not expose the
 app list.** The full services dump is 183 lines of gearhead's own services and nothing else — no
-third-party packages. That closes the cheap probe: the prediction in the table above held, and the
-app list really is only ever rendered into the video stream.
+third-party packages. That correctly closed `dumpsys`; it did not prove the list existed only in
+the projected video, because the same list is also rendered in phone-side Customize launcher.
 
-So T-22 now has a known route and a known cost, rather than an unknown:
+For a live, automatable projection session the route and cost remain:
 
 - **Route:** the head unit server on 5277, no root, one menu tap. Confirmed reachable.
 - **Cost:** implementing enough of the AA protocol to complete the handshake and decode video —
   which is what upstream's ~100 classes are. There is no shortcut through `dumpsys`.
-- **Therefore:** the harness continues to report `androidAutoVisible: "unknown"`, and installer
-  attribution stays the assertion it actually makes. Attempt the protocol only if visibility
-  itself becomes the thing under test, and start from AASDK/openauto's framing rather than
+- **Therefore:** use Customize launcher for explicit listing checks. Attempt the protocol only
+  when rendering or interaction is under test, and start from AASDK/openauto framing rather than
   guesswork.
 
 **Turn the server off when finished** (same overflow menu, "Stop head unit server"). It is an
@@ -209,10 +215,11 @@ legitimate harness signal.
 resolve** on the test device, which uses `gearhead.vanagon.VnDrivingModeLauncherActivity` and
 `.frx.SetupActivity`. Resolve intents instead — a hardcoded class is a silently dead button.
 
-## The hard part: proving Android Auto sees the app
+## The hard part now: proving a listed app works
 
-Install success is easy to assert (`pm list packages`). "Android Auto lists it" is the assertion
-that actually matters and the one with no obvious API. Options, none free:
+Install success is easy to assert (`pm list packages`), and Customize launcher now answers
+whether Android Auto lists it. Proving the app actually opens and behaves on the head unit still
+has no cheap API. Options, none free:
 
 1. **Dump AA's own state.** `dumpsys` against `com.google.android.projection.gearhead`, or its
    app-list cache on disk. Cheapest, fully on-device, no desktop — but undocumented, version-fragile,
@@ -223,10 +230,10 @@ that actually matters and the one with no obvious API. Options, none free:
 3. **On-device AA rendering + screencap + OCR/template match.** Works without a desktop, brittle
    against AA UI changes, and needs a car or a head-unit emulator to enter projection mode at all.
 
-**Decide during T-22 and write the rationale down.** Recommended order to evaluate: (1) for a fast
-signal in every run, (2) as the periodic authoritative check. Until one is chosen, the harness
-should record install + launch + package presence and report AA visibility as `unknown` rather
-than silently claiming success.
+The matrix continues to record `androidAutoVisible: "unknown"`: an unattended run cannot assume
+the device is onboarded, and Customize launcher exposes labels rather than unique package ids.
+Run the explicit launcher probe when listing is under test; use a car/DHU/emulator when rendering
+or interaction is under test.
 
 ## adb on this box
 

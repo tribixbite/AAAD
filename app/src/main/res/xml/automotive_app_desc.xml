@@ -9,5 +9,5 @@
   unopenable. See docs/aa-visibility.md.
 -->
 <automotiveApp>
-    <uses name="template" />
+    <uses name="projection" />
 </automotiveApp>

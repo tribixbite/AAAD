@@ -23,6 +23,20 @@ describe("parseResultLine", () => {
     });
   });
 
+  test("reads a side-by-side Carify conversion", () => {
+    expect(parseResultLine(`${prefix}RESULT=CARIFIED com.example.phone.aaaddev`)).toEqual({
+      kind: "carified",
+      packageName: "com.example.phone.aaaddev",
+    });
+  });
+
+  test("reads a native app that needs no conversion", () => {
+    expect(parseResultLine(`${prefix}RESULT=ALREADY_CONVERTED com.example.car`)).toEqual({
+      kind: "already-converted",
+      packageName: "com.example.car",
+    });
+  });
+
   test("reads a system-installer handoff", () => {
     expect(parseResultLine(`${prefix}RESULT=SYSTEM_INSTALLER (not Play-attributed)`)).toEqual({
       kind: "system-installer",

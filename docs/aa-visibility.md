@@ -136,10 +136,11 @@ developer setting — which is exactly why upstream ships `AndroidAutoSetupActiv
 walkthrough for enabling it (`strings.xml:316-333`). `AndroidAutoCompatChecker` also notes:
 *"On Android 14+, this flag cannot be changed after installation without modifying packages.xml."*
 
-## What does not run: the repackaging chain
+## What did not run upstream: its repackaging chain
 
-Four classes implement APK rewriting and re-signing. **None of them can execute on a stock
-device.** This matters: it means the fork does not need to reproduce any of it.
+Four upstream classes implement APK rewriting and re-signing. **None of that upstream chain can
+execute on a stock device.** This is historical evidence, not a description of this fork's
+`CarifyRepackager`, which uses vendored APKEditor and an in-process signer.
 
 | Class | Intent | Why it never runs |
 | --- | --- | --- |
@@ -231,9 +232,18 @@ can be catalogued from publisher sources and flagged as AA-visibility-unverified
 
 ## Converting an app that is already installed
 
-The corollary of "attribution can only be declared at session creation": an AA-capable app that
-was sideloaded from anywhere else — F-Droid, Obtainium, a browser download, another installer, or
-this app's own fallback path — is invisible in the car and **cannot be repaired in place**.
+The Convert screen has two operations because attribution and car capability are separate:
+
+- A publisher APK that already has a usable `projection` or `template` surface but lacks Play
+  attribution is re-staged unchanged. Its signature and data survive.
+- Any APK without a usable car surface gets a side-by-side Car copy with the injected T-54 template
+  bridge. This applies even when the original came from Play, and to built-in apps. Rewriting
+  invalidates the publisher signature, so replacing the original is impossible and unsafe; the
+  clone has a new package, AAAD's persistent signing key, and fresh data.
+
+For the first operation, the corollary of "attribution can only be declared at session creation"
+is that a sideloaded AA-capable app is invisible in the car and **cannot have its attribution
+edited in place**.
 
 The fix is to reinstall the app's *own* APKs through an attributed session. Nothing is
 re-downloaded, patched, or re-signed:
@@ -253,9 +263,15 @@ re-downloaded, patched, or re-signed:
 Because the APKs and therefore the signature are unchanged, this is an update over the top:
 **app data and settings survive**.
 
-Conversion has no fallback, and should not grow one. The entire point is the attribution, and the
-platform `PackageInstaller` cannot provide it — an app may only attribute an install to itself.
-Offering a fallback here would produce exactly the invisible install the user is trying to fix.
+Without Shizuku, conversion falls back to the platform `PackageInstaller`. It cannot provide Play
+attribution — an app may only attribute an install to itself — so visibility then depends on the
+user enabling **Unknown sources** in Android Auto's developer settings. The UI explains that before
+starting and again after a successful platform install. This makes Shizuku optional without
+pretending the two install routes have identical visibility semantics.
+
+The Car-copy operation also uses that attributed session after decoding, manifest/resource
+patching, bridge injection, zip alignment, and APK Signature Scheme v2/v3 signing on-device. It
+never uploads the APK and never stops or writes into the original package.
 
 Scale of the problem on one real device: 556 apps from Play, and ~136 sideloaded — 36 via
 Obtainium, 26 F-Droid, 26 packageinstaller, 19 Chrome, 16 AppManager, 13 with no installer at all.
@@ -334,9 +350,9 @@ This is the only window there is. `dumpsys` exposes nothing about the list, and 
 logs nothing useful — a full logcat capture during a package change produced **zero** gearhead
 lines. Before this, "will Android Auto show my app?" could only be answered by driving.
 
-### Declaring `projection` is necessary but NOT sufficient [V]
+### A manifest-only `projection` declaration is NOT sufficient [V]
 
-Measured with the list above, on one device, all three clones built the same way:
+Measured with the list above, on one device, all three manifest-only clones built the same way:
 
 | clone | descriptor | in Android Auto's list |
 | --- | --- | --- |
@@ -357,8 +373,9 @@ always nearly was. Calculator and Service Browser have no car implementation at 
 manifest edit conjures one. Every app in that list — Spotify, Discord, Widgets for Auto, the Google
 apps — has a real media, template, or projection service behind it.
 
-So the rule is: **`carify` repairs an app that is car-capable but mis-declared. It cannot make an
-arbitrary phone app appear in the car.**
+The verified rule is narrower than the old documentation made it: **manifest surgery can repair a
+mis-declared car app, but cannot turn a phone app into a car app. Executable car code is required.**
+That measurement describes Carify before T-54; the current pipeline injects the missing code.
 
 This section has been wrong twice, in both directions, and the reason is worth keeping. First it
 asserted from CarStream's APK that an ordinary Activity can *never* be projected — reading one
@@ -367,7 +384,34 @@ running full screen was taken to prove the opposite, and the caveat was removed 
 first was over-inference from code, the second under-verification of a result: neither established
 *which* clone had worked. The list above is what an actual measurement looks like.
 
-### Two SDKs, and only one of them is obtainable
+### Injecting a real car surface (T-54) [V/I]
+
+Carify now handles an APK with no car implementation by injecting a minimized AndroidX runtime and
+real `CarAppService`: a `template` descriptor, AndroidX permission Activity, notification
+receiver and connection query, map/navigation permissions, Car API 7, and
+`DEFAULT + CAR_LAUNCHER + NAVIGATION + APP_MAPS` on the launcher.
+
+**[V] Discovery evidence:** the complete projection runtime/categories initially remained NOT
+FOUND. Renaming a second clone to `maps.popupcalc.android` also remained NOT FOUND, ruling out
+package identity. Adding AABrowser's `android:appCategory="game"` produced
+`FOUND: Calculator (Car)`.
+
+That result did not isolate descriptor type. The exact missing control was run next: with the
+known-visible projection clone disabled, an otherwise identical shell-initiated
+`template + appCategory=game` clone at `maps.templatecalc.android` independently returned FOUND.
+The earlier excluded shell-initiated Calculator/Nav2Contacts templates lacked the game category,
+so comparison with Play-initiated templates was confounded and did not establish a Play gate.
+Carify therefore defaults to the public template service that actually backs its runtime bridge.
+Both disposable clones were removed; the normal clone launches cleanly on the phone.
+
+**[I] Head-unit outcome:** Customize launcher proves listing, not behavior. Calculator still must
+be selected in a car/DHU/emulator to verify rendering and button input. Do not upgrade that outcome
+to **[V]** until the projected test passes.
+
+The bridge declares game/maps/navigation discovery signals for a Calculator, so it is explicitly
+a local testing/personal-use artifact and not a truthful Play-distribution declaration.
+
+### Two car routes, and one public bridge
 
 The apps that open full screen are **projected** apps: an exported `<service>` filtering on
 `com.google.android.gms.car.category.CATEGORY_PROJECTION`, drawing an Activity on the head unit
@@ -375,34 +419,30 @@ through the unofficial Android Auto custom-apps SDK. That SDK is not published t
 fork cannot build against it.
 
 The **templated** Car App Library (`androidx.car.app`) is public, on Maven, and distraction-optimised
-by construction. It is what AAAD's own car surface uses (T-44). The trade is that templates cannot
-draw arbitrary UI — which is the right constraint for this app, since installing APKs is not
-something to do while moving.
+by construction. Navigation apps additionally receive a drawing Surface for their map. T-54 uses
+that public Surface as the bridge to the cloned Activity; the policy caveat above is separate from
+the technical mechanism.
 
-## Observability: AA's app list needs a live projection session [V]
+## Observability: the launcher list lives in Android Auto settings [V]
 
-Checked on the test device with Android Auto installed but not projecting:
+Gearhead does not expose its launcher list through `dumpsys`, logcat, a database, or a useful
+preference. The earlier investigation stopped there and incorrectly concluded that the list had to
+be decoded from a live head-unit video stream.
 
-```bash
-adb shell "dumpsys activity service com.google.android.projection.gearhead"
-#   No services match: com.google.android.projection.gearhead
-adb shell "settings get global car_developer_settings_enabled"   # null
-```
+The list has a simpler authoritative rendering: Android Auto's phone-side *Display → Customize
+launcher* screen. `harness/tools/aa-launcher-list.sh <serial> [label]` opens that screen through
+the exported settings Activity, navigates by UI text and measured coordinates, collects labels
+with UI Automator while scrolling, then removes its dump and restores Home. T-53 used it to
+distinguish AABrowser from the two manifest-only phone-app clones.
 
-Confirmed a second way on a **rooted** device, where the on-disk state is readable:
-`/data/data/com.google.android.projection.gearhead/` has no `databases/` at all, and
-`shared_prefs/carservice.xml` is 424 bytes of unrelated tuning constants — no app list, no
-`unknown_sources` flag. AA caches nothing about installable apps until it has actually projected.
+The phone must have completed Android Auto onboarding. On the rooted Saga, where onboarding was
+never completed, the screen omits known-good third-party apps such as Nav2Contacts; its negative
+results are environment failures, not app evidence. The paired S25U is the acceptance phone.
 
-Gearhead runs no services until a head unit connects, so **there is no way to read AA's app list
-on an idle phone.** The question "does Android Auto list this app" is only answerable inside a
-projection session — a real car, the desktop Desktop Head Unit, or an emulated head unit.
-
-That is the concrete blocker behind [testing-harness.md](testing-harness.md) T-22, and it is very
-likely why upstream v2.8.5 built its own head unit emulator
-([upstream-2.8.5-diff.md](upstream-2.8.5-diff.md#the-other-headline-an-in-app-android-auto-head-unit)).
-Everything upstream of that assertion — download, attribution, install state — is observable from
-adb today; only the final "AA sees it" step is not.
+Listing and functioning remain separate assertions. Customize launcher closes T-22 without a head
+unit. Proving that a listed app actually opens, renders, and accepts input still needs a live
+projection session — a car, DHU, or emulator — and remains the final T-54 gate for the injected
+Calculator bridge.
 
 ## Diagnostics worth keeping
 

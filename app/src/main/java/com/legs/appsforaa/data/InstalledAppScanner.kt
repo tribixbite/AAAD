@@ -43,8 +43,17 @@ enum class ConversionState {
     CONVERTIBLE,
 }
 
+/** What the Convert button must do for this package. */
+enum class ConversionAction {
+    /** Keep the publisher APK/signature and only repair its Play Store install attribution. */
+    RESTAGE,
+
+    /** Rewrite and sign a side-by-side copy with AAAD's car-compatible template bridge. */
+    CAR_COPY,
+}
+
 /**
- * An installed app that declares Android Auto support.
+ * An installed app that can be offered by the Convert screen.
  *
  * [apkPaths] is the base APK followed by any split APKs. Conversion has to re-stage **all** of
  * them: committing a session containing only the base of a split app fails, or worse produces an
@@ -73,18 +82,33 @@ data class InstalledApp(
     /**
      * Whether the app declares the Android Auto metadata key at all.
      *
-     * Decisive for what conversion buys: attribution is what Android Auto checks *second*. An app
-     * that never declares AA support will not be listed however it was installed, so converting it
-     * is legitimate — it fixes the attribution — but it will not put the app in the car.
+     * Decisive for which conversion path is needed. Apps with their own usable car surface only
+     * need their install attribution repaired. Everything else needs a rewritten side-by-side
+     * copy carrying AAAD's template bridge.
      */
     val declaresAndroidAuto: Boolean get() = carCapabilities != null
 
+    /** The publisher APK already contains a projection or templated car implementation. */
+    val hasCarVersion: Boolean get() = carCapabilities?.hasCarUi == true
+
     /**
-     * Android Auto will list it but refuse to open it while driving. Nothing on this phone can
-     * change that — it is a statement the app makes in its own manifest.
+     * Android Auto will list the publisher APK but refuse to open it while driving. Carify fixes
+     * this on the copy by declaring a distraction-optimised template surface.
      */
     val blockedWhileDriving: Boolean
-        get() = carCapabilities?.let { !it.hasCarUi && !it.isEmpty } == true
+        get() = carCapabilities?.hasCarUi == false
+
+    /**
+     * Native car apps keep their publisher signature and data. Apps without a usable car surface
+     * cannot be modified in place (their signature would no longer match), so they get a separate
+     * Car copy instead. A Play-installed phone-only app is therefore actionable too.
+     */
+    val conversionAction: ConversionAction?
+        get() = when {
+            carCapabilities?.hasCarUi != true -> ConversionAction.CAR_COPY
+            state == ConversionState.CONVERTIBLE -> ConversionAction.RESTAGE
+            else -> null
+        }
 }
 
 /**
@@ -137,10 +161,14 @@ class InstalledAppScanner(private val context: Context) {
             return@withContext emptyList()
         }
 
-        val ourPackage = context.packageName
         val candidates = installed.asSequence()
             .mapNotNull { pkg -> pkg.applicationInfo?.let { pkg to it } }
-            .filter { (_, info) -> info.packageName != ourPackage }
+            // These are outputs, not new conversion inputs. The original remains in the list and
+            // its button updates the same copy on a later run.
+            .filter { (_, info) ->
+                !info.packageName.endsWith(".aaad") &&
+                    !info.packageName.endsWith(".aaaddev")
+            }
             .filter { (_, info) -> scope == ScanScope.ALL || declaresAndroidAuto(info) }
             .filter { (_, info) -> includeSystemApps || !isSystemApp(info) }
             .toList()
@@ -167,7 +195,8 @@ class InstalledAppScanner(private val context: Context) {
             // rows a user can act on belong at the top rather than interleaved alphabetically.
             .sortedWith(
                 compareBy(
-                    { it.state != ConversionState.CONVERTIBLE },
+                    { it.conversionAction == null },
+                    { it.conversionAction != ConversionAction.CAR_COPY },
                     { !it.declaresAndroidAuto },
                     { it.label.lowercase() },
                 )

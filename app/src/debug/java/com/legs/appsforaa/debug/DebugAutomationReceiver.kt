@@ -5,10 +5,12 @@ import android.content.Context
 import android.content.Intent
 import com.legs.appsforaa.BuildConfig
 import com.legs.appsforaa.data.CatalogRepository
+import com.legs.appsforaa.data.ConversionAction
 import com.legs.appsforaa.data.InstalledAppScanner
 import com.legs.appsforaa.data.ScanScope
 import com.legs.appsforaa.data.SelfUpdateChecker
 import com.legs.appsforaa.utils.InstallManager
+import com.legs.appsforaa.utils.CarifyRepackager
 import com.legs.appsforaa.utils.LogFile
 import com.legs.appsforaa.utils.Logger
 import com.legs.appsforaa.utils.ShizukuInstaller
@@ -137,14 +139,27 @@ class DebugAutomationReceiver : BroadcastReceiver() {
             return
         }
 
-        Logger.i(TAG, "CONVERT $packageName state=${app.state} apks=${app.apkPaths.size}")
+        Logger.i(TAG, "CONVERT $packageName action=${app.conversionAction} " +
+            "state=${app.state} apks=${app.apkPaths.size}")
         if (!ShizukuInstaller.ensureReady()) {
             Logger.e(TAG, "RESULT=FAILED Shizuku not ready")
             return
         }
-        when (val result = ShizukuInstaller.convertInstalled(packageName, app.apkPaths)) {
-            is ShizukuInstaller.Result.Success -> Logger.i(TAG, "RESULT=CONVERTED $packageName")
-            is ShizukuInstaller.Result.Failure -> Logger.e(TAG, "RESULT=FAILED ${result.message}")
+        when (app.conversionAction) {
+            ConversionAction.CAR_COPY -> when (val result = CarifyRepackager(context).convert(app)) {
+                is CarifyRepackager.Result.Success ->
+                    Logger.i(TAG, "RESULT=CARIFIED ${result.packageName}")
+                is CarifyRepackager.Result.Failure ->
+                    Logger.e(TAG, "RESULT=FAILED ${result.message}")
+            }
+            ConversionAction.RESTAGE ->
+                when (val result = ShizukuInstaller.convertInstalled(packageName, app.apkPaths)) {
+                    is ShizukuInstaller.Result.Success ->
+                        Logger.i(TAG, "RESULT=CONVERTED $packageName")
+                    is ShizukuInstaller.Result.Failure ->
+                        Logger.e(TAG, "RESULT=FAILED ${result.message}")
+                }
+            null -> Logger.i(TAG, "RESULT=ALREADY_CONVERTED $packageName")
         }
     }
 

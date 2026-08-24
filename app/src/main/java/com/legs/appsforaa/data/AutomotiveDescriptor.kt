@@ -30,9 +30,9 @@ import org.xmlpull.v1.XmlPullParser
  * neither is a media source: Android Auto lists it and then refuses to open its UI while driving.
  *
  * No installer, permission or setting can change that, because it is a statement the app makes
- * about itself in its own APK — but **rewriting the APK can**, which is what
- * `harness/tools/carify.sh` does: a renamed, re-signed copy that declares `projection` and
- * installs alongside the original.
+ * about itself in its own APK — but **rewriting the APK can**. The phone Convert screen and
+ * `harness/tools/carify.sh` create a renamed, re-signed copy with a real templated Car App service
+ * and install it alongside the original.
  */
 object AutomotiveDescriptor {
 

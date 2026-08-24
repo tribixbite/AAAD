@@ -282,17 +282,20 @@
     <string name="install_needs_shizuku">AAAD cannot reach Shizuku, and this install cannot ask you to confirm. Open Shizuku, start it if needed, and grant AAAD access.</string>
 
     <!-- Converting already-installed apps to Play Store attribution -->
-    <string name="convert_title">Convert installed apps</string>
-    <string name="convert_subtitle">Apps already on this device that Android Auto can show</string>
+    <string name="convert_title">Car compatibility</string>
+    <string name="convert_subtitle">Choose an installed app to register its car version or create a car-compatible copy.</string>
     <string name="convert_open">Convert installed apps</string>
     <string name="convert_scanning">Scanning installed apps…</string>
-    <string name="convert_none_found">No Android Auto capable apps are installed on this device.</string>
+    <string name="convert_none_found">No apps match this search and filter.</string>
     <plurals name="convert_found">
         <item quantity="one">%d Android Auto capable app installed</item>
         <item quantity="other">%d Android Auto capable apps installed</item>
     </plurals>
     <string name="convert_installer_none">an unknown source</string>
     <string name="convert_state_ok">%1$s · already visible in Android Auto</string>
+    <string name="convert_state_car_ready">%1$s · car version registered with Android Auto</string>
+    <string name="convert_state_car_needs_registration">%1$s · car version included; registration needed</string>
+    <string name="convert_car_version_included">Car version included</string>
     <!-- Attributed, but with no Android Auto support: "already visible in Android Auto" would be
          plainly false, and it read as a contradiction next to the no-support caveat. -->
     <string name="convert_state_attributed_no_aa">%1$s · installed from the Play Store, no Android Auto support</string>
@@ -300,6 +303,7 @@
     <!-- For an app that declares no Android Auto support: naming the installer is the whole
          truth, and the caveat line explains what converting will and will not achieve. -->
     <string name="convert_state_installer">Installed by %1$s</string>
+    <string name="convert_state_needs_car_copy">%1$s · car-compatible copy available</string>
     <plurals name="convert_found_all">
         <item quantity="one">%d app installed</item>
         <item quantity="other">%d apps installed</item>
@@ -307,13 +311,14 @@
     <!-- Corrected once a head unit proved an ordinary Activity does project: this is fixable,
          just not by converting. Saying "only its developer can fix it" was wrong and left the
          user with nowhere to go. -->
-    <string name="convert_no_projection">This app declares media support only, so Android Auto lists it but refuses to open it while driving. Converting will not change that — it needs a rewritten copy. Use the carify tool on your computer.</string>
+    <string name="convert_no_projection">This app has no usable car screen. Create a car-compatible copy to add AAAD\'s template surface.</string>
     <string name="convert_scope_aa">Android Auto apps</string>
     <string name="manual_source_message">%1$s is not published as a downloadable release — its developer distributes it from their own site, where you pick a version. That download installs through Android rather than through this app, so it will not be registered with Android Auto until you convert it here afterwards.</string>
     <string name="manual_source_open">Open download page</string>
     <string name="convert_scope_all">All apps</string>
     <string name="convert_search_hint">Search installed apps</string>
-    <string name="convert_no_aa_metadata">Converting fixes the installer, but this app declares no Android Auto support, so Android Auto still will not list it. A rewritten copy can add that — see the carify tool.</string>
+    <string name="convert_no_aa_metadata">This app has no Android Auto support. Create a car-compatible copy to add AAAD\'s template surface.</string>
+    <string name="convert_car_copy_detail">Creates a separate car-compatible app. The original app and its data stay untouched; the copy starts with fresh data.</string>
     <string name="convert_filtered">%1$d of %2$d apps</string>
 
     <!-- Android Auto car screen (templated Car App Library surface) -->
@@ -344,18 +349,45 @@
     <string name="car_needs_shizuku">AAAD cannot reach Shizuku. On your phone, open Shizuku, start it if needed, and grant AAAD access.</string>
     <string name="car_failed">Failed: %1$s</string>
     <string name="action_convert">Convert</string>
-    <string name="convert_already_running">A conversion is already running</string>
+    <string name="action_create_car_compatible_copy">Create compatible copy</string>
+    <string name="action_register_car_version">Register car version</string>
+    <string name="action_cancel_conversion">Cancel conversion</string>
+    <string name="action_remove_from_queue">Remove from queue</string>
     <string name="convert_confirm_title">Convert %1$s?</string>
     <string name="convert_confirm_message">%1$s will be reinstalled from its own APK so Android Auto recognises it. It is the same app and the same signature, so your data and settings are kept.</string>
     <string name="convert_confirm_message_split">%1$s will be reinstalled from its own APK files so Android Auto recognises it. It is the same app and the same signature, so your data and settings are kept. This app ships as multiple APKs, which all get reinstalled together.</string>
     <!-- Converting stops the target app. Harmless for most, but not if it is the terminal running
          your session, your keyboard, or your launcher - so it is stated before the tap, not after. -->
     <string name="convert_confirm_stopped">%1$s is stopped while it reinstalls. If you are relying on it right now — a terminal, a keyboard, a launcher — it will close.</string>
-    <string name="convert_running">Converting %1$s…</string>
     <string name="convert_done">%1$s converted — Android Auto will now list it</string>
     <string name="convert_failed">Conversion failed: %1$s</string>
-    <string name="convert_needs_shizuku_title">Shizuku is required</string>
-    <string name="convert_needs_shizuku_message">Converting an app needs Shizuku running, because only a privileged install can register an app with Android Auto. There is no fallback for this — the normal Android installer cannot set the required attribution.\n\nOpen Shizuku, start the service, and try again.</string>
+    <string name="convert_carify_confirm_title">Create a car-compatible copy of %1$s?</string>
+    <string name="convert_system_installer_note">If Shizuku is unavailable, Android will ask you to confirm the installation. Enable “Unknown sources” in Android Auto\'s developer settings so manually installed car apps can appear.</string>
+    <string name="convert_carify_confirm_message">AAAD will create a separate car-compatible copy of %1$s with an Android Auto template surface. Your original app and its data are not changed or stopped. The copy has fresh data and may not support every phone-only feature. This can take a few minutes.\n\n%2$s</string>
+    <string name="convert_carify_done">%1$s car-compatible copy installed</string>
+    <string name="convert_carify_failed">Could not create car-compatible copy: %1$s</string>
+    <plurals name="convert_queue_position">
+        <item quantity="one">Next in queue</item>
+        <item quantity="other">Queue position %d</item>
+    </plurals>
+    <plurals name="convert_queue_count">
+        <item quantity="one">%d conversion queued</item>
+        <item quantity="other">%d conversions queued</item>
+    </plurals>
+    <string name="convert_queue_title">Converting %1$s</string>
+    <string name="convert_cancelling">Cancelling…</string>
+    <string name="convert_cancelled">Conversion cancelled</string>
+    <string name="convert_removed_from_queue">Removed from queue</string>
+    <string name="convert_stage_preparing">Preparing app…</string>
+    <string name="convert_stage_merging">Merging APK files…</string>
+    <string name="convert_stage_reading">Reading app package…</string>
+    <string name="convert_stage_patching">Adding car compatibility…</string>
+    <string name="convert_stage_building">Building car-compatible APK…</string>
+    <string name="convert_stage_signing">Signing car-compatible APK…</string>
+    <string name="convert_stage_staging">Staging APK files…</string>
+    <string name="convert_stage_installing">Installing…</string>
+    <string name="convert_stage_waiting_for_confirmation">Waiting for Android installation confirmation…</string>
+    <string name="convert_done_standard_installer">%1$s installed. If it is missing in Android Auto, enable “Unknown sources” in Android Auto\'s developer settings.</string>
 
     <string name="onboarding_install_granted">Granted — this app can install the apps you choose.</string>
     <!-- Replaces onboarding_welcome_description, whose "Swipe through to learn how to use the

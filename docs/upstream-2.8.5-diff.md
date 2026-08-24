@@ -98,12 +98,11 @@ itself**:
   `utils/AndroidAutoConnectionDetector`, `AndroidAutoDeveloperModeManager`,
   `AndroidAutoQuickLauncher`, `AndroidAutoCacheManager`, `data/AndroidAutoPreferences`.
 
-**This is directly relevant to [testing-harness.md](testing-harness.md) T-22.** The open question
-there was how to get ground truth on "does Android Auto actually list this app" without a desktop
-Desktop Head Unit. 2.8.5 demonstrates a third option: emulate the head unit on the phone. Whether
-to reimplement that is a real decision — it is a large amount of protocol work — but it is now a
-known-viable option, and `forceParkingBrake` / `forceUnrestricted` would make an unattended
-harness run possible without a vehicle.
+**This informed [testing-harness.md](testing-harness.md)'s T-22 research.** T-22 was later closed
+more cheaply by reading Android Auto's phone-side Customize launcher screen. The emulator remains
+relevant to the stronger question of whether a listed app opens, renders, and accepts input
+without a car. Reimplementing it is still substantial protocol work, but `forceParkingBrake` /
+`forceUnrestricted` could make that stronger test unattended.
 
 ## Everything else that moved
 
@@ -147,6 +146,6 @@ does not exist and never detects CarStream as installed. Fixed in
    the rename is unverified and should be tested before designing around it.
 3. **Adopt `SmartInstaller`'s ladder shape** for T-06 — Shizuku+Play attribution, Shizuku direct,
    plain PackageInstaller, with an honest capability report.
-4. **T-22 has a third option** — an on-device head unit emulator.
+4. **Head-unit behavior has a third test option** — an on-device head unit emulator.
 5. The standalone fork deliberately does **not** follow 2.8.5's subscription, anti-tamper, or
    Firebase-cache additions.

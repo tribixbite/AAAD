@@ -3,7 +3,7 @@
 # Build AAAD on Termux ARM64.
 #
 # Usage:
-#   ./build-on-termux.sh [debug|release] [flags...]
+#   ./build-on-termux.sh [debug|release|bridge] [flags...]
 #
 # Flags:
 #   --clean        Force a clean build (default: incremental)
@@ -44,7 +44,7 @@ for arg in "$@"; do
         --slow)       SLOW=1 ;;
         --no-install) NO_INSTALL=1 ;;
         --help|-h)    show_help ;;
-        debug|release) BUILD_TYPE="$arg" ;;
+        debug|release|bridge) BUILD_TYPE="$arg" ;;
         *) fail "unknown argument '$arg'. Run '$0 --help'." ;;
     esac
 done
@@ -129,8 +129,9 @@ fi
 
 # --- Build --------------------------------------------------------------------
 case "$BUILD_TYPE" in
-    release) TASK="assembleRelease"; APK_DIR="app/build/outputs/apk/release" ;;
-    debug)   TASK="assembleDebug";   APK_DIR="app/build/outputs/apk/debug" ;;
+    release) TASK=":app:assembleRelease"; APK_DIR="app/build/outputs/apk/release" ;;
+    debug)   TASK=":app:assembleDebug";   APK_DIR="app/build/outputs/apk/debug" ;;
+    bridge)  TASK=":carify-bridge:assembleRelease"; APK_DIR="carify-bridge/build/outputs/apk/release" ;;
 esac
 
 LOG_FILE="build-${BUILD_TYPE}-$(date +%Y%m%d-%H%M%S).log"
@@ -164,6 +165,7 @@ say "=== BUILD SUCCESSFUL ==="
 ls -lh "$APK_DIR"/*.apk
 
 [ "$NO_INSTALL" -eq 1 ] && { say "Skipping install (--no-install)."; exit 0; }
+[ "$BUILD_TYPE" = "bridge" ] && { say "Bridge payload built; it is injected by harness/tools/carify.sh, not installed by itself."; exit 0; }
 
 # --- Install ------------------------------------------------------------------
 # Debug builds carry applicationIdSuffix '.dev', so they install alongside any official

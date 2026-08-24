@@ -2,9 +2,10 @@
 """
 Rewrites a decoded AndroidManifest.xml into a side-by-side, Android-Auto-visible clone.
 
-The hard constraint: **class names must not move.** We are not touching the DEX, so every
-`android:name` that names a class still refers to the original package's classes. Renaming those
-would produce an app whose manifest points at classes that do not exist. Only *identifiers* get
+The hard constraint: **the app's class names must not move.** Carify can add its own bridge DEX,
+but the original DEX is not rewritten, so every existing `android:name` still refers to the
+original package's classes. Renaming those would produce an app whose manifest points at classes
+that do not exist. Only *identifiers* get
 the new package: the manifest package itself, permissions the app declares, provider authorities,
 and task affinity. Those are the ones that collide with the original install if left alone -
 duplicate permissions and duplicate authorities are both hard install failures.
@@ -17,9 +18,13 @@ A = f"{{{ANDROID}}}"
 ET.register_namespace("android", ANDROID)
 
 path, old_pkg, new_pkg, label_suffix = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+discovery = sys.argv[5] if len(sys.argv) > 5 else "template"
+if discovery not in {"projection", "template"}:
+    sys.exit(f"unsupported Carify discovery mode: {discovery}")
 
 PROJECTION_CATEGORY = "com.google.android.gms.car.category.CATEGORY_PROJECTION"
 CAR_APP_SERVICE_ACTION = "androidx.car.app.CarAppService"
+BRIDGE_SERVICE = "com.legs.appsforaa.carify.CarifyCarAppService"
 
 tree = ET.parse(path)
 root = tree.getroot()
@@ -88,13 +93,14 @@ def set_meta(parent, name, *, value=None, resource=None):
 
 # 5. What car surface can this app actually back?
 #
-#    `projection` is necessary but NOT sufficient, measured with
-#    harness/tools/aa-launcher-list.sh: a clone of an app with no car implementation declares it
-#    and Android Auto still does not list the app. What the descriptor does is tell Android Auto
-#    which surface an app's EXISTING car code presents. It cannot conjure that code.
+#    The S25U control established the complete working signature: the AndroidX runtime and service,
+#    full launcher categories, and appCategory=game. With the known-visible projection clone
+#    disabled, an otherwise identical shell-initiated template+game clone was FOUND. The earlier
+#    template failures were therefore confounded by their missing app category, not evidence of a
+#    Play-initiation gate.
 #
-#    So the descriptor is chosen from what the APK already contains, and when nothing backs it the
-#    caller is told, because the rewrite will not achieve what they are hoping for.
+#    Existing projection/template implementations stay authoritative. The bridge is added only
+#    when the APK has neither, avoiding duplicate Car App runtimes in apps such as AABrowser.
 has_projection_service = False
 has_car_app_service = False
 for service in app.findall("service"):
@@ -106,24 +112,75 @@ for service in app.findall("service"):
         if CAR_APP_SERVICE_ACTION in acts:
             has_car_app_service = True
 
+needs_bridge = not has_projection_service and not has_car_app_service
 if has_car_app_service and not has_projection_service:
     car_uses, backing = "template", "the app's own androidx CarAppService"
 elif has_projection_service:
     car_uses, backing = "projection", "the app's own CATEGORY_PROJECTION service"
 else:
-    car_uses, backing = "projection", None
+    car_uses = discovery
+    backing = f"the injected Carify {discovery} runtime and launcher Activity"
+
+
+def add_uses_permission(name: str):
+    if any(p.get(f"{A}name") == name for p in root.findall("uses-permission")):
+        return
+    permission = ET.Element("uses-permission")
+    permission.set(f"{A}name", name)
+    # Keep conventional manifest ordering even though APKEditor's parser accepts either order.
+    root.insert(list(root).index(app), permission)
+    changes.append(f"added permission {name}")
+
+
+if needs_bridge:
+    add_uses_permission("androidx.car.app.ACCESS_SURFACE")
+    add_uses_permission("androidx.car.app.MAP_TEMPLATES")
+    add_uses_permission("androidx.car.app.NAVIGATION_TEMPLATES")
+
+    queries = root.find("queries")
+    if queries is None:
+        queries = ET.Element("queries")
+        root.insert(list(root).index(app), queries)
+    if not any(
+            provider.get(f"{A}authorities") == "androidx.car.app.connection"
+            for provider in queries.findall("provider")):
+        provider = ET.SubElement(queries, "provider")
+        provider.set(f"{A}name", "androidx.car.app.connection.provider")
+        provider.set(f"{A}authorities", "androidx.car.app.connection")
+
+    permission_activity = ET.SubElement(app, "activity")
+    permission_activity.set(f"{A}name", "androidx.car.app.CarAppPermissionActivity")
+    permission_activity.set(f"{A}exported", "false")
+    permission_activity.set(f"{A}theme", "@android:style/Theme.Translucent.NoTitleBar")
+
+    notification_receiver = ET.SubElement(app, "receiver")
+    notification_receiver.set(
+        f"{A}name", "androidx.car.app.notification.CarAppNotificationBroadcastReceiver")
+    notification_receiver.set(f"{A}exported", "false")
+
+    if discovery == "template":
+        bridge_service = ET.SubElement(app, "service")
+        bridge_service.set(f"{A}name", BRIDGE_SERVICE)
+        bridge_service.set(f"{A}exported", "true")
+        bridge_filter = ET.SubElement(bridge_service, "intent-filter")
+        bridge_action = ET.SubElement(bridge_filter, "action")
+        bridge_action.set(f"{A}name", CAR_APP_SERVICE_ACTION)
+        bridge_category = ET.SubElement(bridge_filter, "category")
+        bridge_category.set(f"{A}name", "androidx.car.app.category.NAVIGATION")
+
+    set_meta(app, "androidx.car.app.minCarApiLevel", value="7")
+    changes.append(f"injected AndroidX {discovery} runtime components")
+    # AABrowser's listed projection Activity is classified as a game by PackageManager.
+    # Gearhead uses this application category as part of its custom-app discovery path.
+    app.set(f"{A}appCategory", "game")
 
 set_meta(app, "com.google.android.gms.car.application", resource="@xml/automotive_app_desc")
 set_meta(app, "distractionOptimized", value="true")
 changes.append(f"car descriptor declares <uses name=\"{car_uses}\"/>")
-if backing:
-    changes.append(f"  backed by {backing}")
-else:
-    changes.append("  WARNING: this APK contains no car implementation — no CATEGORY_PROJECTION")
-    changes.append("  service and no androidx CarAppService. Measured on device, Android Auto does")
-    changes.append("  not list such a clone however it is declared. See TASKS.md T-53.")
+changes.append(f"  backed by {backing}")
 print(f"CAR_USES={car_uses}")
-print(f"CAR_BACKED={'yes' if backing else 'no'}")
+print("CAR_BACKED=yes")
+print(f"CAR_NEEDS_BRIDGE={'yes' if needs_bridge else 'no'}")
 
 # 6. Make the UI as adaptable as the manifest can: a phone Activity on a head unit is a fixed
 #    portrait box unless it is told otherwise. This cannot fix a layout that hardcodes phone
@@ -147,12 +204,23 @@ for activity, intent_filter in launchers:
         del activity.attrib[f"{A}screenOrientation"]
         changes.append("removed screenOrientation lock from launcher")
     activity.set(f"{A}resizeableActivity", "true")
-    # CAR_LAUNCHER is how a projected app announces its car entry point.
-    if not any(c.get(f"{A}name") == "android.intent.category.CAR_LAUNCHER"
-               for c in intent_filter.findall("category")):
+    # Match the resolving Activity shape of listed projected apps such as AABrowser. Gearhead
+    # filters the whole intent, not merely CAR_LAUNCHER.
+    car_categories = (
+        "android.intent.category.DEFAULT",
+        "android.intent.category.CAR_LAUNCHER",
+        "androidx.car.app.category.NAVIGATION",
+        "android.intent.category.APP_MAPS",
+    )
+    existing_categories = {
+        c.get(f"{A}name") for c in intent_filter.findall("category")
+    }
+    for car_category in car_categories:
+        if car_category in existing_categories:
+            continue
         category = ET.SubElement(intent_filter, "category")
-        category.set(f"{A}name", "android.intent.category.CAR_LAUNCHER")
-        changes.append("added CAR_LAUNCHER to launcher intent-filter")
+        category.set(f"{A}name", car_category)
+        changes.append(f"added {car_category} to launcher intent-filter")
 
 changes.append(f"launcher activities patched: {len(launchers)}")
 

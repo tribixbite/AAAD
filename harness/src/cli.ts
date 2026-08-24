@@ -260,10 +260,10 @@ async function convertCommand(options: Options): Promise<void> {
 /**
  * Builds a side-by-side Android-Auto-visible clone of each package.
  *
- * Thin wrapper over `tools/carify.sh`, which owns the pipeline because it is a chain of external
- * tools — APKEditor, zipalign, apksigner, adb — and shelling out to them from TypeScript would
- * add a layer without adding anything. Read that script for what the clone actually gains, and
- * for what it explicitly cannot promise.
+ * Thin wrapper over `tools/carify.sh`, which owns the external-tool pipeline and injects the
+ * Car App bridge for apps that lack car code. Read that script for the exact clone contract.
+ * Building and installing proves the package side; launcher visibility and rendering still
+ * require Android Auto's Customize launcher and a live head-unit session.
  */
 async function carifyCommand(options: Options): Promise<void> {
   const device = await requireDevice(options);

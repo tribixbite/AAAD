@@ -24,6 +24,8 @@ const INCLUDE_STOPPED = "0x00000020";
 export type ActionResult =
   | { kind: "attributed"; version: string }
   | { kind: "converted"; packageName: string }
+  | { kind: "carified"; packageName: string }
+  | { kind: "already-converted"; packageName: string }
   | { kind: "system-installer" }
   /**
    * Shizuku was not ready, and an unattended install refuses to fall back to a dialog nobody is
@@ -64,6 +66,12 @@ export function parseResultLine(line: string): ActionResult | null {
   }
   if (line.includes("RESULT=CONVERTED")) {
     return { kind: "converted", packageName: line.trim().split(/\s+/).pop() ?? "" };
+  }
+  if (line.includes("RESULT=CARIFIED")) {
+    return { kind: "carified", packageName: line.trim().split(/\s+/).pop() ?? "" };
+  }
+  if (line.includes("RESULT=ALREADY_CONVERTED")) {
+    return { kind: "already-converted", packageName: line.trim().split(/\s+/).pop() ?? "" };
   }
   if (line.includes("RESULT=SYSTEM_INSTALLER")) return { kind: "system-installer" };
   if (line.includes("RESULT=NEEDS_SHIZUKU")) return { kind: "needs-shizuku" };

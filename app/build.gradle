@@ -81,6 +81,10 @@ android {
         buildConfigField "String", "UPDATE_REPO", "\"${cfg('UPDATE_REPO', 'tribixbite/AAAD')}\""
     }
 
+    sourceSets {
+        main.assets.srcDir(layout.buildDirectory.dir("generated/carify-assets"))
+    }
+
     // Signing is env-var driven (same contract as ../swype/cleverkeys and the
     // android-termux-build skill) so no keystore path is ever committed:
     //   RELEASE_KEYSTORE, RELEASE_KEYSTORE_PASSWORD, RELEASE_KEY_ALIAS, RELEASE_KEY_PASSWORD
@@ -116,12 +120,95 @@ android {
     }
 }
 
+/*
+ * Produce the DEX injected into converted phone apps.
+ *
+ * The bridge APK's AndroidX AppInfo reads its library version from a 0x7f resource id. A converted
+ * app owns a different resource table, so that one lookup is made package-independent before the
+ * DEX is bundled as an AAAD asset. This is the same guarded rewrite used by tools/carify.sh.
+ */
+def carifyToolJar = file("libs/APKEditor-1.4.8.jar")
+def carifyBridgeApk = rootProject.file(
+    "carify-bridge/build/outputs/apk/release/carify-bridge-release-unsigned.apk"
+)
+def carifyAssetDir = layout.buildDirectory.dir("generated/carify-assets/carify")
+def carifyWorkDir = layout.buildDirectory.dir("intermediates/carify-bridge-dex")
+
+tasks.register("prepareCarifyBridgeDex") {
+    dependsOn(":carify-bridge:assembleRelease")
+    inputs.file(carifyBridgeApk)
+    inputs.file(carifyToolJar)
+    outputs.file(carifyAssetDir.map { it.file("bridge.dex") })
+
+    doLast {
+        def work = carifyWorkDir.get().asFile
+        def raw = new File(work, "raw")
+        def smali = new File(work, "smali")
+        delete(work)
+        raw.mkdirs()
+        smali.mkdirs()
+
+        copy {
+            from(zipTree(carifyBridgeApk))
+            include("classes*.dex")
+            into(raw)
+        }
+        def dexFiles = fileTree(raw).matching { include("classes*.dex") }.files.sort()
+        if (dexFiles.size() != 1) {
+            throw new GradleException(
+                "Carify bridge must produce exactly one DEX, got ${dexFiles.size()}"
+            )
+        }
+
+        javaexec {
+            classpath = files(carifyToolJar)
+            mainClass = "org.jf.baksmali.Main"
+            args("d", dexFiles.first().absolutePath, "-o", smali.absolutePath)
+        }
+
+        def appInfoFiles = fileTree(smali).matching {
+            include("**/androidx/car/app/AppInfo.smali")
+        }.files
+        if (appInfoFiles.size() != 1) {
+            throw new GradleException("Injected bridge is missing androidx.car.app.AppInfo")
+        }
+        def appInfo = appInfoFiles.first()
+        def lines = appInfo.readLines("UTF-8")
+        def start = lines.findIndexOf {
+            it.contains("Context;->getResources()Landroid/content/res/Resources;")
+        }
+        def getString = start < 0 ? -1 : (start..<lines.size()).find {
+            lines[it].contains("Resources;->getString(I)Ljava/lang/String;")
+        } ?: -1
+        def end = getString < 0 ? -1 : (getString..<lines.size()).find {
+            lines[it].contains("move-result-object p0")
+        } ?: -1
+        if (start < 0 || getString < 0 || end < 0) {
+            throw new GradleException(
+                "Car App AppInfo version lookup changed; refusing unsafe payload"
+            )
+        }
+        lines.subList(start, end + 1).clear()
+        lines.add(start, '    const-string p0, "1.7.0"')
+        appInfo.setText(lines.join("\n") + "\n", "UTF-8")
+
+        def output = carifyAssetDir.get().file("bridge.dex").asFile
+        output.parentFile.mkdirs()
+        javaexec {
+            classpath = files(carifyToolJar)
+            mainClass = "org.jf.smali.Main"
+            args("a", smali.absolutePath, "-o", output.absolutePath)
+        }
+    }
+}
+tasks.named("preBuild").configure { dependsOn("prepareCarifyBridgeDex") }
+
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
 
     // AndroidX core
     implementation 'androidx.appcompat:appcompat:1.7.1'
-    implementation 'com.google.android.material:material:1.13.0'
+    implementation 'com.google.android.material:material:1.14.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
     implementation 'androidx.core:core-ktx:1.17.0'
     implementation 'androidx.recyclerview:recyclerview:1.4.0'
@@ -157,6 +244,9 @@ dependencies {
     // published to any Maven repository, so it is not an option here. See TASKS.md T-44.
     implementation 'androidx.car.app:app:1.7.0'
     implementation 'androidx.car.app:app-projected:1.7.0'
+
+    // Pure-Java Android SDK signer used for side-by-side Carify clones.
+    implementation 'com.android.tools.build:apksig:8.13.1'
 
     // REMOVED for the standalone fork (see docs/standalone.md):
     //   com.github.iGio90:BottomDialogs (JitPack)          — T-19. An unpinnable
