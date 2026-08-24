@@ -404,11 +404,18 @@ so comparison with Play-initiated templates was confounded and did not establish
 Carify therefore defaults to the public template service that actually backs its runtime bridge.
 Both disposable clones were removed; the normal clone launches cleanly on the phone.
 
+**Correction, 2026-08-24:** that discovery control was not a valid shipping category. Android Auto
+defines games as parked-only, which explains the later “not available while driving” result on
+every converted clone. Carify now uses `android:appCategory="maps"`, matching its
+`androidx.car.app.category.NAVIGATION` service and `NavigationTemplate`. The historical game
+experiment remains above because it established that application category participates in
+discovery; it must not be copied back into generated APKs.
+
 **[I] Head-unit outcome:** Customize launcher proves listing, not behavior. Calculator still must
 be selected in a car/DHU/emulator to verify rendering and button input. Do not upgrade that outcome
 to **[V]** until the projected test passes.
 
-The bridge declares game/maps/navigation discovery signals for a Calculator, so it is explicitly
+The bridge declares maps/navigation discovery signals for arbitrary phone apps, so it is explicitly
 a local testing/personal-use artifact and not a truthful Play-distribution declaration.
 
 ### Two car routes, and one public bridge

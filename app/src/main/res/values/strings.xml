@@ -167,6 +167,7 @@
     <!-- Progress Messages -->
     <string name="progress_downloading">Downloading %1$s…</string>
     <string name="progress_installing">Installing %1$s…</string>
+    <string name="progress_making_compatible">Making %1$s car-compatible… %2$d%%</string>
     <string name="progress_checking_updates">Checking for updates…</string>
     <string name="check_for_updates">Check for Updates</string>
     <string name="checking_for_aaad_updates">Checking for AAAD updates…</string>
@@ -277,6 +278,8 @@
     <string name="progress_resolving">Finding the latest %1$s…</string>
     <string name="progress_downloading_percent">Downloading %1$s… %2$d%%</string>
     <string name="install_done_attributed">%1$s installed and registered for Android Auto</string>
+    <string name="install_done_compatible">%1$s installed as a car-compatible app for driving</string>
+    <string name="install_done_compatible_system">%1$s installed as a car-compatible app. If it is missing in Android Auto, enable “Unknown sources” in Android Auto\'s developer settings.</string>
     <string name="install_handed_to_system">Confirm the install when Android asks. Without Shizuku the app is not registered for Android Auto — enable \"Unknown sources\" in Android Auto\'s developer settings.</string>
     <string name="install_failed_reason">Install failed: %1$s</string>
     <string name="install_needs_shizuku">AAAD cannot reach Shizuku, and this install cannot ask you to confirm. Open Shizuku, start it if needed, and grant AAAD access.</string>
@@ -345,6 +348,7 @@
     <string name="car_install_confirm">%1$s will be downloaded from its publisher and installed so Android Auto lists it.</string>
     <string name="car_installing">Installing %1$s…</string>
     <string name="car_install_done">%1$s installed</string>
+    <string name="car_install_done_compatible">%1$s installed as a car-compatible app</string>
     <string name="car_install_needs_phone">This install needs to be confirmed on your phone.</string>
     <string name="car_needs_shizuku">AAAD cannot reach Shizuku. On your phone, open Shizuku, start it if needed, and grant AAAD access.</string>
     <string name="car_failed">Failed: %1$s</string>
@@ -417,6 +421,7 @@
     <string name="update_install">Download and install</string>
     <string name="update_downloading">Downloading… %1$d%%</string>
     <string name="update_installing">Installing…</string>
+    <string name="update_making_compatible">Making update car-compatible… %1$d%%</string>
     <string name="update_installed">Installed %1$s.</string>
     <string name="update_handed_off">Confirm the install to finish updating.</string>
 

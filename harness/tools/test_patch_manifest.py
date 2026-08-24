@@ -10,7 +10,7 @@ A = f"{{{ANDROID}}}"
 SCRIPT = Path(__file__).with_name("patch_manifest.py")
 
 
-def manifest(service_filter: str = "") -> str:
+def manifest(service_filter: str = "", app_category: str = "") -> str:
     service = ""
     if service_filter:
         kind, value = service_filter.split(":", 1)
@@ -19,9 +19,10 @@ def manifest(service_filter: str = "") -> str:
         <service android:name="com.example.RealCarService" android:exported="true">
           <intent-filter><{tag} android:name="{value}" /></intent-filter>
         </service>"""
+    category = f' android:appCategory="{app_category}"' if app_category else ""
     return f"""<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="{ANDROID}" package="com.example.phone">
-  <application android:label="Phone app">
+  <application android:label="Phone app"{category}>
     <activity android:name="com.example.phone.MainActivity" android:exported="true">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
@@ -34,10 +35,14 @@ def manifest(service_filter: str = "") -> str:
 
 
 class PatchManifestTest(unittest.TestCase):
-    def run_patch(self, service_filter: str = "", discovery: str = "template"):
+    def run_patch(
+            self,
+            service_filter: str = "",
+            discovery: str = "template",
+            app_category: str = ""):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "AndroidManifest.xml"
-            path.write_text(manifest(service_filter), encoding="utf-8")
+            path.write_text(manifest(service_filter, app_category), encoding="utf-8")
             result = subprocess.run(
                 [
                     "python3",
@@ -67,7 +72,7 @@ class PatchManifestTest(unittest.TestCase):
             item.get(f"{A}name"): item.get(f"{A}value")
             for item in app.findall("meta-data")
         }
-        self.assertEqual(app.get(f"{A}appCategory"), "game")
+        self.assertEqual(app.get(f"{A}appCategory"), "maps")
         self.assertEqual(metadata["androidx.car.app.minCarApiLevel"], "7")
         component_names = {
             item.get(f"{A}name")
@@ -105,10 +110,10 @@ class PatchManifestTest(unittest.TestCase):
             }.issubset(launcher_categories)
         )
 
-    def test_template_game_control_declares_bridge_service(self):
+    def test_template_maps_clone_declares_bridge_service(self):
         root, output = self.run_patch()
         app = root.find("application")
-        self.assertEqual(app.get(f"{A}appCategory"), "game")
+        self.assertEqual(app.get(f"{A}appCategory"), "maps")
         services = app.findall("service")
         self.assertEqual(len(services), 1)
         self.assertEqual(
@@ -129,9 +134,12 @@ class PatchManifestTest(unittest.TestCase):
 
     def test_preserves_existing_projection_service(self):
         root, output = self.run_patch(
-            "category:com.google.android.gms.car.category.CATEGORY_PROJECTION"
+            "category:com.google.android.gms.car.category.CATEGORY_PROJECTION",
+            app_category="game",
         )
-        self.assertEqual(len(root.find("application").findall("service")), 1)
+        app = root.find("application")
+        self.assertEqual(len(app.findall("service")), 1)
+        self.assertEqual(app.get(f"{A}appCategory"), "maps")
         self.assertIn("CAR_USES=projection", output)
         self.assertIn("CAR_NEEDS_BRIDGE=no", output)
 

@@ -42,9 +42,9 @@ import java.util.concurrent.Executors;
  * The template car surface compiled into the AndroidX runtime payload.
  *
  * Carify declares this service for ordinary phone-app clones. An isolated S25U measurement proved
- * that a shell-initiated template clone is listed when appCategory=game; earlier template failures
- * were confounded by their missing category. The service is therefore both the discovery entry
- * point and the runtime bridge to the cloned Activity.
+ * that application category participates in custom-app discovery. The original game experiment
+ * was parked-only, so production clones use maps with this navigation service. The service is both
+ * the discovery entry point and the runtime bridge to the cloned Activity.
  *
  * Android Auto gives a navigation Car App a Surface. This service backs that Surface with a
  * public, own-content VirtualDisplay and launches the clone's ordinary launcher Activity onto it.

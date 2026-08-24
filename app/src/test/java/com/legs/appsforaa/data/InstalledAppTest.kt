@@ -1,5 +1,6 @@
 package com.legs.appsforaa.data
 
+import android.content.pm.ApplicationInfo
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -11,6 +12,7 @@ class InstalledAppTest {
     private fun app(
         state: ConversionState,
         uses: Set<String>? = null,
+        appCategory: Int = ApplicationInfo.CATEGORY_UNDEFINED,
     ) = InstalledApp(
         packageName = "com.example.app",
         label = "Example",
@@ -18,7 +20,7 @@ class InstalledAppTest {
         installerPackage = null,
         apkPaths = listOf("/base.apk"),
         state = state,
-        carCapabilities = uses?.let(AutomotiveDescriptor::Capabilities),
+        carCapabilities = uses?.let { AutomotiveDescriptor.Capabilities(it, appCategory) },
     )
 
     @Test
@@ -63,5 +65,18 @@ class InstalledAppTest {
 
         assertTrue(installed.hasCarVersion)
         assertNull(installed.conversionAction)
+    }
+
+    @Test
+    fun `game category car app gets a driving compatible copy`() {
+        val installed = app(
+            ConversionState.ALREADY_ATTRIBUTED,
+            setOf(AutomotiveDescriptor.USES_TEMPLATE),
+            ApplicationInfo.CATEGORY_GAME,
+        )
+
+        assertFalse(installed.hasCarVersion)
+        assertTrue(installed.blockedWhileDriving)
+        assertEquals(ConversionAction.CAR_COPY, installed.conversionAction)
     }
 }

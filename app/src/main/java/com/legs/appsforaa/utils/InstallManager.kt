@@ -2,6 +2,7 @@ package com.legs.appsforaa.utils
 
 import android.content.Context
 import com.legs.appsforaa.data.AppEntry
+import com.legs.appsforaa.data.AutomotiveDescriptor
 import com.legs.appsforaa.data.ReleaseResolver
 import java.io.File
 
@@ -27,12 +28,20 @@ class InstallManager(
     sealed interface Progress {
         data object Resolving : Progress
         data class Downloading(val fraction: Float) : Progress
+        data class MakingCompatible(val percent: Int) : Progress
         data object Installing : Progress
     }
 
     sealed interface Outcome {
         /** Installed with Play Store attribution — Android Auto will list it. */
         data class InstalledAttributed(val versionName: String) : Outcome
+
+        /** Installed as a driving-capable side-by-side clone instead of a parked/media-only app. */
+        data class InstalledCarCompatible(
+            val versionName: String,
+            val packageName: String,
+            val usedSystemInstaller: Boolean,
+        ) : Outcome
 
         /**
          * Handed to the system installer. The user still has to confirm, and the result will not
@@ -85,11 +94,34 @@ class InstallManager(
             return Outcome.Failed(error.message ?: "Download failed")
         }
 
-        onProgress(Progress.Installing)
         return try {
+            val capabilities = AutomotiveDescriptor.forApkFile(
+                context.packageManager,
+                apk.absolutePath,
+            )
             // Waits for the permission dialog if one is needed, so the first install of a session
             // does not silently fall back to an unattributed install.
-            if (ShizukuInstaller.ensureReady()) {
+            val shizukuReady = ShizukuInstaller.ensureReady()
+            if (capabilities?.hasDrivingUi != true) {
+                if (!shizukuReady && !allowSystemFallback) {
+                    Logger.i(
+                        TAG,
+                        "Shizuku is not ready and " + entry.name +
+                            " needs a car-compatible copy; " +
+                            "unattended installation cannot show Android's confirmation dialog",
+                    )
+                    return Outcome.NeedsShizuku
+                }
+                installCarCompatible(
+                    entry = entry,
+                    apk = apk,
+                    versionName = release.versionName,
+                    shizukuReady = shizukuReady,
+                    allowSystemFallback = allowSystemFallback,
+                    onProgress = onProgress,
+                )
+            } else if (shizukuReady) {
+                onProgress(Progress.Installing)
                 when (val result = ShizukuInstaller.install(apk)) {
                     is ShizukuInstaller.Result.Success ->
                         Outcome.InstalledAttributed(release.versionName)
@@ -107,6 +139,7 @@ class InstallManager(
                     "confirm, so ${entry.name} is not installed")
                 Outcome.NeedsShizuku
             } else {
+                onProgress(Progress.Installing)
                 Logger.i(TAG, "Falling back to the system installer — the result will NOT be " +
                     "attributed to the Play Store, so Android Auto will not list ${entry.name} " +
                     "unless AA's Unknown sources is enabled")
@@ -115,6 +148,46 @@ class InstallManager(
         } finally {
             // The APK is reproducible; keeping it only costs cache space.
             apk.delete()
+        }
+    }
+
+    private suspend fun installCarCompatible(
+        entry: AppEntry,
+        apk: File,
+        versionName: String,
+        shizukuReady: Boolean,
+        allowSystemFallback: Boolean,
+        onProgress: (Progress) -> Unit,
+    ): Outcome {
+        val repackager = CarifyRepackager(context)
+        suspend fun run(mode: CarifyRepackager.InstallMode): CarifyRepackager.Result =
+            repackager.convertApk(apk, entry.name, mode) { stage ->
+                onProgress(Progress.MakingCompatible(stage.percent))
+            }
+
+        val firstMode = if (shizukuReady) {
+            CarifyRepackager.InstallMode.SHIZUKU
+        } else {
+            CarifyRepackager.InstallMode.SYSTEM
+        }
+        var result = run(firstMode)
+        if (
+            result is CarifyRepackager.Result.Failure &&
+            firstMode == CarifyRepackager.InstallMode.SHIZUKU &&
+            allowSystemFallback
+        ) {
+            Logger.w(TAG, "Attributed compatible install failed; trying Android installer: " +
+                result.message)
+            result = run(CarifyRepackager.InstallMode.SYSTEM)
+        }
+
+        return when (result) {
+            is CarifyRepackager.Result.Success -> Outcome.InstalledCarCompatible(
+                versionName = versionName,
+                packageName = result.packageName,
+                usedSystemInstaller = result.usedSystemInstaller,
+            )
+            is CarifyRepackager.Result.Failure -> Outcome.Failed(result.message)
         }
     }
 

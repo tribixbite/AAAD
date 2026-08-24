@@ -183,7 +183,7 @@ tools/carify.sh --apk downloaded.apk                # same clone, from a file, n
 **`carify` now has two paths.** An APK that already contains a projection or Car App Library
 service keeps that implementation and gets its declaration repaired. An ordinary phone app gets
 a minimized AndroidX runtime and real `CarAppService`: `template`, the permission/receiver/query
-components, `DEFAULT + CAR_LAUNCHER + NAVIGATION + APP_MAPS`, and `appCategory=game`. Split apps
+components, `DEFAULT + CAR_LAUNCHER + NAVIGATION + APP_MAPS`, and `appCategory=maps`. Split apps
 are merged first.
 
 The phone's **Convert installed apps** screen uses the same distinction. A native AA app that is
@@ -200,13 +200,12 @@ Without it, AAAD uses Android's standard confirmation installer; the user must a
 install packages and enable **Unknown sources** in Android Auto's developer settings for those
 manually installed car apps to be visible.
 
-The odd game category is measured, not guessed. On the paired S25U, both an otherwise complete
-projection clone and a separate template clone were NOT FOUND before that category was added.
-With the known-visible projection clone disabled, the shell-initiated template+game control was
-independently **FOUND: Calculator (Car)**. That rules out the earlier claim that shell-initiated
-templates are Play-gated; those comparisons were confounded by app category. Package renaming was
-also separately ruled out. This is a local testing/personal-use artifact, not a truthful Play
-declaration. Actual head-unit rendering and input remain a separate acceptance test.
+Application category is measured, not guessed. The first isolated S25U discovery control used
+`game` and proved that category was the missing listing signal, but Android Auto defines games as
+parked-only. Shipping that control value caused every Carify clone to report “not available while
+driving.” Production clones therefore use `appCategory=maps`, matching their NAVIGATION
+`CarAppService`; never restore `game`. Package renaming was separately ruled out. Actual
+head-unit rendering and input remain a separate acceptance test.
 
 `tools/aa-launcher-list.sh <serial>` prints the apps Android Auto will actually show, read off the
 phone. Use it instead of guessing — or driving.

@@ -88,15 +88,15 @@ data class InstalledApp(
      */
     val declaresAndroidAuto: Boolean get() = carCapabilities != null
 
-    /** The publisher APK already contains a projection or templated car implementation. */
-    val hasCarVersion: Boolean get() = carCapabilities?.hasCarUi == true
+    /** The publisher APK already contains a car implementation usable while driving. */
+    val hasCarVersion: Boolean get() = carCapabilities?.hasDrivingUi == true
 
     /**
      * Android Auto will list the publisher APK but refuse to open it while driving. Carify fixes
      * this on the copy by declaring a distraction-optimised template surface.
      */
     val blockedWhileDriving: Boolean
-        get() = carCapabilities?.hasCarUi == false
+        get() = carCapabilities != null && carCapabilities.hasDrivingUi.not()
 
     /**
      * Native car apps keep their publisher signature and data. Apps without a usable car surface
@@ -105,7 +105,7 @@ data class InstalledApp(
      */
     val conversionAction: ConversionAction?
         get() = when {
-            carCapabilities?.hasCarUi != true -> ConversionAction.CAR_COPY
+            carCapabilities?.hasDrivingUi != true -> ConversionAction.CAR_COPY
             state == ConversionState.CONVERTIBLE -> ConversionAction.RESTAGE
             else -> null
         }

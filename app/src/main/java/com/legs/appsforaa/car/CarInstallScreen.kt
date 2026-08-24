@@ -129,6 +129,11 @@ class CarInstallScreen(carContext: CarContext) : Screen(carContext), DefaultLife
                 val message = when (outcome) {
                     is InstallManager.Outcome.InstalledAttributed ->
                         carContext.getString(R.string.car_install_done, item.entry.name)
+                    is InstallManager.Outcome.InstalledCarCompatible ->
+                        carContext.getString(
+                            R.string.car_install_done_compatible,
+                            item.entry.name,
+                        )
                     is InstallManager.Outcome.NeedsShizuku ->
                         carContext.getString(R.string.car_needs_shizuku)
                     is InstallManager.Outcome.HandedToSystemInstaller ->

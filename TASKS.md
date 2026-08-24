@@ -593,7 +593,7 @@ Design: [docs/agent-dash.md](docs/agent-dash.md).
   implementations remain authoritative. Injected phone apps use a real AndroidX `CarAppService`
   and `template` descriptor, permission Activity/notification receiver/connection-provider query,
   `ACCESS_SURFACE` + map/navigation permissions, minimum
-  Car API 7, `DEFAULT + CAR_LAUNCHER + NAVIGATION + APP_MAPS`, and `appCategory=game`.
+  Car API 7, `DEFAULT + CAR_LAUNCHER + NAVIGATION + APP_MAPS`, and `appCategory=maps`.
 
   DEX injection deliberately does not merge the payload's resource table. The one Car App
   handshake lookup that requires it is rewritten to the pinned library version (`1.7.0`);
@@ -626,9 +626,9 @@ Design: [docs/agent-dash.md](docs/agent-dash.md).
   restored immediately and the disposable debug copy was removed after the test.
 
   **Still required:** select Calculator in a real head-unit session and verify it renders and
-  accepts button input. Listing is now **[V]**; head-unit behavior remains **[I]**. The game/maps
-  declarations are deliberately local custom-app discovery signals, not representations suitable
-  for Play review.
+  accepts button input. Listing is now **[V]**; head-unit behavior remains **[I]**. The maps and
+  navigation declarations are deliberately local custom-app discovery signals, not representations
+  suitable for Play review.
 
 - [x] **T-55** **Finish the phone conversion workflow.** The All-app scan now includes AAAD itself,
   while generated `.aaad`/`.aaaddev` outputs remain excluded. Apps that already ship a projection
@@ -655,6 +655,28 @@ Design: [docs/agent-dash.md](docs/agent-dash.md).
 
   Validation is green: supported debug and release builds (23 MB and 15 MB), app unit tests and
   lint, 46 harness tests, 4 manifest-patcher tests, workflow YAML parsing, and `git diff --check`.
+
+- [~] **T-56** **Remove the “not available while driving” restriction from every AAAD path.**
+  Root cause: T-54 promoted its successful discovery control, `android:appCategory="game"`, into
+  production. Android Auto officially defines games as parked-only. The clone was discoverable,
+  but the category itself instructed Android Auto to disable it while moving.
+
+  Generated copies now use `android:appCategory="maps"`, matching the injected NAVIGATION
+  `CarAppService`, `NavigationTemplate`, map/navigation permissions, and APP_MAPS launcher
+  category. Capability scanning also reads `ApplicationInfo.category`: even an app with a
+  projection/template surface is not labeled as an existing driving-capable car version when it
+  declares game, and is offered a corrected side-by-side copy.
+
+  Catalog installation is covered too. AAAD inspects every downloaded APK before installing it.
+  A publisher APK with a driving-capable surface retains its signature and takes the normal
+  attributed install path. A media-only, phone-only, or parked-game APK is Carified directly from
+  the download; the unusable publisher entry is never installed. Catalog installed-state,
+  updates, and Open resolve the `.aaad`/`.aaaddev` package transparently.
+
+  Automated debug and signed release builds (23 MB and 15 MB), app unit tests, blocking lint,
+  46 harness tests, and 4 generated-manifest tests are green. S25U generated-package and Android
+  Auto launcher verification remain pending because its wireless-debugging endpoint disappeared
+  during this task.
 
 - [x] **T-52** **Fix AABrowser** — the complaint that started this whole thread. Its APK declares
   `<uses name="media"/>` and nothing else, so Android Auto lists it and refuses to open it while

@@ -151,7 +151,9 @@ class CatalogRepository(
     private fun installStateOf(entry: AppEntry, latestVersion: String?): InstallState {
         // A user-added entry has no package name until its first install teaches us one.
         if (entry.packageName.isBlank()) return InstallState.NotInstalled
-        val installedVersion = installedVersionName(entry.packageName)
+        val installedPackage = installedPackageName(entry.packageName)
+            ?: return InstallState.NotInstalled
+        val installedVersion = installedVersionName(installedPackage)
             ?: return InstallState.NotInstalled
 
         // Only claim an update when the comparison is confident. VersionCompare returns null for
@@ -169,6 +171,27 @@ class CatalogRepository(
     private fun installedVersionName(packageName: String): String? = runCatching {
         context.packageManager.getPackageInfo(packageName, 0).versionName ?: ""
     }.getOrNull()
+
+    /**
+     * Resolves a catalog package to its driving-compatible clone when one exists.
+     *
+     * Known catalog entries retain the publisher package id, while media-only/parked downloads
+     * install as a side-by-side Carify clone. User-discovered entries may already have learned the
+     * clone id from PACKAGE_ADDED, so suffixes are never appended twice.
+     */
+    fun installedPackageName(packageName: String): String? {
+        if (packageName.isBlank()) return null
+        val candidates = if (
+            packageName.endsWith(".aaad") || packageName.endsWith(".aaaddev")
+        ) {
+            listOf(packageName)
+        } else {
+            val preferredSuffix = if (BuildConfig.DEBUG) ".aaaddev" else ".aaad"
+            val otherSuffix = if (BuildConfig.DEBUG) ".aaad" else ".aaaddev"
+            listOf(packageName + preferredSuffix, packageName + otherSuffix, packageName)
+        }
+        return candidates.firstOrNull { installedVersionName(it) != null }
+    }
 
     /**
      * Resolves `descriptionRes` (a string resource *name*, so one catalog serves all 30 locales)

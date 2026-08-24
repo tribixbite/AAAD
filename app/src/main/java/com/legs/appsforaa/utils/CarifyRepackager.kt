@@ -1,7 +1,10 @@
 package com.legs.appsforaa.utils
 
 import android.content.Context
+import android.content.pm.PackageManager
 import com.legs.appsforaa.BuildConfig
+import com.legs.appsforaa.data.AutomotiveDescriptor
+import com.legs.appsforaa.data.ConversionState
 import com.legs.appsforaa.data.InstalledApp
 import com.reandroid.apkeditor.Main
 import com.reandroid.archive.ZipAlign
@@ -65,6 +68,43 @@ class CarifyRepackager(private val context: Context) {
         const val BRIDGE_SERVICE =
             "com.legs.appsforaa.carify.CarifyCarAppService"
         const val BRIDGE_CLASS_MARKER = "Landroidx/car/app/CarAppService;"
+    }
+
+    /**
+     * Creates a car-compatible clone directly from a downloaded APK.
+     *
+     * Catalog installs use this before the publisher package is installed, so a media-only or
+     * parked-only APK never enters Android Auto as the misleading, unusable launcher entry.
+     */
+    suspend fun convertApk(
+        apk: File,
+        displayLabel: String,
+        installMode: InstallMode = InstallMode.SHIZUKU,
+        onProgress: (Stage) -> Unit = {},
+    ): Result {
+        if (!apk.isFile || apk.length() == 0L) {
+            return Result.Failure("Downloaded APK is missing or empty")
+        }
+        val packageInfo = context.packageManager.getPackageArchiveInfo(
+            apk.absolutePath,
+            PackageManager.GET_META_DATA,
+        ) ?: return Result.Failure("Downloaded file is not a readable APK")
+        val packageName = packageInfo.packageName
+        if (packageName.isBlank()) return Result.Failure("Downloaded APK has no package name")
+
+        val input = InstalledApp(
+            packageName = packageName,
+            label = displayLabel,
+            versionName = packageInfo.versionName.orEmpty(),
+            installerPackage = null,
+            apkPaths = listOf(apk.absolutePath),
+            state = ConversionState.CONVERTIBLE,
+            carCapabilities = AutomotiveDescriptor.forApkFile(
+                context.packageManager,
+                apk.absolutePath,
+            ),
+        )
+        return convert(input, installMode, onProgress)
     }
 
     suspend fun convert(
@@ -299,9 +339,9 @@ class CarifyRepackager(private val context: Context) {
             setMeta(document, application, "androidx.car.app.minCarApiLevel", value = "7")
         }
 
-        // Measured on the S25U: this is the custom-app discovery discriminator. It is applied to
-        // every rewritten clone, including clones that preserve a publisher's own car service.
-        application.setAndroid("appCategory", "game")
+        // CATEGORY_GAME made clones discoverable but Android Auto explicitly limits games to
+        // parked use. CATEGORY_MAPS matches the driving-capable NAVIGATION CarAppService below.
+        application.setAndroid("appCategory", "maps")
         application.setAndroid("resizeableActivity", "true")
         val originalLabel = application.android("label")
         val patchedLabels = originalLabel

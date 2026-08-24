@@ -114,6 +114,13 @@ class DebugAutomationReceiver : BroadcastReceiver() {
         when (outcome) {
             is InstallManager.Outcome.InstalledAttributed ->
                 Logger.i(TAG, "RESULT=ATTRIBUTED version=${outcome.versionName}")
+            is InstallManager.Outcome.InstalledCarCompatible ->
+                Logger.i(
+                    TAG,
+                    "RESULT=ATTRIBUTED version=${outcome.versionName} " +
+                        "carified=${outcome.packageName} " +
+                        "system=${outcome.usedSystemInstaller}",
+                )
             is InstallManager.Outcome.HandedToSystemInstaller ->
                 Logger.i(TAG, "RESULT=SYSTEM_INSTALLER (not Play-attributed)")
             is InstallManager.Outcome.NeedsShizuku ->

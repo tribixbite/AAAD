@@ -77,9 +77,9 @@ object Diagnostics {
                 }
                 appendLine()
                 appendLine("  ! = Android Auto will not list this app; it can be converted.")
-                appendLine("  D = declares no 'projection', so Android Auto lists it but blocks it")
-                appendLine("      while driving. Installing it differently cannot change that, but a")
-                appendLine("      rewritten copy can: harness/tools/carify.sh")
+                appendLine("  D = has no driving-capable car surface, or is categorized as a game")
+                appendLine("      and therefore parked-only. A rewritten maps/navigation copy can")
+                appendLine("      remove that restriction: harness/tools/carify.sh")
             }
         }
     }

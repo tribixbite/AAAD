@@ -94,10 +94,9 @@ def set_meta(parent, name, *, value=None, resource=None):
 # 5. What car surface can this app actually back?
 #
 #    The S25U control established the complete working signature: the AndroidX runtime and service,
-#    full launcher categories, and appCategory=game. With the known-visible projection clone
-#    disabled, an otherwise identical shell-initiated template+game clone was FOUND. The earlier
-#    template failures were therefore confounded by their missing app category, not evidence of a
-#    Play-initiation gate.
+#    full launcher categories, and an application category. The first isolated control used
+#    appCategory=game and was FOUND, but Android Auto restricts games to parked use. The bridge is
+#    a navigation template, so its driving-capable application category is maps.
 #
 #    Existing projection/template implementations stay authoritative. The bridge is added only
 #    when the APK has neither, avoiding duplicate Car App runtimes in apps such as AABrowser.
@@ -170,9 +169,11 @@ if needs_bridge:
 
     set_meta(app, "androidx.car.app.minCarApiLevel", value="7")
     changes.append(f"injected AndroidX {discovery} runtime components")
-    # AABrowser's listed projection Activity is classified as a game by PackageManager.
-    # Gearhead uses this application category as part of its custom-app discovery path.
-    app.set(f"{A}appCategory", "game")
+
+# CATEGORY_GAME is parked-only. CATEGORY_MAPS matches the navigation declarations added below and
+# remains eligible while driving. Apply it to repaired publisher car apps too: preserving a
+# publisher's stale game category would preserve the exact restriction Carify is meant to remove.
+app.set(f"{A}appCategory", "maps")
 
 set_meta(app, "com.google.android.gms.car.application", resource="@xml/automotive_app_desc")
 set_meta(app, "distractionOptimized", value="true")

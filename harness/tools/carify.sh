@@ -18,13 +18,14 @@
 #   * an AndroidX template descriptor, CarAppService, and runtime components
 #   * distractionOptimized=true on the application and the launcher activity
 #   * DEFAULT + CAR_LAUNCHER + NAVIGATION + APP_MAPS on the launcher intent-filter
-#   * appCategory=game, which the S25U proved is part of gearhead's custom-app discovery filter
+#   * appCategory=maps, matching the driving-capable navigation template
 #   * resizeableActivity=true and no screenOrientation lock, so a phone Activity has a chance of
 #     rendering usefully on a landscape head unit
 #
 # Existing car implementations are preserved. Ordinary phone apps receive a real CarAppService.
-# An isolated S25U control proved that a shell-initiated template is listed when appCategory=game;
-# the earlier template failures were missing that category.
+# The earlier game classification proved category participates in discovery, but games are
+# parked-only. Carify now declares maps alongside its navigation template so clones remain usable
+# while driving.
 #
 # Requires: java, APKEditor.jar, zipalign, apksigner, keytool, adb.
 set -euo pipefail

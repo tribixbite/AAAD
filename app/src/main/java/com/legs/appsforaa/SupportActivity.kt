@@ -125,11 +125,15 @@ class SupportActivity : AppCompatActivity() {
                     is InstallManager.Progress.Resolving -> getString(R.string.update_checking)
                     is InstallManager.Progress.Downloading -> getString(
                         R.string.update_downloading, (progress.fraction * 100).roundToInt())
+                    is InstallManager.Progress.MakingCompatible ->
+                        getString(R.string.update_making_compatible, progress.percent)
                     is InstallManager.Progress.Installing -> getString(R.string.update_installing)
                 }
             }
             binding.updateStatus.text = when (outcome) {
                 is InstallManager.Outcome.InstalledAttributed ->
+                    getString(R.string.update_installed, update.version)
+                is InstallManager.Outcome.InstalledCarCompatible ->
                     getString(R.string.update_installed, update.version)
                 is InstallManager.Outcome.HandedToSystemInstaller ->
                     getString(R.string.update_handed_off)

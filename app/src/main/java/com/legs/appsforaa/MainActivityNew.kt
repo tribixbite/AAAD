@@ -273,6 +273,12 @@ class MainActivityNew : AppCompatActivity() {
                             item.entry.name,
                             (progress.fraction * 100).toInt(),
                         )
+                    is InstallManager.Progress.MakingCompatible ->
+                        getString(
+                            R.string.progress_making_compatible,
+                            item.entry.name,
+                            progress.percent,
+                        )
                     is InstallManager.Progress.Installing ->
                         getString(R.string.progress_installing, item.entry.name)
                 }
@@ -287,6 +293,15 @@ class MainActivityNew : AppCompatActivity() {
         val message = when (outcome) {
             is InstallManager.Outcome.InstalledAttributed ->
                 getString(R.string.install_done_attributed, item.entry.name)
+            is InstallManager.Outcome.InstalledCarCompatible ->
+                getString(
+                    if (outcome.usedSystemInstaller) {
+                        R.string.install_done_compatible_system
+                    } else {
+                        R.string.install_done_compatible
+                    },
+                    item.entry.name,
+                )
             is InstallManager.Outcome.HandedToSystemInstaller ->
                 getString(R.string.install_handed_to_system)
             is InstallManager.Outcome.NeedsShizuku ->
@@ -320,7 +335,8 @@ class MainActivityNew : AppCompatActivity() {
     }
 
     private fun launchApp(item: AppListItem) {
-        val intent = packageManager.getLaunchIntentForPackage(item.entry.packageName)
+        val installedPackage = repository.installedPackageName(item.entry.packageName)
+        val intent = installedPackage?.let(packageManager::getLaunchIntentForPackage)
         if (intent == null) {
             Toast.makeText(this, R.string.error_cannot_open_app, Toast.LENGTH_SHORT).show()
             return

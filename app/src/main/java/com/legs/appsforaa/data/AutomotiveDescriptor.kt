@@ -4,6 +4,7 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.content.res.XmlResourceParser
+import android.os.Build
 import com.legs.appsforaa.utils.Logger
 import org.xmlpull.v1.XmlPullParser
 
@@ -43,9 +44,9 @@ object AutomotiveDescriptor {
     const val USES_PROJECTION = "projection"
 
     /**
-     * A templated Car App Library app. Not blocked while driving — templates are
-     * distraction-optimised by construction — but it draws template UI, not its own screen.
-     * Nav2Contacts in the bundled catalog declares exactly this and nothing else.
+     * A templated Car App Library app. Templates are distraction-optimised by construction, but a
+     * game-category application is still parked-only. Nav2Contacts in the bundled catalog
+     * declares exactly this descriptor and nothing else.
      */
     const val USES_TEMPLATE = "template"
     const val USES_MEDIA = "media"
@@ -57,7 +58,10 @@ object AutomotiveDescriptor {
      * one Google adds, or a typo in a publisher's manifest — stays visible in diagnostics instead
      * of being silently dropped.
      */
-    data class Capabilities(val uses: Set<String>) {
+    data class Capabilities(
+        val uses: Set<String>,
+        val appCategory: Int = ApplicationInfo.CATEGORY_UNDEFINED,
+    ) {
 
         /** Declares a full-screen car Activity, the unofficial projected-app route. */
         val projects: Boolean get() = USES_PROJECTION in uses
@@ -70,6 +74,12 @@ object AutomotiveDescriptor {
          * media-only declaration — is listed and then refuses to open.
          */
         val hasCarUi: Boolean get() = projects || templated
+
+        /** Games are an Android Auto parked-app category and are unavailable while driving. */
+        val parkedOnly: Boolean get() = appCategory == ApplicationInfo.CATEGORY_GAME
+
+        /** A real car surface that Android Auto is allowed to expose while the car is moving. */
+        val hasDrivingUi: Boolean get() = hasCarUi && !parkedOnly
 
         /**
          * Declares Android Auto support but only as a media source. Such an app appears in the
@@ -117,7 +127,13 @@ object AutomotiveDescriptor {
         if (resourceId == 0) return null
 
         val resources: Resources = packageManager.getResourcesForApplication(info)
-        return resources.getXml(resourceId).use { parser -> parseUses(parser) }
+        val uses = resources.getXml(resourceId).use { parser -> parseUses(parser) }
+        val category = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            info.category
+        } else {
+            ApplicationInfo.CATEGORY_UNDEFINED
+        }
+        return Capabilities(uses, category)
     }
 
     /**
@@ -127,7 +143,7 @@ object AutomotiveDescriptor {
      * not `android:name=` — so it must be looked up with a null namespace. Asking for the android
      * namespace returns null for every real descriptor and reports each app as declaring nothing.
      */
-    private fun parseUses(parser: XmlResourceParser): Capabilities {
+    private fun parseUses(parser: XmlResourceParser): Set<String> {
         val uses = mutableSetOf<String>()
         var event = parser.eventType
         while (event != XmlPullParser.END_DOCUMENT) {
@@ -136,7 +152,7 @@ object AutomotiveDescriptor {
             }
             event = parser.next()
         }
-        return Capabilities(uses)
+        return uses
     }
 
     /** [XmlResourceParser] is not [AutoCloseable] before API 31, so `use` is spelled by hand. */
