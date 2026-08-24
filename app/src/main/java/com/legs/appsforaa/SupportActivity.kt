@@ -131,7 +131,7 @@ class SupportActivity : AppCompatActivity() {
                 }
             }
             binding.updateStatus.text = when (outcome) {
-                is InstallManager.Outcome.InstalledAttributed ->
+                is InstallManager.Outcome.InstalledUnattended ->
                     getString(R.string.update_installed, update.version)
                 is InstallManager.Outcome.InstalledCarCompatible ->
                     getString(R.string.update_installed, update.version)

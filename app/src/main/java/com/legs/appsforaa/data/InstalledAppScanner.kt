@@ -18,7 +18,7 @@ import kotlinx.coroutines.withContext
  */
 private const val AA_METADATA_KEY = "com.google.android.gms.car.application"
 
-/** The installer attribution Android Auto trusts. */
+/** A genuine Google Play install has Play as both installer-of-record and initiating package. */
 private const val PLAY_STORE_PACKAGE = "com.android.vending"
 
 /** Which installed apps a scan should return. */
@@ -36,10 +36,10 @@ enum class ScanScope {
 
 /** How an installed, Android-Auto-capable app stands with respect to AA visibility. */
 enum class ConversionState {
-    /** Attributed to the Play Store already — nothing to do. */
-    ALREADY_ATTRIBUTED,
+    /** Initiated by the Play Store (or a system app), not merely labelled as Play-installed. */
+    TRUSTED_INSTALL,
 
-    /** AA-capable but attributed to something else, so AA will not list it. Convertible. */
+    /** Sideloaded or initiated by another package. Some routes can become parked copies. */
     CONVERTIBLE,
 }
 
@@ -64,6 +64,8 @@ data class InstalledApp(
     val label: String,
     val versionName: String,
     val installerPackage: String?,
+    /** The package that actually performed the install on Android 11+, if still available. */
+    val initiatingPackage: String? = null,
     val apkPaths: List<String>,
     val state: ConversionState,
     /**
@@ -88,15 +90,14 @@ data class InstalledApp(
      */
     val declaresAndroidAuto: Boolean get() = carCapabilities != null
 
-    /** The publisher APK already contains a car implementation usable while driving. */
-    val hasCarVersion: Boolean get() = carCapabilities?.hasDrivingUi == true
+    /** The publisher APK already declares a car implementation of some category. */
+    val hasCarVersion: Boolean get() = carCapabilities?.hasCarUi == true
 
     /**
-     * Android Auto will list the publisher APK but refuse to open it while driving. Carify fixes
-     * this on the copy by declaring a distraction-optimised template surface.
+     * The declared experience is parked-only or has no launchable car UI.
      */
     val blockedWhileDriving: Boolean
-        get() = carCapabilities != null && carCapabilities.hasDrivingUi.not()
+        get() = carCapabilities?.let { it.parkedOnly || !it.hasCarUi } == true
 
     /**
      * Native car apps keep their publisher signature and data. Apps without a usable car surface
@@ -105,22 +106,23 @@ data class InstalledApp(
      */
     val conversionAction: ConversionAction?
         get() = when {
-            carCapabilities?.hasDrivingUi != true -> ConversionAction.CAR_COPY
+            carCapabilities == null -> ConversionAction.CAR_COPY
+            carCapabilities.parkedOnly -> null
+            carCapabilities.templated && state == ConversionState.CONVERTIBLE ->
+                ConversionAction.CAR_COPY
+            !carCapabilities.hasCarUi -> ConversionAction.CAR_COPY
             state == ConversionState.CONVERTIBLE -> ConversionAction.RESTAGE
             else -> null
         }
 }
 
 /**
- * Finds installed apps that Android Auto could show but currently will not, because they were
- * not installed with Play Store attribution.
+ * Finds installed apps and reports their declared car surface plus their real install provenance.
  *
  * This is the discovery half of "conversion": an app sideloaded from anywhere — F-Droid, a
  * browser download, another installer, or an earlier AAAD build's fallback path — declares AA
- * support but is invisible in the car. It cannot be repaired in place
- * (`pm set-installer` is impossible, see `docs/aa-visibility.md`), so the fix is to reinstall the
- * very same APKs through an attributed session, which preserves data because the signature is
- * unchanged.
+ * support but may be invisible in the car. Legacy projection apps can be re-staged unchanged;
+ * untrusted templates and phone-only apps need a separate parked copy.
  */
 class InstalledAppScanner(private val context: Context) {
 
@@ -221,7 +223,7 @@ class InstalledAppScanner(private val context: Context) {
         packageInfo: PackageInfo,
         info: ApplicationInfo,
     ): InstalledApp? {
-        val installer = installerPackageOf(packageManager, info.packageName)
+        val installSource = installSourceOf(packageManager, info.packageName)
         val apkPaths = buildList {
             info.sourceDir?.let(::add)
             info.splitSourceDirs?.let(::addAll)
@@ -236,10 +238,12 @@ class InstalledAppScanner(private val context: Context) {
             label = runCatching { packageManager.getApplicationLabel(info).toString() }
                 .getOrDefault(info.packageName),
             versionName = packageInfo.versionName.orEmpty(),
-            installerPackage = installer,
+            installerPackage = installSource.installer,
+            initiatingPackage = installSource.initiator,
             apkPaths = apkPaths,
-            state = if (installer == PLAY_STORE_PACKAGE) ConversionState.ALREADY_ATTRIBUTED
-            else ConversionState.CONVERTIBLE,
+            state = if (isSystemApp(info) || installSource.isGenuinePlayInstall) {
+                ConversionState.TRUSTED_INSTALL
+            } else ConversionState.CONVERTIBLE,
             isSystemApp = isSystemApp(info),
             // Guarded by the cheap metadata check: reading a descriptor opens the app's resources,
             // and doing that for several hundred packages that plainly declare no car support
@@ -252,16 +256,32 @@ class InstalledAppScanner(private val context: Context) {
         )
     }
 
-    /** `getInstallSourceInfo` replaced the deprecated call in API 30. */
-    private fun installerPackageOf(
+    private data class InstallSource(
+        val installer: String?,
+        val initiator: String?,
+        val isGenuinePlayInstall: Boolean,
+    )
+
+    /**
+     * Reads both install-source identities. `installingPackageName` is a mutable label: shell can
+     * set it to Play with `pm install -i`. `initiatingPackageName` identifies who performed the
+     * install and is what current Android Auto uses for its trusted-source check.
+     */
+    private fun installSourceOf(
         packageManager: PackageManager,
         packageName: String,
-    ): String? = runCatching {
+    ): InstallSource = runCatching {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-            packageManager.getInstallSourceInfo(packageName).installingPackageName
+            val source = packageManager.getInstallSourceInfo(packageName)
+            InstallSource(
+                installer = source.installingPackageName,
+                initiator = source.initiatingPackageName,
+                isGenuinePlayInstall = source.initiatingPackageName == PLAY_STORE_PACKAGE,
+            )
         } else {
             @Suppress("DEPRECATION")
-            packageManager.getInstallerPackageName(packageName)
+            val installer = packageManager.getInstallerPackageName(packageName)
+            InstallSource(installer, null, installer == PLAY_STORE_PACKAGE)
         }
-    }.getOrNull()
+    }.getOrElse { InstallSource(null, null, false) }
 }

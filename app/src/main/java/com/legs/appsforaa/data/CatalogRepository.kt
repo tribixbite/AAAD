@@ -144,7 +144,7 @@ class CatalogRepository(
             AppListItem(
                 entry = entry,
                 state = installStateOf(entry, latestVersions[entry.id]),
-                descriptionResId = descriptionResIdOf(entry),
+                descriptionText = descriptionTextOf(entry),
             )
         }
 
@@ -193,15 +193,14 @@ class CatalogRepository(
         return candidates.firstOrNull { installedVersionName(it) != null }
     }
 
-    /**
-     * Resolves `descriptionRes` (a string resource *name*, so one catalog serves all 30 locales)
-     * to an id. Returns 0 when absent, which callers treat as "no description".
-     */
-    private fun descriptionResIdOf(entry: AppEntry): Int {
-        if (entry.descriptionRes.isBlank()) return 0
+    /** Literal text is used for discovered repos; bundled entries keep localized resources. */
+    private fun descriptionTextOf(entry: AppEntry): String {
+        if (entry.description.isNotBlank()) return entry.description
+        if (entry.descriptionRes.isBlank()) return ""
         @Suppress("DiscouragedApi") // by-name lookup is the point: the catalog is data, not code
-        return context.resources.getIdentifier(
+        val id = context.resources.getIdentifier(
             entry.descriptionRes, "string", context.packageName
         )
+        return if (id == 0) "" else context.getString(id)
     }
 }

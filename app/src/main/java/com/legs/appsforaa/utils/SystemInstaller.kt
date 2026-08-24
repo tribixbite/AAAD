@@ -20,12 +20,8 @@ import kotlin.coroutines.resume
 /**
  * Fallback installer using the platform [PackageInstaller], for devices without Shizuku.
  *
- * **This cannot make an app visible to Android Auto on its own.** An ordinary app may only
- * attribute an install to itself, so the resulting package reports
- * `installer=sksa.aa.customapps`, not the Play Store. Android Auto will then list the app only if
- * the user has enabled *Unknown sources* in Android Auto's own developer settings. Callers must
- * say so rather than implying the install succeeded in the sense the user cares about. See
- * `docs/aa-visibility.md`.
+ * This path needs a person to confirm the session. Android Auto may additionally require its
+ * developer *Unknown sources* setting for supported parked/custom app categories.
  *
  * Catalog installs use [install], which hands off to the confirmation dialog without awaiting it.
  * Conversion uses [installAndAwait] so its queue does not open overlapping confirmation dialogs.

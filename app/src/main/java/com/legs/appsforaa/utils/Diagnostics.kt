@@ -72,14 +72,14 @@ object Diagnostics {
                     val uses = app.carCapabilities?.uses?.sorted()?.joinToString(",") ?: "unreadable"
                     appendLine(
                         "  $marker ${app.packageName} ${app.versionName} " +
-                            "installer=${app.installerPackage ?: "none"} uses=$uses"
+                            "installer=${app.installerPackage ?: "none"} " +
+                            "initiator=${app.initiatingPackage ?: "none"} uses=$uses"
                     )
                 }
                 appendLine()
-                appendLine("  ! = Android Auto will not list this app; it can be converted.")
-                appendLine("  D = has no driving-capable car surface, or is categorized as a game")
-                appendLine("      and therefore parked-only. A rewritten maps/navigation copy can")
-                appendLine("      remove that restriction: harness/tools/carify.sh")
+                appendLine("  ! = no admitted car surface; AAAD can create a parked copy.")
+                appendLine("  D = declared or converted as parked-only. Android Auto intentionally")
+                appendLine("      disables that app while driving.")
             }
         }
     }
@@ -87,9 +87,9 @@ object Diagnostics {
     /** Spells out the consequence rather than leaving the reader to infer it. */
     private fun attributionSummary(state: ShizukuInstaller.Availability): String = when (state) {
         ShizukuInstaller.Availability.Ready ->
-            "installs are attributed to the Play Store, so Android Auto lists them"
+            "silent package-manager installs are available; this does not confer Play trust"
         else ->
-            "installs fall back to the system installer and are NOT attributed, so Android Auto " +
-                "lists them only if its own \"Unknown sources\" setting is enabled"
+            "Android confirmation is required; parked/custom visibility may also require Android " +
+                "Auto's \"Unknown sources\" developer setting"
     }
 }

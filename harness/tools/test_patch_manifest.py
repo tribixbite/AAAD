@@ -72,8 +72,8 @@ class PatchManifestTest(unittest.TestCase):
             item.get(f"{A}name"): item.get(f"{A}value")
             for item in app.findall("meta-data")
         }
-        self.assertEqual(app.get(f"{A}appCategory"), "maps")
-        self.assertEqual(metadata["androidx.car.app.minCarApiLevel"], "7")
+        self.assertEqual(app.get(f"{A}appCategory"), "game")
+        self.assertEqual(metadata["androidx.car.app.minCarApiLevel"], "5")
         component_names = {
             item.get(f"{A}name")
             for item in app.findall("activity") + app.findall("receiver")
@@ -110,10 +110,10 @@ class PatchManifestTest(unittest.TestCase):
             }.issubset(launcher_categories)
         )
 
-    def test_template_maps_clone_declares_bridge_service(self):
+    def test_template_parked_clone_declares_bridge_service(self):
         root, output = self.run_patch()
         app = root.find("application")
-        self.assertEqual(app.get(f"{A}appCategory"), "maps")
+        self.assertEqual(app.get(f"{A}appCategory"), "game")
         services = app.findall("service")
         self.assertEqual(len(services), 1)
         self.assertEqual(
@@ -139,7 +139,7 @@ class PatchManifestTest(unittest.TestCase):
         )
         app = root.find("application")
         self.assertEqual(len(app.findall("service")), 1)
-        self.assertEqual(app.get(f"{A}appCategory"), "maps")
+        self.assertEqual(app.get(f"{A}appCategory"), "game")
         self.assertIn("CAR_USES=projection", output)
         self.assertIn("CAR_NEEDS_BRIDGE=no", output)
 

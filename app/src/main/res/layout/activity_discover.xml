@@ -60,6 +60,52 @@
             android:layout_marginTop="8dp"
             android:text="@string/discover_search" />
 
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/discover_try"
+            android:textAppearance="?attr/textAppearanceLabelLarge"
+            android:textColor="?attr/colorOnSurfaceVariant" />
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/discovery_suggestions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            app:singleLine="false">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/suggest_media"
+                style="@style/Widget.Material3.Chip.Assist"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/discover_suggest_media" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/suggest_navigation"
+                style="@style/Widget.Material3.Chip.Assist"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/discover_suggest_navigation" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/suggest_mirroring"
+                style="@style/Widget.Material3.Chip.Assist"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/discover_suggest_mirroring" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/suggest_dashboard"
+                style="@style/Widget.Material3.Chip.Assist"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/discover_suggest_dashboard" />
+
+        </com.google.android.material.chip.ChipGroup>
+
     </LinearLayout>
 
     <FrameLayout

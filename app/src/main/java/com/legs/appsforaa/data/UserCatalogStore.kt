@@ -82,6 +82,7 @@ internal fun AppEntry.toJson(): JSONObject = JSONObject().apply {
     put("packageName", packageName)
     put("category", category.jsonValue)
     put("descriptionRes", descriptionRes)
+    put("description", description)
     put(
         "source",
         when (val entrySource = source) {

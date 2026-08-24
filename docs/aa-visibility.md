@@ -21,20 +21,26 @@ jadx -d java --no-res --show-bad-code mini.dex      # 52 readable Java files
 `classes3.dex` holds the app's own code. Tooling notes: `~/git/termux-tools/docs/APKTOOL_TERMUX.md`
 and `.claude/skills/smali-dex-patching.md`. `jadx` is packaged for Termux (`pacman -S jadx`).
 
-## The actual gate
+## The current gate
 
-Android Auto surfaces a third-party app only when **both** hold:
+Android Auto admission depends on the declared car surface, its category, and the **initiating**
+install source. On Android 11+, `InstallSourceInfo` exposes installing and initiating packages
+separately. A shell session may set `-i com.android.vending`, but the S25U still reports
+`initiatingPackageName=com.android.shell`; current Android Auto 17.3 uses that distinction.
 
-1. **The app declares AA support** — `<meta-data android:name="com.google.android.gms.car.application" .../>`
-   in its manifest. Every app in the catalog already does; they are AA apps. AAAD's
-   `AndroidAutoCompatChecker` reports *"Apps need `<meta-data android:name="com.google.android.gms.car.application"/>`
-   in manifest"* when it doesn't.
-2. **Android Auto trusts the installation** — either AA's developer setting *Unknown sources* is
-   enabled, or the package looks like it came from the Play Store.
+The developer *Unknown sources* setting is not a universal bypass. Google's testing documentation
+limits it to supported media, messaging/notification, and parked-app paths and explicitly says it
+does not apply to Car App Library apps. A maps/navigation template therefore requires a genuine
+trusted-store install. AAAD, adb, and Shizuku all initiate as shell and cannot create that trust.
 
-Point 2 is the whole trick. **In v2.1, AAAD does not patch or re-sign the app on-device — it
-falsifies the install attribution.** Everything in the v2.1 codebase that looks like patching is
-dead (see below).
+The supported general-purpose conversion target is consequently a parked game-category copy.
+That copy can appear with Unknown sources enabled, but Android Auto intentionally disables it while
+the vehicle is moving. There is no supported non-root way for AAAD to turn arbitrary phone UI into
+an unrestricted driving app.
+
+References: [Android Auto testing](https://developer.android.com/training/cars/testing),
+[parked apps](https://developer.android.com/training/cars/parked/auto), and
+[`InstallSourceInfo`](https://developer.android.com/reference/android/content/pm/InstallSourceInfo).
 
 > **Scope warning.** That statement is true of **v2.1 only**. Upstream's current **v2.8.5** does
 > rename packages and re-sign, in-process and working. The `pm install-create -i
@@ -44,7 +50,7 @@ dead (see below).
 
 ## What actually runs: installer attribution
 
-### Tier 1 — Shizuku session install (the working path)
+### Tier 1 — Shizuku session install (legacy installer-label path)
 
 `utils/ShizukuInstaller.installApkWithSession()` builds a `pm` session as the shell UID:
 
@@ -62,7 +68,9 @@ Executed through `Shizuku.newProcess(String[], String[], String)`, reached by re
 it is not public API. `getPlayStoreUid()` resolves `com.android.vending`'s uid for the originating
 package, falling back to a hardcoded `10299`.
 
-`-i com.android.vending` is the payload: it sets the installer package, which is what AA reads.
+`-i com.android.vending` sets the installing package label. It does **not** make Play the
+initiating package. This helped older Android Auto builds, but does not satisfy current
+trusted-source admission for Car App Library driving categories.
 
 ### Tier 2 — repair an existing install — **does not work** [V]
 
@@ -87,12 +95,11 @@ installer package**. Neither adb nor Shizuku qualifies — both run as the shell
 is not signed as the Play Store. So the entire tier-2 repair path, including
 `fixAllAAADInstalledApps()`, is dead on modern Android.
 
-The asymmetry is the important part: **the installer package can be *declared* when the session is
-created, but never *changed* afterwards.** That is why tier 1 works and tier 2 does not — and why
-upstream needed a root-only tier 3 at all.
+The asymmetry is still useful historically: the installer label can be declared when the session
+is created but cannot be changed afterwards. Neither operation changes the initiating package.
 
-Practical consequence: **attribution must be set at install time.** An app already installed
-without it cannot be fixed in place; it has to be uninstalled and reinstalled through a session.
+Practical consequence: re-staging can repair the legacy installer label, but cannot turn a shell
+install into a genuine Play-initiated install.
 
 ### Tier 3 — `/data/system/packages.xml` (root, last resort)
 

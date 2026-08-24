@@ -15,6 +15,8 @@ data class RepoResult(
     val stars: Int,
     val archived: Boolean,
     val htmlUrl: String,
+    val language: String = "",
+    val updatedAt: String = "",
 )
 
 /**
@@ -36,8 +38,12 @@ class GitHubSearch(
     private companion object {
         const val TAG = "GitHubSearch"
         const val SEARCH_URL = "https://api.github.com/search/repositories"
+        const val REPO_URL = "https://api.github.com/repos"
+        val OWNER_PATTERN = Regex("[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?")
+        val REPO_PATTERN = Regex("[A-Za-z0-9._-]{1,100}")
         const val PER_PAGE = 50
         const val TIMEOUT_SECONDS = 20L
+        const val MAX_DESCRIPTION_CHARS = 280
 
         fun defaultClient(): OkHttpClient = OkHttpClient.Builder()
             .connectTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
@@ -71,48 +77,106 @@ class GitHubSearch(
             val items = JSONObject(body).optJSONArray("items") ?: return@withContext emptyList()
             buildList {
                 for (i in 0 until items.length()) {
-                    val item = items.optJSONObject(i) ?: continue
-                    val stars = item.optInt("stargazers_count")
-                    if (stars < minStars) continue
-                    val fullName = item.optString("full_name").ifBlank { continue }
-                    add(
-                        RepoResult(
-                            fullName = fullName,
-                            // isNull() first: org.json's optString returns the literal string
-                            // "null" for a JSON null, and GitHub sends null for repos with no
-                            // description — which rendered as a card reading "null".
-                            description = if (item.isNull("description")) ""
-                            else item.optString("description"),
-                            stars = stars,
-                            archived = item.optBoolean("archived"),
-                            htmlUrl = item.optString("html_url"),
-                        )
-                    )
+                    val result = items.optJSONObject(i)?.let(::parseResult) ?: continue
+                    if (result.stars >= minStars) add(result)
                 }
             }.also { Logger.d(TAG, "\"$query\" -> ${it.size} repos") }
         }
+
+    /** Resolves one pasted reference before it can be added to the catalog. */
+    suspend fun lookup(repo: String): RepoResult = withContext(Dispatchers.IO) {
+        val request = Request.Builder()
+            .url("$REPO_URL/$repo")
+            .header("Accept", "application/vnd.github+json")
+            .build()
+
+        val body = httpClient.newCall(request).execute().use { response ->
+            if (response.code == 404) error("Repository $repo not found")
+            if (response.code == 403 || response.code == 429) {
+                error("GitHub rate limit reached — try again in a minute")
+            }
+            check(response.isSuccessful) {
+                "Could not load $repo: HTTP ${response.code}"
+            }
+            response.body?.string().orEmpty()
+        }
+        val result = parseResult(JSONObject(body))
+            ?: error("GitHub returned incomplete details for $repo")
+        Logger.d(TAG, "$repo -> verified repository")
+        result
+    }
 
     /**
      * Accepts what a user is likely to paste: a full GitHub URL, or a bare `owner/repo`.
      * Returns null when it is neither.
      */
     fun parseRepoReference(input: String): String? {
-        val trimmed = input.trim().removeSuffix("/").removeSuffix(".git")
+        val trimmed = input.trim().removeSuffix("/")
         if (trimmed.isEmpty()) return null
 
         val path = when {
-            trimmed.startsWith("http://") || trimmed.startsWith("https://") ->
-                runCatching { java.net.URI(trimmed).path.orEmpty() }.getOrDefault("")
+            trimmed.startsWith("http://") || trimmed.startsWith("https://") -> {
+                val uri = runCatching { java.net.URI(trimmed) }.getOrNull() ?: return null
+                if (uri.scheme !in setOf("http", "https")) return null
+                if (uri.userInfo != null || uri.port != -1) return null
+                if (uri.host?.lowercase() !in setOf("github.com", "www.github.com")) return null
+                uri.path.orEmpty()
+            }
             trimmed.startsWith("github.com/") -> trimmed.removePrefix("github.com/")
             else -> trimmed
         }.trim('/')
 
         val segments = path.split('/').filter { it.isNotBlank() }
         if (segments.size < 2) return null
-        // A release or tree URL carries more segments; owner/repo is always the first two.
-        return "${segments[0]}/${segments[1]}"
+        val owner = segments[0]
+        val repo = segments[1].removeSuffix(".git")
+        if (repo == "." || repo == "..") return null
+        if (!OWNER_PATTERN.matches(owner)) return null
+        if (!REPO_PATTERN.matches(repo)) return null
+        return "$owner/$repo"
+    }
+
+    private fun parseResult(item: JSONObject): RepoResult? {
+        val fullName = item.optString("full_name").ifBlank { return null }
+        val htmlUrl = item.optString("html_url").ifBlank {
+            "https://github.com/$fullName"
+        }
+        return RepoResult(
+            fullName = fullName,
+            description = sanitizeDescription(
+                if (item.isNull("description")) "" else item.optString("description")
+            ),
+            stars = item.optInt("stargazers_count"),
+            archived = item.optBoolean("archived"),
+            htmlUrl = htmlUrl,
+            language = if (item.isNull("language")) "" else item.optString("language"),
+            updatedAt = item.optString("updated_at"),
+        )
     }
 
     private fun encode(value: String): String =
         java.net.URLEncoder.encode(value, Charsets.UTF_8.name())
+
+    /**
+     * Repository descriptions are untrusted metadata. Some repositories abuse the field with a
+     * complete page/script payload; keep the useful lead sentence and bound every result card.
+     * HTML tags/entities are separately reduced to plain text by the adapters.
+     */
+    internal fun sanitizeDescription(value: String): String {
+        val normalized = value.replace(Regex("\\s+"), " ").trim()
+        val suspiciousMarkers = listOf(
+            " window.",
+            " document.",
+            " function(",
+            "<script",
+            "<style",
+            " localStorage.",
+        )
+        val firstMarker = suspiciousMarkers
+            .map { normalized.indexOf(it, ignoreCase = true) }
+            .filter { it >= 0 }
+            .minOrNull()
+            ?: normalized.length
+        return normalized.substring(0, firstMarker).trim().take(MAX_DESCRIPTION_CHARS)
+    }
 }

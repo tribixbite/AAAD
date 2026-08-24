@@ -29,7 +29,8 @@ import javax.xml.transform.stream.StreamResult
  *
  * This is intentionally a clone, never an update over the publisher package: manifest/resource
  * changes invalidate the publisher signature. The original app and its data stay untouched while
- * the clone is signed with [CarifySigner] and installed with Play attribution through Shizuku.
+ * the clone is signed with [CarifySigner]. Shizuku can install it unattended; Android's installer
+ * is the confirmation-based fallback.
  */
 class CarifyRepackager(private val context: Context) {
 
@@ -97,6 +98,7 @@ class CarifyRepackager(private val context: Context) {
             label = displayLabel,
             versionName = packageInfo.versionName.orEmpty(),
             installerPackage = null,
+            initiatingPackage = null,
             apkPaths = listOf(apk.absolutePath),
             state = ConversionState.CONVERTIBLE,
             carCapabilities = AutomotiveDescriptor.forApkFile(
@@ -336,12 +338,15 @@ class CarifyRepackager(private val context: Context) {
                         .setAndroid("name", "androidx.car.app.category.NAVIGATION")
                 }
             }
-            setMeta(document, application, "androidx.car.app.minCarApiLevel", value = "7")
+            // SurfaceCallback.onClick is the newest API the bridge calls (Car API 5).
+            setMeta(document, application, "androidx.car.app.minCarApiLevel", value = "5")
         }
 
-        // CATEGORY_GAME made clones discoverable but Android Auto explicitly limits games to
-        // parked use. CATEGORY_MAPS matches the driving-capable NAVIGATION CarAppService below.
-        application.setAndroid("appCategory", "maps")
+        // A never-before-installed S25U control proved a maps/template clone is rejected because
+        // the shell, not a trusted store, initiated its install. Parked games are the one general
+        // Activity route covered by Android Auto's Unknown sources setting, so arbitrary phone
+        // apps must be honest parked copies. This category makes an AAAD sideload discoverable.
+        application.setAndroid("appCategory", "game")
         application.setAndroid("resizeableActivity", "true")
         val originalLabel = application.android("label")
         val patchedLabels = originalLabel

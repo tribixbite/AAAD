@@ -24,8 +24,8 @@ class InstalledAppTest {
     )
 
     @Test
-    fun `ordinary app gets a car copy even when Play attributed`() {
-        val installed = app(ConversionState.ALREADY_ATTRIBUTED)
+    fun `ordinary app gets a car copy even with a trusted install`() {
+        val installed = app(ConversionState.TRUSTED_INSTALL)
 
         assertEquals(ConversionAction.CAR_COPY, installed.conversionAction)
         assertFalse(installed.hasCarVersion)
@@ -35,7 +35,7 @@ class InstalledAppTest {
     @Test
     fun `media only app gets a car compatible copy`() {
         val installed = app(
-            ConversionState.ALREADY_ATTRIBUTED,
+            ConversionState.TRUSTED_INSTALL,
             setOf(AutomotiveDescriptor.USES_MEDIA),
         )
 
@@ -45,21 +45,33 @@ class InstalledAppTest {
     }
 
     @Test
-    fun `unattributed native car app is restaged without rewriting`() {
+    fun `sideloaded template app gets a discoverable parked copy`() {
         val installed = app(
             ConversionState.CONVERTIBLE,
             setOf(AutomotiveDescriptor.USES_TEMPLATE),
         )
 
-        assertEquals(ConversionAction.RESTAGE, installed.conversionAction)
+        assertEquals(ConversionAction.CAR_COPY, installed.conversionAction)
         assertTrue(installed.hasCarVersion)
         assertFalse(installed.blockedWhileDriving)
     }
 
     @Test
-    fun `Play attributed native car app needs no action`() {
+    fun `sideloaded legacy projection app keeps lightweight restage`() {
         val installed = app(
-            ConversionState.ALREADY_ATTRIBUTED,
+            ConversionState.CONVERTIBLE,
+            setOf(AutomotiveDescriptor.USES_PROJECTION),
+        )
+
+        assertEquals(ConversionAction.RESTAGE, installed.conversionAction)
+        assertTrue(installed.hasCarVersion)
+    }
+
+
+    @Test
+    fun `trusted native car app needs no action`() {
+        val installed = app(
+            ConversionState.TRUSTED_INSTALL,
             setOf(AutomotiveDescriptor.USES_PROJECTION),
         )
 
@@ -68,15 +80,15 @@ class InstalledAppTest {
     }
 
     @Test
-    fun `game category car app gets a driving compatible copy`() {
+    fun `game category car app is reported as parked only`() {
         val installed = app(
-            ConversionState.ALREADY_ATTRIBUTED,
+            ConversionState.TRUSTED_INSTALL,
             setOf(AutomotiveDescriptor.USES_TEMPLATE),
             ApplicationInfo.CATEGORY_GAME,
         )
 
-        assertFalse(installed.hasCarVersion)
+        assertTrue(installed.hasCarVersion)
         assertTrue(installed.blockedWhileDriving)
-        assertEquals(ConversionAction.CAR_COPY, installed.conversionAction)
+        assertNull(installed.conversionAction)
     }
 }

@@ -93,10 +93,10 @@ def set_meta(parent, name, *, value=None, resource=None):
 
 # 5. What car surface can this app actually back?
 #
-#    The S25U control established the complete working signature: the AndroidX runtime and service,
-#    full launcher categories, and an application category. The first isolated control used
-#    appCategory=game and was FOUND, but Android Auto restricts games to parked use. The bridge is
-#    a navigation template, so its driving-capable application category is maps.
+#    A never-before-installed S25U control proved that installer-of-record spoofing does not make
+#    a shell-initiated Car App Library package trusted. Android Auto rejects maps/template clones
+#    before discovery. Parked games are covered by Unknown sources and are the only supported
+#    general Activity route on Android Auto, so arbitrary sideloaded copies use that honest route.
 #
 #    Existing projection/template implementations stay authoritative. The bridge is added only
 #    when the APK has neither, avoiding duplicate Car App runtimes in apps such as AABrowser.
@@ -167,13 +167,13 @@ if needs_bridge:
         bridge_category = ET.SubElement(bridge_filter, "category")
         bridge_category.set(f"{A}name", "androidx.car.app.category.NAVIGATION")
 
-    set_meta(app, "androidx.car.app.minCarApiLevel", value="7")
+    # SurfaceCallback.onClick is the newest host API the injected bridge calls.
+    set_meta(app, "androidx.car.app.minCarApiLevel", value="5")
     changes.append(f"injected AndroidX {discovery} runtime components")
 
-# CATEGORY_GAME is parked-only. CATEGORY_MAPS matches the navigation declarations added below and
-# remains eligible while driving. Apply it to repaired publisher car apps too: preserving a
-# publisher's stale game category would preserve the exact restriction Carify is meant to remove.
-app.set(f"{A}appCategory", "maps")
+# A shell install can change the installer label but not its initiating package. Android Auto
+# admits the sideload through its parked-app Unknown sources path, which requires game.
+app.set(f"{A}appCategory", "game")
 
 set_meta(app, "com.google.android.gms.car.application", resource="@xml/automotive_app_desc")
 set_meta(app, "distractionOptimized", value="true")

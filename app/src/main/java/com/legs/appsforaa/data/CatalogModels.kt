@@ -1,6 +1,5 @@
 package com.legs.appsforaa.data
 
-import androidx.annotation.StringRes
 import org.json.JSONObject
 
 /**
@@ -64,6 +63,7 @@ data class AppEntry(
     val packageName: String,
     val category: AppCategory,
     val descriptionRes: String,
+    val description: String = "",
     val source: AppSource,
 ) {
     companion object {
@@ -80,6 +80,7 @@ data class AppEntry(
                 packageName = packageName,
                 category = AppCategory.fromJson(json.optString("category")),
                 descriptionRes = json.optString("descriptionRes"),
+                description = json.optString("description"),
                 source = source,
             )
         }
@@ -139,5 +140,5 @@ sealed interface InstallState {
 data class AppListItem(
     val entry: AppEntry,
     val state: InstallState,
-    @param:StringRes val descriptionResId: Int,
+    val descriptionText: String,
 )

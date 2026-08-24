@@ -3,10 +3,10 @@ package com.legs.appsforaa
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import androidx.core.widget.doAfterTextChanged
+import androidx.appcompat.widget.TooltipCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.legs.appsforaa.adapters.ConversionRowState
@@ -23,6 +23,7 @@ import com.legs.appsforaa.utils.ShizukuInstaller
 import com.legs.appsforaa.utils.SystemInstaller
 import com.legs.appsforaa.utils.applyBottomInsetPadding
 import com.legs.appsforaa.utils.applyTopInsetPadding
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
@@ -34,10 +35,9 @@ import java.io.File
 /**
  * Makes installed apps usable from Android Auto.
  *
- * Apps that already contain a car surface are re-staged unchanged when their installer
- * attribution needs repair. Phone-only apps get a separately signed, side-by-side copy with
- * AAAD's template bridge. Shizuku provides Play attribution when available; otherwise Android's
- * standard installer works with Android Auto's Unknown sources developer option.
+ * Existing legacy projection apps can be re-staged unchanged. Phone-only and untrusted templated
+ * apps get a separately signed, side-by-side parked copy. Shizuku provides unattended
+ * installation when available; Android's standard installer is the confirmation-based fallback.
  *
  * Full rationale: `docs/aa-visibility.md`.
  */
@@ -97,6 +97,10 @@ class ConvertActivity : AppCompatActivity() {
         binding.appList.layoutManager = LinearLayoutManager(this)
         binding.appList.adapter = adapter
 
+        TooltipCompat.setTooltipText(binding.copyHelp, getString(R.string.convert_copy_help_title))
+        binding.copyHelp.setOnClickListener {
+            showCopyHelp()
+        }
         binding.scopeToggle.check(R.id.scope_aa)
         binding.scopeToggle.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (!isChecked) return@addOnButtonCheckedListener
@@ -170,6 +174,14 @@ class ConvertActivity : AppCompatActivity() {
         }
     }
 
+    private fun showCopyHelp() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.convert_copy_help_title)
+            .setMessage(R.string.convert_copy_help_message)
+            .setPositiveButton(R.string.action_got_it, null)
+            .show()
+    }
+
     /**
      * Conversion reinstalls a package the user did not get from this app, so it asks first and
      * says exactly what will happen — including that data is preserved, which is the thing a user
@@ -198,7 +210,7 @@ class ConvertActivity : AppCompatActivity() {
             }.joinToString("\n\n")
         }
 
-        AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this)
             .setTitle(
                 getString(
                     if (makesCarCopy) R.string.convert_carify_confirm_title

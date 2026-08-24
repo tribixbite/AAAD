@@ -12,10 +12,9 @@ import org.xmlpull.v1.XmlPullParser
  * Reads an app's `automotive_app_desc` — the XML its `com.google.android.gms.car.application`
  * meta-data points at — and reports which car experiences it declares.
  *
- * **This is a different question from installer attribution, and conflating the two wastes hours.**
- * Attribution decides whether Android Auto *lists* an app at all (see `docs/aa-visibility.md`).
- * This descriptor decides what the app is then *allowed to do*. An app can be perfectly attributed,
- * appear in the launcher, and still refuse to open with "can't use while driving".
+ * **This is different from Android Auto admission.** A descriptor tells Android Auto what kind of
+ * experience an APK declares; the initiating installer and developer Unknown sources setting
+ * still decide whether that declaration is admitted.
  *
  * Evidence for that split, from the shipped APKs of three catalog apps:
  *
@@ -26,14 +25,9 @@ import org.xmlpull.v1.XmlPullParser
  * | Nav2Contacts | `template` | runs as a templated app |
  * | AABrowser | `media` only | "can't use while driving" |
  *
- * Either `projection` (a full-screen Activity — an ordinary one is enough, confirmed on a head
- * unit) or `template` (Car App Library) gives an app a usable car surface. An app declaring
- * neither is a media source: Android Auto lists it and then refuses to open its UI while driving.
- *
- * No installer, permission or setting can change that, because it is a statement the app makes
- * about itself in its own APK — but **rewriting the APK can**. The phone Convert screen and
- * `harness/tools/carify.sh` create a renamed, re-signed copy with a real templated Car App service
- * and install it alongside the original.
+ * Legacy `projection` apps may be exposed by Android Auto's developer option. Official Car App
+ * Library `template` apps require a trusted initiating source for driving categories. AAAD cannot
+ * manufacture that trust, so conversion creates a renamed, re-signed parked game copy instead.
  */
 object AutomotiveDescriptor {
 
@@ -70,15 +64,14 @@ object AutomotiveDescriptor {
         val templated: Boolean get() = USES_TEMPLATE in uses
 
         /**
-         * Has some usable car surface. Either route is fine; only an app with neither — a
-         * media-only declaration — is listed and then refuses to open.
+         * Declares some car surface. This does not imply Android Auto will admit it.
          */
         val hasCarUi: Boolean get() = projects || templated
 
         /** Games are an Android Auto parked-app category and are unavailable while driving. */
         val parkedOnly: Boolean get() = appCategory == ApplicationInfo.CATEGORY_GAME
 
-        /** A real car surface that Android Auto is allowed to expose while the car is moving. */
+        /** A declared non-game car surface; trusted-source admission is a separate check. */
         val hasDrivingUi: Boolean get() = hasCarUi && !parkedOnly
 
         /**

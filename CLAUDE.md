@@ -43,14 +43,14 @@ Three goals, in priority order. Task breakdown in [TASKS.md](TASKS.md).
 **The app runs and does its job.** `LauncherActivity` → `MainActivityNew` shows the catalog,
 resolves install state, and refreshes on package changes. Three flows work:
 
-- **Install** — resolve a publisher's latest GitHub release, download, install through a
-  Play-attributed Shizuku session so Android Auto lists it (T-06).
+- **Install** — resolve a publisher's latest GitHub release, download, verify its car surface, and
+  install it unattended through Shizuku or interactively through Android (T-06).
 - **Convert** — register an app's existing car version, or create a side-by-side car-compatible
   copy for any installed app. Work is queued, cancellable, and reports stage progress (T-55).
 - **Discover** — search GitHub or paste a repo URL to add apps, Obtainium-style (T-31a).
 
-Everything Shizuku cannot do falls back to the system installer, which **cannot** set attribution;
-the app says so plainly rather than implying success.
+Shizuku is an optional unattended-install bridge. It does not confer trusted-store admission;
+everything it cannot do falls back to Android's confirmation installer.
 
 Still unimplemented: onboarding (T-08), support and the AA setup guide (T-09). Their manifest
 entries are **omitted, not stubbed** — a declared component with no class is a crash waiting for
@@ -180,32 +180,31 @@ bun run src/cli.ts logs --level W                   # the app's own JSONL log, p
 tools/carify.sh --apk downloaded.apk                # same clone, from a file, no device needed
 ```
 
-**`carify` now has two paths.** An APK that already contains a projection or Car App Library
-service keeps that implementation and gets its declaration repaired. An ordinary phone app gets
-a minimized AndroidX runtime and real `CarAppService`: `template`, the permission/receiver/query
-components, `DEFAULT + CAR_LAUNCHER + NAVIGATION + APP_MAPS`, and `appCategory=maps`. Split apps
-are merged first.
+**`carify` now has two paths.** An APK that already contains a legacy projection surface keeps
+that implementation. An ordinary phone or untrusted templated app gets a minimized AndroidX
+runtime, a real `CarAppService`, and `appCategory=game`. Split apps are merged first. The game
+category is intentional: it is the supported parked-app discovery route for a sideloaded
+arbitrary app.
 
-The phone's **Convert installed apps** screen uses the same distinction. A native AA app that is
-merely unattributed is re-staged unchanged, preserving its signature and data. Any app without a
-usable car surface—including Play-installed and built-in apps—gets a `<package>.aaad` side-by-side
+The phone's **Convert installed apps** screen uses the same distinction. A native legacy
+projection app may be re-staged unchanged, preserving its signature and data. Any app without an
+admitted car surface—including Play-installed and built-in apps—gets a `<package>.aaad` side-by-side
 Car copy. The original is never stopped or modified; the copy is re-signed, starts with fresh data,
 and carries the template bridge above. System apps stay out of the default AA-only list but are
 available under **All apps**. AAAD itself is listed too. Apps with a publisher-supplied car version
 carry an explicit chip; full descriptions wrap; conversions show stage progress and run in a
 cancellable FIFO queue.
 
-Shizuku is optional for this phone UI. When it is ready, installs carry Play Store attribution.
-Without it, AAAD uses Android's standard confirmation installer; the user must allow AAAD to
-install packages and enable **Unknown sources** in Android Auto's developer settings for those
-manually installed car apps to be visible.
+Shizuku is optional for this phone UI. When ready it avoids Android's confirmation dialog; it
+cannot make `com.android.shell` a trusted initiating store. Without it, AAAD uses Android's
+standard confirmation installer. **Unknown sources** may expose supported parked/custom apps, but
+is not a bypass for Car App Library driving categories.
 
-Application category is measured, not guessed. The first isolated S25U discovery control used
-`game` and proved that category was the missing listing signal, but Android Auto defines games as
-parked-only. Shipping that control value caused every Carify clone to report “not available while
-driving.” Production clones therefore use `appCategory=maps`, matching their NAVIGATION
-`CarAppService`; never restore `game`. Package renaming was separately ruled out. Actual
-head-unit rendering and input remain a separate acceptance test.
+Application category is measured, not guessed. A fresh S25U control proved that a sideloaded
+`maps` template is rejected even when its displayed installer is Play: Android records shell as
+the initiator. A `game` copy is discoverable because it follows the official parked-app route.
+Never claim or try to remove its while-driving restriction; that restriction is imposed by
+Android Auto and is the safety contract that makes the route available.
 
 `tools/aa-launcher-list.sh <serial>` prints the apps Android Auto will actually show, read off the
 phone. Use it instead of guessing — or driving.

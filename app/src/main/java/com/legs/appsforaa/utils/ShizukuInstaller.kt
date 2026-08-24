@@ -14,12 +14,11 @@ import java.io.File
 import kotlin.coroutines.resume
 
 /**
- * Installs an APK through Shizuku so Android Auto will list it.
+ * Installs an APK through Shizuku without an Android confirmation dialog.
  *
- * The mechanism, and why it is the only one that works, is documented in
- * `docs/aa-visibility.md`. In short: Android Auto surfaces a third-party app only when the app
- * declares AA support **and** the install is attributed to the Play Store. Shizuku runs `pm` as
- * the shell uid, which is allowed to declare `-i com.android.vending` when it creates the session.
+ * Shizuku runs `pm` as the shell uid. The command retains `-i com.android.vending` for legacy
+ * Android Auto builds that read the installer label, but current builds also expose the shell as
+ * the initiating package. This path therefore provides automation, not genuine Play Store trust.
  *
  * Two properties of that mechanism shape this class:
  *
@@ -78,15 +77,14 @@ object ShizukuInstaller {
      * answer** if needed.
      *
      * The waiting is the point. Requesting permission and continuing immediately guarantees the
-     * first install of every session silently takes the unattributed fallback path, because the
-     * user has not answered yet — which looks like "Shizuku doesn't work" and produces an app
-     * Android Auto will not list.
+     * first install of every session silently takes the interactive fallback path before the user
+     * has answered.
      */
     suspend fun ensureReady(): Boolean {
         // Shizuku hands its binder to the app ASYNCHRONOUSLY, through ShizukuProvider after the
         // process starts. pingBinder() is false until that lands, so checking it synchronously
         // reports "NotRunning" on a perfectly healthy Shizuku — and silently downgrades the
-        // install to an unattributed one. Wait for it before deciding anything.
+        // install to the interactive path. Wait for it before deciding anything.
         if (!isBinderAlive() && shizukuAppInstalled) {
             awaitBinder(BINDER_WAIT_MILLIS)
         }
@@ -268,7 +266,7 @@ object ShizukuInstaller {
                 )
             }
 
-            Logger.i(TAG, "Converted $packageName (${apkPaths.size} APK(s)) to Play attribution")
+            Logger.i(TAG, "Re-staged $packageName (${apkPaths.size} APK(s)) unattended")
             Result.Success(packageName)
         } catch (cancelled: CancellationException) {
             abandonSession(sessionId)
@@ -279,7 +277,8 @@ object ShizukuInstaller {
     private fun createSession(): Int? {
         val command = buildString {
             append("pm install-create -r")
-            // The payload: this is what Android Auto reads. See docs/aa-visibility.md.
+            // Retain the legacy installer-of-record label. Current Android Auto can separately
+            // observe that shell initiated the session; this does not confer Play trust.
             append(" -i $PLAY_STORE_PACKAGE")
             append(" --originating-uri '$PLAY_STORE_URI'")
             append(" --install-reason 0")

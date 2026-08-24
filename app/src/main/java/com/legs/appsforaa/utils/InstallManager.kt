@@ -9,10 +9,10 @@ import java.io.File
 /**
  * Orchestrates resolve → download → install for one catalog entry.
  *
- * The install method is chosen per attempt rather than configured, because Shizuku's state
- * changes underneath the app: the user can start or stop it at any time. The two methods are not
- * equivalent and the difference is not cosmetic — only the Shizuku path produces an install that
- * Android Auto will list. See `docs/aa-visibility.md`.
+ * The install method is chosen per attempt because Shizuku's state changes underneath the app.
+ * Shizuku makes installation unattended; it does not make a shell-initiated install a genuine
+ * Play Store install. Android Auto visibility still follows the app surface and its developer
+ * Unknown sources setting. See `docs/aa-visibility.md`.
  */
 class InstallManager(
     private val context: Context,
@@ -33,10 +33,10 @@ class InstallManager(
     }
 
     sealed interface Outcome {
-        /** Installed with Play Store attribution — Android Auto will list it. */
-        data class InstalledAttributed(val versionName: String) : Outcome
+        /** Installed unchanged through the unattended package-manager path. */
+        data class InstalledUnattended(val versionName: String) : Outcome
 
-        /** Installed as a driving-capable side-by-side clone instead of a parked/media-only app. */
+        /** Installed as a parked, side-by-side car-compatible copy. */
         data class InstalledCarCompatible(
             val versionName: String,
             val packageName: String,
@@ -45,8 +45,8 @@ class InstallManager(
 
         /**
          * Handed to the system installer. The user still has to confirm, and the result will not
-         * carry Play Store attribution, so Android Auto lists it only when AA's *Unknown sources*
-         * developer setting is enabled.
+         * be visible in Android Auto only where its developer *Unknown sources* setting permits
+         * that app category.
          */
         data object HandedToSystemInstaller : Outcome
 
@@ -100,14 +100,19 @@ class InstallManager(
                 apk.absolutePath,
             )
             // Waits for the permission dialog if one is needed, so the first install of a session
-            // does not silently fall back to an unattributed install.
+            // does not silently fall back to an interactive install.
             val shizukuReady = ShizukuInstaller.ensureReady()
-            if (capabilities?.hasDrivingUi != true) {
+            // A sideloaded Car App Library template is not admitted as a driving app merely
+            // because the APK declares one. Preserve known legacy projection apps and publisher
+            // parked apps; turn every other GitHub/catalog APK into an honest parked copy.
+            val canInstallUnchanged =
+                capabilities?.projects == true || capabilities?.parkedOnly == true
+            if (!canInstallUnchanged) {
                 if (!shizukuReady && !allowSystemFallback) {
                     Logger.i(
                         TAG,
                         "Shizuku is not ready and " + entry.name +
-                            " needs a car-compatible copy; " +
+                            " needs a parked car-compatible copy; " +
                             "unattended installation cannot show Android's confirmation dialog",
                     )
                     return Outcome.NeedsShizuku
@@ -124,7 +129,7 @@ class InstallManager(
                 onProgress(Progress.Installing)
                 when (val result = ShizukuInstaller.install(apk)) {
                     is ShizukuInstaller.Result.Success ->
-                        Outcome.InstalledAttributed(release.versionName)
+                        Outcome.InstalledUnattended(release.versionName)
                     is ShizukuInstaller.Result.Failure -> if (allowSystemFallback) {
                         Logger.w(TAG, "Shizuku install failed, falling back: ${result.message}")
                         systemInstall(apk)
@@ -176,7 +181,7 @@ class InstallManager(
             firstMode == CarifyRepackager.InstallMode.SHIZUKU &&
             allowSystemFallback
         ) {
-            Logger.w(TAG, "Attributed compatible install failed; trying Android installer: " +
+                    Logger.w(TAG, "Unattended compatible install failed; trying Android installer: " +
                 result.message)
             result = run(CarifyRepackager.InstallMode.SYSTEM)
         }

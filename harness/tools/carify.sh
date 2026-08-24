@@ -18,14 +18,14 @@
 #   * an AndroidX template descriptor, CarAppService, and runtime components
 #   * distractionOptimized=true on the application and the launcher activity
 #   * DEFAULT + CAR_LAUNCHER + NAVIGATION + APP_MAPS on the launcher intent-filter
-#   * appCategory=maps, matching the driving-capable navigation template
+#   * appCategory=game, the Android Auto parked-app route available to sideloaded Activities
 #   * resizeableActivity=true and no screenOrientation lock, so a phone Activity has a chance of
 #     rendering usefully on a landscape head unit
 #
-# Existing car implementations are preserved. Ordinary phone apps receive a real CarAppService.
-# The earlier game classification proved category participates in discovery, but games are
-# parked-only. Carify now declares maps alongside its navigation template so clones remain usable
-# while driving.
+# Existing car implementations are preserved. Ordinary phone apps receive a real CarAppService,
+# but Android Auto will not admit a shell-initiated Car App Library package as trusted merely
+# because its installer label says Play. The parked-game route is the only honest, generally
+# discoverable sideload route; Android Auto disables these copies while moving.
 #
 # Requires: java, APKEditor.jar, zipalign, apksigner, keytool, adb.
 set -euo pipefail

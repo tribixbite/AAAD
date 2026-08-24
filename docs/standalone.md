@@ -32,13 +32,12 @@ Also removed once the mechanism was actually known:
 
 | Removed | Why |
 | --- | --- |
-| `org.bouncycastle:bcpkix/bcprov:1.82` | Upstream used them only for on-device APK re-signing — a chain that cannot execute on a stock device. Android Auto visibility comes from **installer attribution**, not from patching or re-signing the app. Evidence: [aa-visibility.md](aa-visibility.md) |
+| `org.bouncycastle:bcpkix/bcprov:1.82` | Upstream used them only for an on-device signing chain that cannot execute on stock Android. This fork uses Android Keystore and in-process signing for parked side-by-side copies. Evidence: [aa-visibility.md](aa-visibility.md) |
 
 Deliberately kept:
 
-- **Shizuku** — the load-bearing dependency. It is how the install session sets
-  `-i com.android.vending`, which is what makes Android Auto list the app, and it is what makes
-  unattended harness runs possible.
+- **Shizuku** — optional for unattended on-phone installs. It runs package-manager sessions as
+  shell; it does not produce genuine Play-initiated installs. The host harness uses adb instead.
 - **Room / DataStore / WorkManager / Glide** — local catalog cache, preferences, background
   refresh, icons. All local; none of them imply a server.
 - **Jsoup / OkHttp** — resolving and downloading APKs from publisher pages that have no API.
@@ -73,6 +72,7 @@ Bundled at `app/src/main/assets/catalog.json`; the same schema serves a remote `
       "packageName": "maps.jaoloonda.android",
       "category": "multimedia",
       "descriptionRes": "carstream_description",
+      "description": "Optional literal text for user-added repositories",
       "minSdk": 24,
       "source": { "type": "github-release", "repo": "owner/repo", "assetPattern": "\\.apk$" }
     }
@@ -91,7 +91,8 @@ Bundled at `app/src/main/assets/catalog.json`; the same schema serves a remote `
 
 `category` maps to the existing section strings: `multimedia` (`first_section_name`),
 `mirroring` (`second_section_name`), `other` (`third_section_name`). `descriptionRes` names an
-existing string resource so the 30 translated locales keep working.
+existing string resource so the 30 translated locales keep working. `description` is optional
+plain text used by user-added repositories; markup is stripped before display.
 
 ### Package names
 

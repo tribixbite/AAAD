@@ -127,7 +127,7 @@ class CarInstallScreen(carContext: CarContext) : Screen(carContext), DefaultLife
                 val outcome = InstallManager(carContext)
                     .install(item.entry, allowSystemFallback = false) { /* progress: car shows a spinner */ }
                 val message = when (outcome) {
-                    is InstallManager.Outcome.InstalledAttributed ->
+                    is InstallManager.Outcome.InstalledUnattended ->
                         carContext.getString(R.string.car_install_done, item.entry.name)
                     is InstallManager.Outcome.InstalledCarCompatible ->
                         carContext.getString(

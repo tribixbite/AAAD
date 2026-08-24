@@ -12,11 +12,8 @@ import com.legs.appsforaa.utils.applyVerticalInsetPadding
 /**
  * Walks the user through enabling *Unknown sources* in Android Auto's developer settings.
  *
- * This screen matters more than it looks. Without Shizuku, this is the **only** route to Android
- * Auto listing a sideloaded app — the platform installer cannot set the Play Store attribution AA
- * looks for (`docs/aa-visibility.md`). So the screen leads with whether the user actually needs
- * it: if Shizuku is ready, it says so rather than sending them through a fiddly manual procedure
- * for nothing.
+ * This setting is independent of Shizuku. Shizuku automates installation, but current Android
+ * Auto builds can still see that the shell initiated it.
  *
  * The steps are instructions rather than automation on purpose. Upstream v2.8.5 flips the setting
  * by shell-editing gearhead's own `shared_prefs` (backup, `sed`, restore) which needs root and

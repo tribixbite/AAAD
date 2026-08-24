@@ -112,7 +112,9 @@ class DebugAutomationReceiver : BroadcastReceiver() {
             Logger.d(TAG, "progress: $progress")
         }
         when (outcome) {
-            is InstallManager.Outcome.InstalledAttributed ->
+            // ATTRIBUTED is retained as a wire-compatible harness token; current Android Auto
+            // separately observes the shell initiator, so it is not a trusted-store guarantee.
+            is InstallManager.Outcome.InstalledUnattended ->
                 Logger.i(TAG, "RESULT=ATTRIBUTED version=${outcome.versionName}")
             is InstallManager.Outcome.InstalledCarCompatible ->
                 Logger.i(

@@ -84,13 +84,17 @@ class InstalledAppAdapter(
 
             val installer = app.installerPackage ?: context.getString(R.string.convert_installer_none)
             val state = when {
-                app.hasCarVersion && app.state == ConversionState.ALREADY_ATTRIBUTED ->
+                app.carCapabilities?.parkedOnly == true ->
+                    context.getString(R.string.convert_state_car_parked, app.versionName)
+                app.hasCarVersion && app.conversionAction == ConversionAction.CAR_COPY ->
+                    context.getString(R.string.convert_state_car_requires_store, app.versionName)
+                app.hasCarVersion && app.state == ConversionState.TRUSTED_INSTALL ->
                     context.getString(R.string.convert_state_car_ready, app.versionName)
                 app.hasCarVersion ->
                     context.getString(R.string.convert_state_car_needs_registration, app.versionName)
                 app.conversionAction == ConversionAction.CAR_COPY ->
                     context.getString(R.string.convert_state_needs_car_copy, app.versionName)
-                app.state == ConversionState.ALREADY_ATTRIBUTED ->
+                app.state == ConversionState.TRUSTED_INSTALL ->
                     context.getString(R.string.convert_state_attributed_no_aa, app.versionName)
                 // "Android Auto will not list it" is true of a non-AA app but for an unrelated
                 // reason, and stating it next to the caveat reads as contradictory.
@@ -100,14 +104,14 @@ class InstalledAppAdapter(
                     context.getString(R.string.convert_state_installer, installer)
             }
 
-            val caveat = when {
-                app.conversionAction == ConversionAction.CAR_COPY ->
-                    context.getString(R.string.convert_car_copy_detail)
-                else -> null
-            }
-            binding.appDetail.text = if (caveat != null) state + "\n" + caveat else state
+            binding.appDetail.text = state
 
             binding.carVersion.visibility = if (app.hasCarVersion) View.VISIBLE else View.GONE
+            binding.carVersion.setText(
+                if (app.carCapabilities?.parkedOnly == true) {
+                    R.string.convert_parked_car_version_included
+                } else R.string.convert_car_version_included
+            )
 
             binding.conversionStatus.visibility =
                 if (rowState == null) View.GONE else View.VISIBLE

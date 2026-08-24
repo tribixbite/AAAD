@@ -35,11 +35,11 @@ import kotlinx.coroutines.launch
  * [PackageInstallReceiver] reports a package change so the list never goes stale behind the user.
  *
  * Tapping a card's action launches an installed app, or downloads and installs one that is not.
- * The install goes through [InstallManager], which prefers the Play-attributed Shizuku path and
- * says plainly when it had to fall back to one Android Auto will ignore.
+ * The install goes through [InstallManager], which uses Shizuku for unattended installation when
+ * available and otherwise hands off to Android for confirmation.
  *
- * Two side doors: [ConvertActivity] fixes apps already installed without attribution, and
- * [DiscoverActivity] adds new ones from GitHub.
+ * Two side doors: [ConvertActivity] creates compatible parked copies, and [DiscoverActivity] adds
+ * verified releases from GitHub.
  */
 class MainActivityNew : AppCompatActivity() {
 
@@ -159,15 +159,11 @@ class MainActivityNew : AppCompatActivity() {
     }
 
     /**
-     * The Android Auto setup route is only offered when Shizuku cannot do the job.
-     *
-     * Surfacing it unconditionally would push users through a fiddly manual procedure they do not
-     * need — and, worse, imply the app cannot already register installs with Android Auto.
+     * Unknown sources is independent of Shizuku, so setup remains reachable in either state.
      */
     private fun refreshAaSetupVisibility() {
         ShizukuInstaller.refreshInstalledState(packageManager)
-        val needed = ShizukuInstaller.availability() != ShizukuInstaller.Availability.Ready
-        binding.openAaSetup.visibility = if (needed) View.VISIBLE else View.GONE
+        binding.openAaSetup.visibility = View.VISIBLE
     }
 
     /** Re-resolves install state without re-fetching the catalog. */
@@ -291,8 +287,8 @@ class MainActivityNew : AppCompatActivity() {
 
     private fun reportOutcome(item: AppListItem, outcome: InstallManager.Outcome) {
         val message = when (outcome) {
-            is InstallManager.Outcome.InstalledAttributed ->
-                getString(R.string.install_done_attributed, item.entry.name)
+            is InstallManager.Outcome.InstalledUnattended ->
+                getString(R.string.install_done, item.entry.name)
             is InstallManager.Outcome.InstalledCarCompatible ->
                 getString(
                     if (outcome.usedSystemInstaller) {

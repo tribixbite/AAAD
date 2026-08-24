@@ -9,6 +9,7 @@ import com.legs.appsforaa.R
 import com.legs.appsforaa.data.AppListItem
 import com.legs.appsforaa.data.InstallState
 import com.legs.appsforaa.databinding.ItemAppCardBinding
+import com.legs.appsforaa.utils.toDisplayText
 
 /**
  * Renders the catalog.
@@ -52,8 +53,8 @@ class AppListAdapter(
             binding.appName.text = item.entry.name
 
             binding.appDescription.apply {
-                if (item.descriptionResId != 0) {
-                    text = context.getString(item.descriptionResId)
+                if (item.descriptionText.isNotBlank()) {
+                    text = item.descriptionText.toDisplayText()
                     visibility = android.view.View.VISIBLE
                 } else {
                     visibility = android.view.View.GONE

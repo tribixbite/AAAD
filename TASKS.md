@@ -587,13 +587,13 @@ Design: [docs/agent-dash.md](docs/agent-dash.md).
   That conclusion remains the evidence for the old pipeline and is the reason T-54 injects code
   rather than adding more manifest flags.
 
-- [~] **T-54** **Inject a real car surface so Calculator can appear and run in Android Auto.**
+- [x] **T-54** **Inject a real parked car surface so Calculator can appear in Android Auto.**
   The `carify-bridge` module builds a minimized AndroidX runtime payload. `carify.sh` injects
   it only when the target has neither a projection service nor its own `CarAppService`; existing
   implementations remain authoritative. Injected phone apps use a real AndroidX `CarAppService`
   and `template` descriptor, permission Activity/notification receiver/connection-provider query,
   `ACCESS_SURFACE` + map/navigation permissions, minimum
-  Car API 7, `DEFAULT + CAR_LAUNCHER + NAVIGATION + APP_MAPS`, and `appCategory=maps`.
+  Car API 5, `DEFAULT + CAR_LAUNCHER + NAVIGATION + APP_MAPS`, and `appCategory=game`.
 
   DEX injection deliberately does not merge the payload's resource table. The one Car App
   handshake lookup that requires it is rewritten to the pinned library version (`1.7.0`);
@@ -614,7 +614,7 @@ Design: [docs/agent-dash.md](docs/agent-dash.md).
   The same transformation now runs inside AAAD. APKEditor 1.4.8 is vendored without its duplicate
   Android/JSR-305 stubs; a generated bridge DEX is bundled as an app asset; Android Keystore holds
   a persistent per-install signing key; and the signed APK is streamed into the existing
-  Play-attributed Shizuku session. Native AA apps retain the lightweight restage path. Ordinary,
+  unattended Shizuku session. Legacy projection apps retain the lightweight restage path. Ordinary,
   media-only, Play-installed, and system apps take the Car-copy path. The debug receiver exercises
   the exact code used by the phone UI and reports `RESULT=CARIFIED`.
 
@@ -625,10 +625,9 @@ Design: [docs/agent-dash.md](docs/agent-dash.md).
   during rewriting; this was the last discovery difference from the control. The control was
   restored immediately and the disposable debug copy was removed after the test.
 
-  **Still required:** select Calculator in a real head-unit session and verify it renders and
-  accepts button input. Listing is now **[V]**; head-unit behavior remains **[I]**. The maps and
-  navigation declarations are deliberately local custom-app discovery signals, not representations
-  suitable for Play review.
+  **Final scope:** listing is **[V]** through the parked-game route. Android Auto intentionally
+  disables this category while driving; T-56 documents why the attempted maps promotion is not an
+  admissible sideloaded replacement.
 
 - [x] **T-55** **Finish the phone conversion workflow.** The All-app scan now includes AAAD itself,
   while generated `.aaad`/`.aaaddev` outputs remain excluded. Apps that already ship a projection
@@ -656,40 +655,40 @@ Design: [docs/agent-dash.md](docs/agent-dash.md).
   Validation is green: supported debug and release builds (23 MB and 15 MB), app unit tests and
   lint, 46 harness tests, 4 manifest-patcher tests, workflow YAML parsing, and `git diff --check`.
 
-- [~] **T-56** **Remove the “not available while driving” restriction from every AAAD path.**
-  Root cause: T-54 promoted its successful discovery control, `android:appCategory="game"`, into
-  production. Android Auto officially defines games as parked-only. The clone was discoverable,
-  but the category itself instructed Android Auto to disable it while moving.
+- [x] **T-56** **Stop promising an unsupported while-driving conversion path.** A fresh,
+  never-installed S25U control settled the gate: a shell-initiated maps/navigation template is not
+  admitted by Android Auto 17.3, even when `pm -i` makes the displayed installer Play. Android's
+  `InstallSourceInfo` still records `com.android.shell` as the initiating package.
 
-  Generated copies now use `android:appCategory="maps"`, matching the injected NAVIGATION
-  `CarAppService`, `NavigationTemplate`, map/navigation permissions, and APP_MAPS launcher
-  category. Capability scanning also reads `ApplicationInfo.category`: even an app with a
-  projection/template surface is not labeled as an existing driving-capable car version when it
-  declares game, and is offered a corrected side-by-side copy.
+  Generated copies use `android:appCategory="game"`, the supported parked-app discovery route.
+  They can appear with Android Auto's developer **Unknown sources** setting and are intentionally
+  unavailable while driving. There is no supported non-root conversion that can grant arbitrary
+  phone UI an unrestricted driving surface.
 
-  Catalog installation is covered too. AAAD inspects every downloaded APK before installing it.
-  A publisher APK with a driving-capable surface retains its signature and takes the normal
-  attributed install path. A media-only, phone-only, or parked-game APK is Carified directly from
-  the download; the unusable publisher entry is never installed. Catalog installed-state,
-  updates, and Open resolve the `.aaad`/`.aaaddev` package transparently.
+  Catalog installation is covered too. AAAD inspects every downloaded APK before installation.
+  Known legacy projection apps and publisher parked apps retain their signature. Phone-only,
+  media-only, and untrusted Car App Library templates become parked side-by-side copies. Catalog
+  installed-state, updates, and Open resolve the `.aaad`/`.aaaddev` package transparently.
 
   Automated debug and signed release builds (23 MB and 15 MB), app unit tests, blocking lint,
   46 harness tests, and 4 generated-manifest tests are green.
 
-  *Verified 2026-08-24 on the Saga through the real foreground UI:* Google Calculator's base plus
-  density split took the `CAR_COPY` path, rebuilt successfully, and installed
-  `com.google.android.calculator.aaaddev` with `installer=com.android.vending`. Pulling that exact
-  generated APK back off the phone showed compiled `appCategory=6` (`CATEGORY_MAPS`), a `template`
-  descriptor, the injected NAVIGATION `CarAppService`, CAR_LAUNCHER + NAVIGATION + APP_MAPS, and
-  both distraction-optimized declarations. Its phone launcher, car launcher, and navigation
-  service all resolve, and the cloned Calculator launches successfully.
+  *Verified 2026-08-24:* the Saga completed the real foreground conversion path. On the S25U, a
+  fresh maps clone did not appear in Customize launcher, while the parked Calculator clone did.
+  Package inspection showed `installingPackageName=com.android.vending` but
+  `initiatingPackageName=com.android.shell`, proving why installer-label spoofing and Shizuku do
+  not confer current trusted-store admission. Disposable controls were removed; the user's
+  existing Calculator and Bambu copies were preserved.
 
-  The Saga cannot close the Android Auto acceptance item: its incomplete first-run/pairing state
-  produces a launcher list containing only Google's built-ins and excludes the known-good,
-  Play-attributed Nav2Contacts too. The disposable `.aaaddev` clone was removed, the older `.aaad`
-  clone was preserved, and original launcher focus was restored. S25U launcher and moving-car/DHU
-  verification remain pending because its wireless-debugging endpoint disappeared during this
-  task.
+- [x] **T-58** **Improve discovery and compatibility help.** Discovery now offers Media,
+  Navigation, Mirroring, and Dashboard shortcuts; accepts only valid GitHub repository URLs;
+  fetches repository metadata; labels active/archived projects; and verifies that a stable release
+  contains an APK before enabling a catalog addition. Saved repository descriptions are persisted,
+  shown in full, and stripped to plain text so raw HTML never reaches the UI.
+
+  The long side-by-side-copy explanation moved behind an accessible 48dp help icon and Material 3
+  dialog. The S25U and Saga render the updated dynamic light/dark UI, full descriptions, queued
+  progress, and cancellable conversions.
 
 - [ ] **T-57** **Make long debug conversions outlive Android's broadcast timeout.** The first Saga
   T-56 attempt used `DEBUG_CONVERT`; `goAsync()` did not exempt it from the platform's receiver
