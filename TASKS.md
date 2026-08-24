@@ -674,9 +674,30 @@ Design: [docs/agent-dash.md](docs/agent-dash.md).
   updates, and Open resolve the `.aaad`/`.aaaddev` package transparently.
 
   Automated debug and signed release builds (23 MB and 15 MB), app unit tests, blocking lint,
-  46 harness tests, and 4 generated-manifest tests are green. S25U generated-package and Android
-  Auto launcher verification remain pending because its wireless-debugging endpoint disappeared
-  during this task.
+  46 harness tests, and 4 generated-manifest tests are green.
+
+  *Verified 2026-08-24 on the Saga through the real foreground UI:* Google Calculator's base plus
+  density split took the `CAR_COPY` path, rebuilt successfully, and installed
+  `com.google.android.calculator.aaaddev` with `installer=com.android.vending`. Pulling that exact
+  generated APK back off the phone showed compiled `appCategory=6` (`CATEGORY_MAPS`), a `template`
+  descriptor, the injected NAVIGATION `CarAppService`, CAR_LAUNCHER + NAVIGATION + APP_MAPS, and
+  both distraction-optimized declarations. Its phone launcher, car launcher, and navigation
+  service all resolve, and the cloned Calculator launches successfully.
+
+  The Saga cannot close the Android Auto acceptance item: its incomplete first-run/pairing state
+  produces a launcher list containing only Google's built-ins and excludes the known-good,
+  Play-attributed Nav2Contacts too. The disposable `.aaaddev` clone was removed, the older `.aaad`
+  clone was preserved, and original launcher focus was restored. S25U launcher and moving-car/DHU
+  verification remain pending because its wireless-debugging endpoint disappeared during this
+  task.
+
+- [ ] **T-57** **Make long debug conversions outlive Android's broadcast timeout.** The first Saga
+  T-56 attempt used `DEBUG_CONVERT`; `goAsync()` did not exempt it from the platform's receiver
+  deadline. Android ANRed and killed the background process exactly 60 seconds into Calculator's
+  APKEditor build, before the five-minute application timeout could matter. The same conversion
+  completed through foreground `ConvertActivity`, so this is isolated to automation. Move long
+  debug install/convert work into a foreground service or another lifecycle the harness can await;
+  keep the exported receiver as a short command ingress and preserve its `RESULT=` protocol.
 
 - [x] **T-52** **Fix AABrowser** — the complaint that started this whole thread. Its APK declares
   `<uses name="media"/>` and nothing else, so Android Auto lists it and refuses to open it while
