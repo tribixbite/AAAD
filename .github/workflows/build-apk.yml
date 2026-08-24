@@ -1,4 +1,4 @@
-# Debug APK build.
+# Tested debug APK build and rolling latest release.
 #
 # Runs on x86_64 Linux, where AGP's Maven aapt2 executes normally — so unlike the on-device
 # build there is no aapt2 override here (see build-on-termux.sh).
@@ -39,12 +39,14 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Build debug APK
-        run: ./gradlew assembleDebug --stacktrace --console=plain
+      - name: Build app and Carify bridge
+        run: ./gradlew :app:assembleDebug :carify-bridge:assembleRelease --stacktrace --console=plain
+
+      - name: Unit tests
+        run: ./gradlew :app:testDebugUnitTest --stacktrace --console=plain
 
       - name: Lint
         run: ./gradlew :app:lint --console=plain
-        continue-on-error: true   # abortOnError is false in app/build.gradle; read the report
 
       - name: Upload lint report
         if: always()
@@ -72,14 +74,17 @@ jobs:
           name: aaad-debug-${{ steps.sha.outputs.short }}
           path: app/build/outputs/apk/debug/*.apk
 
-      - name: Publish dev prerelease
+      - name: Publish latest development release
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v2.6.2
         with:
           files: app/build/outputs/apk/debug/*.apk
+          fail_on_unmatched_files: true
+          overwrite_files: true
           tag_name: dev-${{ steps.sha.outputs.short }}
           name: AAAD dev build (${{ steps.sha.outputs.short }})
-          prerelease: true
+          prerelease: false
+          make_latest: true
           body: |
             Standalone AAAD fork — development build. No backend, no PRO tier, unlimited downloads.
 
@@ -87,3 +92,6 @@ jobs:
             **Package:** `sksa.aa.customapps.dev` — installs alongside an official AAAD build.
 
             Signed with a CI debug key. Personal use only; not a redistribution of upstream AAAD.
+
+            This rolling development release is published for every push to main, so
+            /releases/latest always resolves to the newest successful APK build.

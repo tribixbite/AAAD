@@ -75,7 +75,7 @@ jobs:
           # distribution build (commit-derived timestamp, no daemon/parallel/cache).
           export SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)
           export TZ=UTC LANG=C.UTF-8 LC_ALL=C.UTF-8
-          ./gradlew assembleRelease --no-daemon --no-parallel --no-build-cache \
+          ./gradlew :app:assembleRelease --no-daemon --no-parallel --no-build-cache \
             --stacktrace --console=plain
 
       - name: Verify the APK is signed with the release key
@@ -88,9 +88,11 @@ jobs:
         run: rm -f "$RUNNER_TEMP/release.keystore"
 
       - name: Publish release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v2.6.2
         with:
           files: app/build/outputs/apk/release/*.apk
+          fail_on_unmatched_files: true
+          make_latest: true
           name: AAAD ${{ github.ref_name }}
           tag_name: ${{ github.ref_name }}
           generate_release_notes: true
