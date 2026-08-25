@@ -370,6 +370,7 @@
     <string name="convert_carify_confirm_message">AAAD will create a separate parked car-compatible copy of %1$s. Your original app and its data are not changed or stopped. The copy has fresh data and may not support every phone-only feature. Android Auto disables parked apps while the car is moving. This can take a few minutes.\n\n%2$s</string>
     <string name="convert_carify_done">%1$s parked car-compatible copy installed</string>
     <string name="convert_carify_failed">Could not create car-compatible copy: %1$s</string>
+    <string name="carify_requires_android_15">Android Auto parked apps require Android 15 or newer on the phone</string>
     <plurals name="convert_queue_position">
         <item quantity="one">Next in queue</item>
         <item quantity="other">Queue position %d</item>

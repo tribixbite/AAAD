@@ -2,8 +2,8 @@
 """
 Rewrites a decoded AndroidManifest.xml into a side-by-side, Android-Auto-visible clone.
 
-The hard constraint: **the app's class names must not move.** Carify can add its own bridge DEX,
-but the original DEX is not rewritten, so every existing `android:name` still refers to the
+The hard constraint: **the app's class names must not move.** The original DEX is not rewritten,
+so every existing `android:name` still refers to the
 original package's classes. Renaming those would produce an app whose manifest points at classes
 that do not exist. Only *identifiers* get
 the new package: the manifest package itself, permissions the app declares, provider authorities,
@@ -24,7 +24,6 @@ if discovery not in {"projection", "template"}:
 
 PROJECTION_CATEGORY = "com.google.android.gms.car.category.CATEGORY_PROJECTION"
 CAR_APP_SERVICE_ACTION = "androidx.car.app.CarAppService"
-BRIDGE_SERVICE = "com.legs.appsforaa.carify.CarifyCarAppService"
 
 tree = ET.parse(path)
 root = tree.getroot()
@@ -78,110 +77,46 @@ for element in list(root.findall("permission")) + list(root.findall("uses-permis
         changes.append(f"permission: {name} -> {renamed}")
 
 
-def set_meta(parent, name, *, value=None, resource=None):
-    """Adds or replaces a <meta-data>, so re-running is idempotent."""
+def remove_meta(parent, name):
+    """Removes metadata that would make Gearhead classify this as a driving app."""
     for existing in parent.findall("meta-data"):
         if existing.get(f"{A}name") == name:
             parent.remove(existing)
-    meta = ET.SubElement(parent, "meta-data")
-    meta.set(f"{A}name", name)
-    if value is not None:
-        meta.set(f"{A}value", value)
-    if resource is not None:
-        meta.set(f"{A}resource", resource)
 
 
-# 5. What car surface can this app actually back?
+# 5. Keep only Android Auto's parked-game Activity route.
 #
 #    A never-before-installed S25U control proved that installer-of-record spoofing does not make
 #    a shell-initiated Car App Library package trusted. Android Auto rejects maps/template clones
 #    before discovery. Parked games are covered by Unknown sources and are the only supported
 #    general Activity route on Android Auto, so arbitrary sideloaded copies use that honest route.
 #
-#    Existing projection/template implementations stay authoritative. The bridge is added only
-#    when the APK has neither, avoiding duplicate Car App runtimes in apps such as AABrowser.
-has_projection_service = False
-has_car_app_service = False
+#    A game/Navigation hybrid is still a Car App Library app, so Unknown sources does not apply.
+#    Remove only the car discovery declarations from publisher services; unrelated phone actions
+#    and the services themselves remain intact.
 for service in app.findall("service"):
-    for intent_filter in service.findall("intent-filter"):
-        cats = {c.get(f"{A}name") for c in intent_filter.findall("category")}
-        acts = {a.get(f"{A}name") for a in intent_filter.findall("action")}
-        if PROJECTION_CATEGORY in cats:
-            has_projection_service = True
-        if CAR_APP_SERVICE_ACTION in acts:
-            has_car_app_service = True
-
-needs_bridge = not has_projection_service and not has_car_app_service
-if has_car_app_service and not has_projection_service:
-    car_uses, backing = "template", "the app's own androidx CarAppService"
-elif has_projection_service:
-    car_uses, backing = "projection", "the app's own CATEGORY_PROJECTION service"
-else:
-    car_uses = discovery
-    backing = f"the injected Carify {discovery} runtime and launcher Activity"
-
-
-def add_uses_permission(name: str):
-    if any(p.get(f"{A}name") == name for p in root.findall("uses-permission")):
-        return
-    permission = ET.Element("uses-permission")
-    permission.set(f"{A}name", name)
-    # Keep conventional manifest ordering even though APKEditor's parser accepts either order.
-    root.insert(list(root).index(app), permission)
-    changes.append(f"added permission {name}")
-
-
-if needs_bridge:
-    add_uses_permission("androidx.car.app.ACCESS_SURFACE")
-    add_uses_permission("androidx.car.app.MAP_TEMPLATES")
-    add_uses_permission("androidx.car.app.NAVIGATION_TEMPLATES")
-
-    queries = root.find("queries")
-    if queries is None:
-        queries = ET.Element("queries")
-        root.insert(list(root).index(app), queries)
-    if not any(
-            provider.get(f"{A}authorities") == "androidx.car.app.connection"
-            for provider in queries.findall("provider")):
-        provider = ET.SubElement(queries, "provider")
-        provider.set(f"{A}name", "androidx.car.app.connection.provider")
-        provider.set(f"{A}authorities", "androidx.car.app.connection")
-
-    permission_activity = ET.SubElement(app, "activity")
-    permission_activity.set(f"{A}name", "androidx.car.app.CarAppPermissionActivity")
-    permission_activity.set(f"{A}exported", "false")
-    permission_activity.set(f"{A}theme", "@android:style/Theme.Translucent.NoTitleBar")
-
-    notification_receiver = ET.SubElement(app, "receiver")
-    notification_receiver.set(
-        f"{A}name", "androidx.car.app.notification.CarAppNotificationBroadcastReceiver")
-    notification_receiver.set(f"{A}exported", "false")
-
-    if discovery == "template":
-        bridge_service = ET.SubElement(app, "service")
-        bridge_service.set(f"{A}name", BRIDGE_SERVICE)
-        bridge_service.set(f"{A}exported", "true")
-        bridge_filter = ET.SubElement(bridge_service, "intent-filter")
-        bridge_action = ET.SubElement(bridge_filter, "action")
-        bridge_action.set(f"{A}name", CAR_APP_SERVICE_ACTION)
-        bridge_category = ET.SubElement(bridge_filter, "category")
-        bridge_category.set(f"{A}name", "androidx.car.app.category.NAVIGATION")
-
-    # SurfaceCallback.onClick is the newest host API the injected bridge calls.
-    set_meta(app, "androidx.car.app.minCarApiLevel", value="5")
-    changes.append(f"injected AndroidX {discovery} runtime components")
+    for intent_filter in list(service.findall("intent-filter")):
+        for action in list(intent_filter.findall("action")):
+            if action.get(f"{A}name") == CAR_APP_SERVICE_ACTION:
+                intent_filter.remove(action)
+        for category in list(intent_filter.findall("category")):
+            name = category.get(f"{A}name", "")
+            if name == PROJECTION_CATEGORY or name.startswith("androidx.car.app.category."):
+                intent_filter.remove(category)
+        if not intent_filter.findall("action"):
+            service.remove(intent_filter)
 
 # A shell install can change the installer label but not its initiating package. Android Auto
 # admits the sideload through its parked-app Unknown sources path, which requires game.
 app.set(f"{A}appCategory", "game")
 
-set_meta(app, "com.google.android.gms.car.application", resource="@xml/automotive_app_desc")
-set_meta(app, "distractionOptimized", value="true")
-changes.append(f"car descriptor declares <uses name=\"{car_uses}\"/>")
-changes.append(f"  backed by {backing}")
-print(f"CAR_USES={car_uses}")
+remove_meta(app, "com.google.android.gms.car.application")
+remove_meta(app, "androidx.car.app.minCarApiLevel")
+remove_meta(app, "distractionOptimized")
+changes.append("uses the parked-game CAR_LAUNCHER Activity route")
+print("CAR_USES=parked")
 print("CAR_BACKED=yes")
-print(f"CAR_NEEDS_BRIDGE={'yes' if needs_bridge else 'no'}")
+print("CAR_NEEDS_BRIDGE=no")
 
 # 6. Make the UI as adaptable as the manifest can: a phone Activity on a head unit is a fixed
 #    portrait box unless it is told otherwise. This cannot fix a layout that hardcodes phone
@@ -198,20 +133,21 @@ for activity in app.findall("activity") + app.findall("activity-alias"):
             launchers.append((activity, intent_filter))
 
 for activity, intent_filter in launchers:
-    set_meta(activity, "distractionOptimized", value="true")
+    remove_meta(activity, "distractionOptimized")
     # An orientation lock is the single most common reason a phone Activity renders as a
     # letterboxed sliver on a landscape head unit.
     if activity.get(f"{A}screenOrientation") is not None:
         del activity.attrib[f"{A}screenOrientation"]
         changes.append("removed screenOrientation lock from launcher")
     activity.set(f"{A}resizeableActivity", "true")
-    # Match the resolving Activity shape of listed projected apps such as AABrowser. Gearhead
-    # filters the whole intent, not merely CAR_LAUNCHER.
+    for category in list(intent_filter.findall("category")):
+        if category.get(f"{A}name") in {
+                "androidx.car.app.category.NAVIGATION",
+                "android.intent.category.APP_MAPS"}:
+            intent_filter.remove(category)
     car_categories = (
         "android.intent.category.DEFAULT",
         "android.intent.category.CAR_LAUNCHER",
-        "androidx.car.app.category.NAVIGATION",
-        "android.intent.category.APP_MAPS",
     )
     existing_categories = {
         c.get(f"{A}name") for c in intent_filter.findall("category")

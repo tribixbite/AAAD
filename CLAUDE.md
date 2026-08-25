@@ -180,17 +180,18 @@ bun run src/cli.ts logs --level W                   # the app's own JSONL log, p
 tools/carify.sh --apk downloaded.apk                # same clone, from a file, no device needed
 ```
 
-**`carify` now has two paths.** An APK that already contains a legacy projection surface keeps
-that implementation. An ordinary phone or untrusted templated app gets a minimized AndroidX
-runtime, a real `CarAppService`, and `appCategory=game`. Split apps are merged first. The game
-category is intentional: it is the supported parked-app discovery route for a sideloaded
-arbitrary app.
+**`carify` creates a pure parked-game copy.** It adds `appCategory=game` and `CAR_LAUNCHER` to the
+normal launcher Activity, and removes template/projection discovery from the copy. Do not combine
+the parked category with a `CarAppService`: Gearhead then classifies it as a Car App Library app,
+where Unknown sources does not apply. Split apps are merged first. Android Auto can run parked
+Activities only when the phone is on Android 15 or newer; touch is delivered directly to the
+Activity and needs neither Accessibility nor Shizuku.
 
 The phone's **Convert installed apps** screen uses the same distinction. A native legacy
 projection app may be re-staged unchanged, preserving its signature and data. Any app without an
 admitted car surface—including Play-installed and built-in apps—gets a `<package>.aaad` side-by-side
-Car copy. The original is never stopped or modified; the copy is re-signed, starts with fresh data,
-and carries the template bridge above. System apps stay out of the default AA-only list but are
+Car copy. The original is never stopped or modified; the copy is re-signed and starts with fresh
+data. System apps stay out of the default AA-only list but are
 available under **All apps**. AAAD itself is listed too. Apps with a publisher-supplied car version
 carry an explicit chip; full descriptions wrap; conversions show stage progress and run in a
 cancellable FIFO queue.

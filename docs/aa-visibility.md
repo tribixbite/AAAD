@@ -33,10 +33,11 @@ limits it to supported media, messaging/notification, and parked-app paths and e
 does not apply to Car App Library apps. A maps/navigation template therefore requires a genuine
 trusted-store install. AAAD, adb, and Shizuku all initiate as shell and cannot create that trust.
 
-The supported general-purpose conversion target is consequently a parked game-category copy.
-That copy can appear with Unknown sources enabled, but Android Auto intentionally disables it while
-the vehicle is moving. There is no supported non-root way for AAAD to turn arbitrary phone UI into
-an unrestricted driving app.
+The supported general-purpose conversion target is consequently a parked game-category copy on a
+phone running Android 15 or newer. It is a normal `CAR_LAUNCHER` Activity, not a Car App Library
+service, and receives touch directly. That copy can appear with Unknown sources enabled, but
+Android Auto intentionally disables it while the vehicle is moving. There is no supported non-root
+way for AAAD to turn arbitrary phone UI into an unrestricted driving app.
 
 References: [Android Auto testing](https://developer.android.com/training/cars/testing),
 [parked apps](https://developer.android.com/training/cars/parked/auto), and
@@ -367,12 +368,11 @@ running full screen was taken to prove the opposite, and the caveat was removed 
 first was over-inference from code, the second under-verification of a result: neither established
 *which* clone had worked. The list above is what an actual measurement looks like.
 
-### Injecting a real car surface (T-54) [V/I]
+### Parked Activity conversion (T-54/T-56) [V/I]
 
-Carify now handles an APK with no car implementation by injecting a minimized AndroidX runtime and
-real `CarAppService`: a `template` descriptor, AndroidX permission Activity, notification
-receiver and connection query, map/navigation permissions, Car API 7, and
-`DEFAULT + CAR_LAUNCHER + NAVIGATION + APP_MAPS` on the launcher.
+The first Carify implementation injected a minimized AndroidX runtime and real navigation
+`CarAppService`. That made the clone executable, but it also made the clone a Car App Library app.
+Google's testing contract explicitly says Unknown sources does not apply to that route.
 
 **[V] Discovery evidence:** the complete projection runtime/categories initially remained NOT
 FOUND. Renaming a second clone to `maps.popupcalc.android` also remained NOT FOUND, ruling out
@@ -384,24 +384,23 @@ known-visible projection clone disabled, an otherwise identical shell-initiated
 `template + appCategory=game` clone at `maps.templatecalc.android` independently returned FOUND.
 The earlier excluded shell-initiated Calculator/Nav2Contacts templates lacked the game category,
 so comparison with Play-initiated templates was confounded and did not establish a Play gate.
-Carify therefore defaults to the public template service that actually backs its runtime bridge.
-Both disposable clones were removed; the normal clone launches cleanly on the phone.
+Both disposable clones were removed. A later maps/navigation copy failed trusted-source admission
+on a fresh S25U because shell initiated its install. The final route is therefore the one Android
+documents for arbitrary parked apps: `appCategory=game` plus a normal `CAR_LAUNCHER` Activity, with
+template/projection metadata and service discovery removed from the copy. The host launches the
+Activity and delivers touch itself; no bridge, Accessibility service, Shizuku input, or
+`INJECT_EVENTS` permission is involved. Shizuku remains optional install automation only.
 
-**Correction, 2026-08-24:** that discovery control was not a valid shipping category. Android Auto
-defines games as parked-only, which explains the later “not available while driving” result on
-every converted clone. Carify now uses `android:appCategory="maps"`, matching its
-`androidx.car.app.category.NAVIGATION` service and `NavigationTemplate`. The historical game
-experiment remains above because it established that application category participates in
-discovery; it must not be copied back into generated APKs.
+**[V] Device floor:** the Saga is Android 13 / API 33. Gearhead 17.3 correctly omitted pure parked
+copies there even with Unknown sources enabled. Android's current documentation requires Android
+15 or newer for Android Auto parked Activities, so AAAD now refuses conversion on older phones
+instead of producing an unusable APK. The paired S25U (Android 16) remains the acceptance phone.
 
 **[I] Head-unit outcome:** Customize launcher proves listing, not behavior. Calculator still must
 be selected in a car/DHU/emulator to verify rendering and button input. Do not upgrade that outcome
 to **[V]** until the projected test passes.
 
-The bridge declares maps/navigation discovery signals for arbitrary phone apps, so it is explicitly
-a local testing/personal-use artifact and not a truthful Play-distribution declaration.
-
-### Two car routes, and one public bridge
+### Driving services and the parked route
 
 The apps that open full screen are **projected** apps: an exported `<service>` filtering on
 `com.google.android.gms.car.category.CATEGORY_PROJECTION`, drawing an Activity on the head unit
@@ -409,9 +408,9 @@ through the unofficial Android Auto custom-apps SDK. That SDK is not published t
 fork cannot build against it.
 
 The **templated** Car App Library (`androidx.car.app`) is public, on Maven, and distraction-optimised
-by construction. Navigation apps additionally receive a drawing Surface for their map. T-54 uses
-that public Surface as the bridge to the cloned Activity; the policy caveat above is separate from
-the technical mechanism.
+by construction. Navigation apps additionally receive a drawing Surface for their map. It is a
+valid route for genuine navigation apps from trusted distribution, not a general-purpose wrapper
+for arbitrary phone UI. Parked games are the third route and are always unavailable while moving.
 
 ## Observability: the launcher list lives in Android Auto settings [V]
 

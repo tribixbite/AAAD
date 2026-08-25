@@ -2,7 +2,9 @@ package com.legs.appsforaa.utils
 
 import android.content.Context
 import android.content.pm.PackageManager
+import android.os.Build
 import com.legs.appsforaa.BuildConfig
+import com.legs.appsforaa.R
 import com.legs.appsforaa.data.AutomotiveDescriptor
 import com.legs.appsforaa.data.ConversionState
 import com.legs.appsforaa.data.InstalledApp
@@ -16,7 +18,6 @@ import kotlinx.coroutines.withContext
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 import java.io.File
-import java.util.Locale
 import javax.xml.XMLConstants
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.transform.OutputKeys
@@ -66,9 +67,6 @@ class CarifyRepackager(private val context: Context) {
         const val PROJECTION_CATEGORY =
             "com.google.android.gms.car.category.CATEGORY_PROJECTION"
         const val CAR_APP_SERVICE_ACTION = "androidx.car.app.CarAppService"
-        const val BRIDGE_SERVICE =
-            "com.legs.appsforaa.carify.CarifyCarAppService"
-        const val BRIDGE_CLASS_MARKER = "Landroidx/car/app/CarAppService;"
     }
 
     /**
@@ -114,6 +112,11 @@ class CarifyRepackager(private val context: Context) {
         installMode: InstallMode = InstallMode.SHIZUKU,
         onProgress: (Stage) -> Unit = {},
     ): Result = withContext(Dispatchers.IO) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+            return@withContext Result.Failure(
+                context.getString(R.string.carify_requires_android_15)
+            )
+        }
         val suffix = if (BuildConfig.DEBUG) ".aaaddev" else ".aaad"
         val clonePackage = app.packageName + suffix
         val work = File(
@@ -139,14 +142,12 @@ class CarifyRepackager(private val context: Context) {
             )
             currentCoroutineContext().ensureActive()
             onProgress(Stage.PATCHING)
-            val patch = patchManifest(
+            patchManifest(
                 File(decoded, "AndroidManifest.xml"),
                 app.packageName,
                 clonePackage,
                 app.label,
             )
-            addDescriptor(decoded, patch.carUses)
-            if (patch.needsBridge) injectBridge(decoded)
             currentCoroutineContext().ensureActive()
 
             val unsigned = File(work, "unsigned.apk")
@@ -238,17 +239,12 @@ class CarifyRepackager(private val context: Context) {
         return merged
     }
 
-    private data class ManifestPatch(
-        val carUses: String,
-        val needsBridge: Boolean,
-    )
-
     private fun patchManifest(
         file: File,
         oldPackage: String,
         newPackage: String,
         displayLabel: String,
-    ): ManifestPatch {
+    ) {
         val document = readXml(file)
         val root = document.documentElement
         root.setAttribute("package", newPackage)
@@ -283,63 +279,26 @@ class CarifyRepackager(private val context: Context) {
 
         val application = root.firstElement("application")
             ?: error("APK manifest has no <application>")
-        var hasProjectionService = false
-        var hasCarAppService = false
+        // A compatible copy uses Android Auto's official parked-game Activity route. It must not
+        // simultaneously advertise a Car App Library or legacy projection surface: Gearhead then
+        // classifies it under that route, for which the Unknown sources switch explicitly does
+        // not apply. Keep publisher services themselves but remove only their car discovery
+        // declarations so any unrelated phone behavior stays intact.
         for (service in application.childElements("service")) {
-            for (filter in service.childElements("intent-filter")) {
-                val categories = filter.childElements("category").map { it.android("name") }
-                val actions = filter.childElements("action").map { it.android("name") }
-                if (PROJECTION_CATEGORY in categories) hasProjectionService = true
-                if (CAR_APP_SERVICE_ACTION in actions) hasCarAppService = true
-            }
-        }
-
-        val needsBridge = !hasProjectionService && !hasCarAppService
-        val carUses = when {
-            hasProjectionService -> "projection"
-            else -> "template"
-        }
-
-        if (needsBridge) {
-            addUsesPermission(document, root, application, "androidx.car.app.ACCESS_SURFACE")
-            addUsesPermission(document, root, application, "androidx.car.app.MAP_TEMPLATES")
-            addUsesPermission(document, root, application, "androidx.car.app.NAVIGATION_TEMPLATES")
-
-            val queries = root.firstElement("queries")
-                ?: document.createElement("queries").also { root.insertBefore(it, application) }
-            if (queries.childElements("provider").none {
-                    it.android("authorities") == "androidx.car.app.connection"
-                }) {
-                queries.appendElement(document, "provider").apply {
-                    setAndroid("name", "androidx.car.app.connection.provider")
-                    setAndroid("authorities", "androidx.car.app.connection")
+            for (filter in service.childElements("intent-filter").toList()) {
+                filter.childElements("action")
+                    .filter { it.android("name") == CAR_APP_SERVICE_ACTION }
+                    .forEach(filter::removeChild)
+                filter.childElements("category")
+                    .filter {
+                        it.android("name") == PROJECTION_CATEGORY ||
+                            it.android("name").startsWith("androidx.car.app.category.")
+                    }
+                    .forEach(filter::removeChild)
+                if (filter.childElements("action").isEmpty()) {
+                    service.removeChild(filter)
                 }
             }
-
-            application.appendElement(document, "activity").apply {
-                setAndroid("name", "androidx.car.app.CarAppPermissionActivity")
-                setAndroid("exported", "false")
-                setAndroid("theme", "@android:style/Theme.Translucent.NoTitleBar")
-            }
-            application.appendElement(document, "receiver").apply {
-                setAndroid(
-                    "name",
-                    "androidx.car.app.notification.CarAppNotificationBroadcastReceiver",
-                )
-                setAndroid("exported", "false")
-            }
-            application.appendElement(document, "service").apply {
-                setAndroid("name", BRIDGE_SERVICE)
-                setAndroid("exported", "true")
-                appendElement(document, "intent-filter").apply {
-                    appendElement(document, "action")
-                        .setAndroid("name", CAR_APP_SERVICE_ACTION)
-                    appendElement(document, "category")
-                        .setAndroid("name", "androidx.car.app.category.NAVIGATION")
-                }
-            }
-            // SurfaceCallback.onClick is the newest API the bridge calls (Car API 5).
-            setMeta(document, application, "androidx.car.app.minCarApiLevel", value = "5")
         }
 
         // A never-before-installed S25U control proved a maps/template clone is rejected because
@@ -357,8 +316,9 @@ class CarifyRepackager(private val context: Context) {
         if (patchedLabels == 0) {
             application.setAndroid("label", "$displayLabel (Car)")
         }
-        setMeta(document, application, AA_METADATA, resource = "@xml/automotive_app_desc")
-        setMeta(document, application, "distractionOptimized", value = "true")
+        removeMeta(application, AA_METADATA)
+        removeMeta(application, "androidx.car.app.minCarApiLevel")
+        removeMeta(application, "distractionOptimized")
 
         var launchers = 0
         val activityTags = application.childElements("activity") +
@@ -373,12 +333,16 @@ class CarifyRepackager(private val context: Context) {
                 launchers++
                 activity.removeAttributeNS(ANDROID_NS, "screenOrientation")
                 activity.setAndroid("resizeableActivity", "true")
-                setMeta(document, activity, "distractionOptimized", value = "true")
+                removeMeta(activity, "distractionOptimized")
+                filter.childElements("category")
+                    .filter {
+                        it.android("name") == "androidx.car.app.category.NAVIGATION" ||
+                            it.android("name") == "android.intent.category.APP_MAPS"
+                    }
+                    .forEach(filter::removeChild)
                 val required = listOf(
                     "android.intent.category.DEFAULT",
                     "android.intent.category.CAR_LAUNCHER",
-                    "androidx.car.app.category.NAVIGATION",
-                    "android.intent.category.APP_MAPS",
                 )
                 for (category in required) {
                     if (filter.childElements("category").none {
@@ -398,7 +362,12 @@ class CarifyRepackager(private val context: Context) {
         }
 
         writeXml(document, file)
-        return ManifestPatch(carUses, needsBridge)
+    }
+
+    private fun removeMeta(parent: Element, name: String) {
+        parent.childElements("meta-data")
+            .filter { it.android("name") == name }
+            .forEach(parent::removeChild)
     }
 
     /**
@@ -433,95 +402,10 @@ class CarifyRepackager(private val context: Context) {
         return changed
     }
 
-    private fun addDescriptor(decoded: File, carUses: String) {
-        val packageJson = File(decoded, "resources").walkTopDown()
-            .firstOrNull { it.isFile && it.name == "package.json" }
-            ?: error("Decoded APK has no resource package")
-        val res = File(packageJson.parentFile, "res")
-        val xml = File(res, "xml").apply { mkdirs() }
-        File(xml, "automotive_app_desc.xml").writeText(
-            "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-                "<automotiveApp>\n    <uses name=\"$carUses\"/>\n</automotiveApp>\n"
-        )
-
-        val publicXml = File(res, "values/public.xml")
-        check(publicXml.isFile) { "Decoded APK has no public.xml" }
-        val document = readXml(publicXml)
-        val root = document.documentElement
-        val entries = root.childElements("public")
-        if (entries.none { it.getAttribute("name") == "automotive_app_desc" }) {
-            val allIds = entries.mapNotNull { it.getAttribute("id").parseResourceId() }
-            val xmlIds = entries
-                .filter { it.getAttribute("type") == "xml" }
-                .mapNotNull { it.getAttribute("id").parseResourceId() }
-            val newId = if (xmlIds.isNotEmpty()) {
-                xmlIds.max() + 1
-            } else {
-                val highestType = allIds.maxOfOrNull { it ushr 16 } ?: 0x12
-                (highestType + 1) shl 16
-            }
-            root.appendElement(document, "public").apply {
-                setAttribute("id", String.format(Locale.US, "0x%08x", newId))
-                setAttribute("type", "xml")
-                setAttribute("name", "automotive_app_desc")
-            }
-            writeXml(document, publicXml)
-        }
-    }
-
-    private fun injectBridge(decoded: File) {
-        val dexDir = File(decoded, "dex")
-        val dexFiles = dexDir.listFiles()
-            ?.filter { it.name.matches(Regex("classes(?:\\d+)?\\.dex")) }
-            .orEmpty()
-        check(dexFiles.isNotEmpty()) { "Decoded APK has no DEX files" }
-        if (dexFiles.any { it.containsAscii(BRIDGE_CLASS_MARKER) }) {
-            error("APK contains an undeclared Car App runtime; refusing a duplicate")
-        }
-
-        val next = dexFiles.maxOf { file ->
-            if (file.name == "classes.dex") 1
-            else file.name.removePrefix("classes").removeSuffix(".dex").toInt()
-        } + 1
-        context.assets.open("carify/bridge.dex").use { input ->
-            File(dexDir, "classes$next.dex").outputStream().use(input::copyTo)
-        }
-    }
-
     private fun runEditor(stage: String, vararg arguments: String) {
         Logger.i(TAG, "APKEditor $stage")
         val exit = Main.execute(arguments)
         check(exit == 0) { "APKEditor $stage failed (exit $exit)" }
-    }
-
-    private fun addUsesPermission(
-        document: Document,
-        root: Element,
-        application: Element,
-        name: String,
-    ) {
-        if (root.childElements("uses-permission").any { it.android("name") == name }) return
-        document.createElement("uses-permission").also {
-            it.setAndroid("name", name)
-            root.insertBefore(it, application)
-        }
-    }
-
-    private fun setMeta(
-        document: Document,
-        parent: Element,
-        name: String,
-        value: String? = null,
-        resource: String? = null,
-    ) {
-        parent.childElements("meta-data")
-            .filter { it.android("name") == name }
-            .forEach(parent::removeChild)
-        parent.appendElement(document, "meta-data").apply {
-            setAndroid("name", name)
-            value?.let { setAndroid("value", it) }
-            resource?.let { setAndroid("resource", it) }
-        }
     }
 
     private fun readXml(file: File): Document {
@@ -586,20 +470,4 @@ class CarifyRepackager(private val context: Context) {
             (0 until nodes.length).mapNotNull { nodes.item(it) as? Element }
         }
 
-    private fun String.parseResourceId(): Long? =
-        removePrefix("0x").takeIf { it.matches(Regex("[0-9a-fA-F]{8}")) }?.toLong(16)
-
-    private fun File.containsAscii(value: String): Boolean {
-        val target = value.toByteArray(Charsets.US_ASCII)
-        inputStream().buffered().use { input ->
-            var matched = 0
-            while (true) {
-                val next = input.read()
-                if (next < 0) return false
-                matched = if (next.toByte() == target[matched]) matched + 1
-                else if (next.toByte() == target[0]) 1 else 0
-                if (matched == target.size) return true
-            }
-        }
-    }
 }

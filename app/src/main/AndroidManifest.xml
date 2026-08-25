@@ -195,7 +195,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="sksa.aa.customapps.fileProvider"
+            android:authorities="${applicationId}.fileProvider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
@@ -234,8 +234,8 @@
           of them and cannot honestly claim to be one.
 
           The declaration is kept because it costs nothing and is correct if that policy changes,
-          and because the screens are useful on a head unit that does surface it. IOT is the least
-          wrong of the available categories.
+          and because the screens are useful on a head unit that does surface it. The descriptor
+          must say template: this service uses the official Car App Library, not legacy projection.
         -->
         <service
             android:name="com.legs.appsforaa.car.AaadCarAppService"
